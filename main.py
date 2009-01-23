@@ -4,14 +4,16 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-# Presets camera position
+from stage import Stage
+
+# Presets camera positions
 MAIN_VIEW = { 
     'camera': { 'x': 0., 'y': 12., 'z': 54.5 },
     'view': { 'x': 0., 'y': 12.6, 'z': 0.1 }
     }
 SIDE_VIEW = { 
-    'camera': { 'x': -26., 'y': 18.5, 'z': 50.5 },
-    'view': { 'x': 3.7, 'y': 8.5, 'z': 0.1 }
+    'camera': { 'x': -26., 'y': 15.5, 'z': 37.5 },
+    'view': { 'x': 2.3, 'y': 2.2, 'z': 0.1 }
     }
 # First position
 camera = MAIN_VIEW['camera'].copy()
@@ -22,80 +24,26 @@ SCREEN = Rect(0, 0, 1000, 700)
 
 def drawAxes():
     # Space axes
-        #Eje X
+    #Eje X
     glBegin(GL_LINES)
     glColor3f(1.0,0.0,0.0)
     glVertex3f(-20000.0,0.0,0.0)
     glVertex3f(20000.0,0.0,0.0)
     glEnd()
     
-        #Eje Y
+    #Eje Y
     glBegin(GL_LINES)
     glColor3f(0.,1.,0.)
     glVertex3f(0.0,-200.0,0.0)
     glVertex3f(0.0,200.0,0.0)
     glEnd()
     
-        #Eje Z
+    #Eje Z
     glBegin(GL_LINES)
     glColor3f(0.,0.,1.)
     glVertex3f(0.0,0.0,-200.0)
     glVertex3f(0.0,0.0,200.0)
     glEnd()
-
-class Stage:
-    def __init__(self, floor):
-        #surface = pygame.image.load("stage_surface.png")
-        self.floor_size = floor
-
-    def render(self):
-        glPushMatrix()
-        glTranslatef(0., -self.floor_size, 0.)
-	glBegin(GL_QUADS)
-	glColor3f(0.0,1.0,0.0)		# Set The Color To Green
-	glVertex3f( self.floor_size, self.floor_size,-self.floor_size)		# Top Right Of The Quad (Top)
-	glVertex3f(-self.floor_size, self.floor_size,-self.floor_size)		# Top Left Of The Quad (Top)
-	glVertex3f(-self.floor_size, self.floor_size, self.floor_size)		# Bottom Left Of The Quad (Top)
-	glVertex3f( self.floor_size, self.floor_size, self.floor_size)		# Bottom Right Of The Quad (Top)
-
-	glColor3f(1.0,0.5,0.0)			# Set The Color To Orange
-	glVertex3f( self.floor_size,-self.floor_size, self.floor_size)		# Top Right Of The Quad (Bottom)
-	glVertex3f(-self.floor_size,-self.floor_size, self.floor_size)		# Top Left Of The Quad (Bottom)
-	glVertex3f(-self.floor_size,-self.floor_size,-self.floor_size)		# Bottom Left Of The Quad (Bottom)
-	glVertex3f( self.floor_size,-self.floor_size,-self.floor_size)		# Bottom Right Of The Quad (Bottom)
-
-	glColor3f(1.0,0.0,0.0)			# Set The Color To Red
-	glVertex3f( self.floor_size, self.floor_size, self.floor_size)		# Top Right Of The Quad (Front)
-	glVertex3f(-self.floor_size, self.floor_size, self.floor_size)		# Top Left Of The Quad (Front)
-	glVertex3f(-self.floor_size,-self.floor_size, self.floor_size)		# Bottom Left Of The Quad (Front)
-	glVertex3f( self.floor_size,-self.floor_size, self.floor_size)		# Bottom Right Of The Quad (Front)
-
-	glColor3f(1.0,1.0,0.0)			# Set The Color To Yellow
-	glVertex3f( self.floor_size,-self.floor_size,-self.floor_size)		# Bottom Left Of The Quad (Back)
-	glVertex3f(-self.floor_size,-self.floor_size,-self.floor_size)		# Bottom Right Of The Quad (Back)
-	glVertex3f(-self.floor_size, self.floor_size,-self.floor_size)		# Top Right Of The Quad (Back)
-	glVertex3f( self.floor_size, self.floor_size,-self.floor_size)		# Top Left Of The Quad (Back)
-
-	glColor3f(0.0,0.0,1.0)			# Set The Color To Blue
-	glVertex3f(-self.floor_size, self.floor_size, self.floor_size)		# Top Right Of The Quad (Left)
-	glVertex3f(-self.floor_size, self.floor_size,-self.floor_size)		# Top Left Of The Quad (Left)
-	glVertex3f(-self.floor_size,-self.floor_size,-self.floor_size)		# Bottom Left Of The Quad (Left)
-	glVertex3f(-self.floor_size,-self.floor_size, self.floor_size)		# Bottom Right Of The Quad (Left)
-
-	glColor3f(1.0,0.0,1.0)			# Set The Color To Violet
-	glVertex3f( self.floor_size, self.floor_size,-self.floor_size)		# Top Right Of The Quad (Right)
-	glVertex3f( self.floor_size, self.floor_size, self.floor_size)		# Top Left Of The Quad (Right)
-	glVertex3f( self.floor_size,-self.floor_size, self.floor_size)		# Bottom Left Of The Quad (Right)
-	glVertex3f( self.floor_size,-self.floor_size,-self.floor_size)		# Bottom Right Of The Quad (Right)
-	glEnd()				# Done Drawing The Quad
-        glPopMatrix()
-
-class Amplificator:
-    def __init__(self, position=(0,0)):
-        self.xpos, self.ypos = position
-
-    def render(self):
-        pass
 
 class GLUTManager:
     @classmethod
@@ -112,6 +60,8 @@ class GLUTManager:
         glLoadIdentity()
         gluPerspective(45.0, float(width)/float(height), 0.1, 100.0)
         glMatrixMode(GL_MODELVIEW)
+        # GLUT
+        glutInit()
 
     @classmethod
     def resize(self, width, height):
@@ -135,7 +85,7 @@ def main():
 
     # Game's objects
     clock = pygame.time.Clock()
-    stage = Stage(floor=20)
+    stage = Stage(floor_size=20).default_amplificators()
 
     global camera, view, up
 
