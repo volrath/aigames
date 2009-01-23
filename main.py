@@ -5,20 +5,11 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 from stage import Stage
+from characters import Slash
+from utils import Camera, keymap_handler, MAIN_VIEW
 
-# Presets camera positions
-MAIN_VIEW = { 
-    'camera': { 'x': 0., 'y': 12., 'z': 54.5 },
-    'view': { 'x': 0., 'y': 12.6, 'z': 0.1 }
-    }
-SIDE_VIEW = { 
-    'camera': { 'x': -26., 'y': 15.5, 'z': 37.5 },
-    'view': { 'x': 2.3, 'y': 2.2, 'z': 0.1 }
-    }
 # First position
-camera = MAIN_VIEW['camera'].copy()
-view = MAIN_VIEW['view'].copy()
-up = { 'x': 0., 'y': 1., 'z': 0. }
+camera = Camera().set(MAIN_VIEW.copy())
 
 SCREEN = Rect(0, 0, 1000, 700)
 
@@ -85,7 +76,8 @@ def main():
 
     # Game's objects
     clock = pygame.time.Clock()
-    stage = Stage(floor_size=20).default_amplificators()
+    slash = Slash(1,1)
+    stage = Stage(floor_size=20)
 
     global camera, view, up
 
@@ -96,42 +88,7 @@ def main():
             if event.type == KEYUP and event.key == K_ESCAPE:
                 return
 
-        # Clear the screen, and z-buffer
-#        glClearColor(0.0,0.0,0.0,0.0)
-#        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        pressed = pygame.key.get_pressed()
-        if pressed[K_LEFT]:
-            camera['x'] += .5
-        elif pressed[K_RIGHT]:
-            camera['x'] += -.5
-        if pressed[K_UP]:
-            camera['y'] += -.5
-        elif pressed[K_DOWN]:
-            camera['y'] += +.5
-        if pressed[K_z]:
-            camera['z'] += -.5
-        elif pressed[K_x]:
-            camera['z'] += +.5
-        if pressed[K_d]:
-            view['x'] += .1
-        elif pressed[K_a]:
-            view['x'] += -.1
-        if pressed[K_s]:
-            view['y'] += -.1
-        elif pressed[K_w]:
-            view['y'] += +.1
-        if pressed[K_q]:
-            view['z'] += -.1
-        elif pressed[K_e]:
-            view['z'] += +.1
-        if pressed[K_1]:
-            print '1 pressed'
-            camera = MAIN_VIEW['camera'].copy()
-            view = MAIN_VIEW['view'].copy()
-        elif pressed[K_2]:
-            camera = SIDE_VIEW['camera'].copy()
-            view = SIDE_VIEW['view'].copy()
+        keymap_handler(slash, camera)
 
         clock.tick(60)
 
@@ -141,10 +98,8 @@ def main():
         glClearColor(0.0,0.0,0.0,0.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        gluLookAt(camera['x'], camera['y'], camera['z'],
-                  view['x'], view['y'], view['z'],
-                  up['x'], up['y'], up['z'])
-        print 'CAMERA: ', camera['x'], camera['y'], camera['z'], 'VIEW:', view['x'], view['y'], view['z']
+        gluLookAt(*camera.to_args())
+        print camera
 
         stage.render()
 

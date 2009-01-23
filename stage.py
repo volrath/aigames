@@ -50,6 +50,7 @@ class Amplificator:
 class Stage:
     def __init__(self, floor_size):
         self.floor = Floor(floor_size)
+        self.amps = []
 
     def default_amplificators(self):
         """
