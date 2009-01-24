@@ -39,7 +39,7 @@ class Slash(Character):
         """
         if deacc:
             # Negative acceleration.
-            if self.velocity.length = 0:
+            if self.velocity.length == 0:
                 self.acceleration.length = 0
             else:
                 self.acceleration = self.velocity.unit() * -12.
@@ -64,7 +64,7 @@ class Slash(Character):
 
         # get new orientation
         if self.velocity.length > 0:
-            self.orientation = atan2(-self.velocity.x, self.velocity.y)
+            self.orientation = atan2(self.velocity.x, self.velocity.z)
         print self.orientation
         return self
 
