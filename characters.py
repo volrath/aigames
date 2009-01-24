@@ -3,7 +3,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from math import atan2, pi
 
-from utils import load_image, FPS
+from utils import FPS, load_image, random_binomial, vector3_from_orientation
 from vector3 import Vector3
 
 class Character:
@@ -44,8 +44,12 @@ class Character:
 
     def update(self, deacc=False):
         time = (1./FPS)
+        # Check for the kinematic movements i'm doing and execute them
+        if hasattr(self, 'wandering') and self.wandering:
+            self.do_wander()
+
         self.position += self.velocity * time
-        #self.orientation += self.rotation * time
+        self.orientation += self.rotation * time
         new_velocity = self.velocity + self.acceleration * time
         old_velocity = self.velocity
         if new_velocity.length > self.lms:
@@ -58,8 +62,8 @@ class Character:
         #self.rotation += self.angular * time
 
         # get new orientation
-        if self.velocity.length > 0:
-            self.orientation = atan2(self.velocity.x, self.velocity.z)
+##         if self.velocity.length > 0:
+##             self.orientation = atan2(self.velocity.x, self.velocity.z)
         print self.velocity
         return self
 
@@ -114,5 +118,13 @@ class Enemy(Character):
     """
     def __init__(self, lms, ams):
         Character.__init__(self, lms, ams, colors=[(126./255, 190./255, 228./255), (39./255, 107./255, 148./255)], size=1.5, std_acc=.2)
+        # Kinematic and Steering Behaviors flag.
+        self.wandering = False
+        self.seeking = None
+        self.evading = []
         #self.image, self.rect = load_image('main_character.png')
-    
+
+    def do_wander(self):
+        self.velocity = vector3_from_orientation((self.orientation * 180.)/pi,
+                                                 self.lms)
+        self.rotation = random_binomial() * self.ams

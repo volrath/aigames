@@ -1,6 +1,6 @@
 import os, pygame
 from pygame.locals import *
-from math import sin, pi
+from math import sin, cos, pi
 
 from vector3 import Vector3
 
@@ -60,6 +60,12 @@ class Camera:
 
 def keymap_handler(character, camera=None):
     pressed = pygame.key.get_pressed()
+
+    # Debugging keys
+    if pressed[K_SPACE]:
+        print 'pressed space'
+        character.wandering = True
+
     # Camera
     if pressed[K_1]:
         camera.set(MAIN_VIEW)
@@ -107,18 +113,6 @@ def keymap_handler(character, camera=None):
     elif not any([pressed[K_w], pressed[K_s], pressed[K_a], pressed[K_d]]):
         character.accelerate(deacc=True)
         return
-##     if pressed[K_q]:
-##         view['z'] += -.1
-##     elif pressed[K_e]:
-##         view['z'] += +.1
-##     if pressed[K_1]:
-##         print '1 pressed'
-##         camera = MAIN_VIEW['camera'].copy()
-##         view = MAIN_VIEW['view'].copy()
-##     elif pressed[K_2]:
-##         camera = SIDE_VIEW['camera'].copy()
-##         view = SIDE_VIEW['view'].copy()
-
 ##
 # functions to load resources
 
@@ -148,3 +142,16 @@ def load_sound(name):
         print 'Cannot load sound:', fullname
         raise SystemExit, message
     return sound
+
+##
+# Misc functions...
+
+def random_binomial():
+    from random import random
+    return random() - random()
+
+def vector3_from_orientation(orientation, length):
+    """
+    Calculates velocity from a character's orientation in a 2D(1/2) space
+    """
+    return Vector3(length * cos(orientation), 0., length * sin(orientation))

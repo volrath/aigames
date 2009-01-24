@@ -89,7 +89,7 @@ def main():
             if event.type == KEYUP and event.key == K_ESCAPE:
                 return
 
-        keymap_handler(slash, camera)
+        keymap_handler(enemy, camera)
 
         clock.tick(FPS)
 
@@ -103,7 +103,7 @@ def main():
 #        print camera
 
         stage.render()
-        enemy.render()
+        enemy.update().render()
 #        slash.update().render()
 
         drawAxes()
