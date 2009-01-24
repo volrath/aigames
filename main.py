@@ -66,6 +66,8 @@ class GLUTManager:
         glLoadIdentity()
 
 def main():
+    global camera
+
     pygame.init()
     screen = pygame.display.set_mode(SCREEN.size, HWSURFACE|OPENGL|DOUBLEBUF)
 
@@ -76,11 +78,9 @@ def main():
 
     # Game's objects
     clock = pygame.time.Clock()
-    slash = Slash(20,20)
-    enemy = Enemy(6,6)
     stage = Stage(floor_size=20)
-
-    global camera, view, up
+    slash = Slash(20, 20, stage)
+#    enemy = Enemy(6,6)
 
     while True:
         for event in pygame.event.get():
@@ -103,8 +103,8 @@ def main():
 #        print camera
 
         stage.render()
-        enemy.render()
-#        slash.update().render()
+#        enemy.render()
+        slash.update().render()
 
         drawAxes()
         pygame.display.flip()

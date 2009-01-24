@@ -1,9 +1,11 @@
+from pygame import Rect
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 class Floor:
     def __init__(self, floor):
+        self.area = Rect(-floor, -floor, floor*2, floor*2)
         #surface = pygame.image.load("stage_surface.png")
         self.floor_size = floor
 

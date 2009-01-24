@@ -1,3 +1,4 @@
+from pygame import Rect
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
@@ -10,9 +11,11 @@ class Character:
     """
     Character properties, movement, size, etc..
     """
-    def __init__(self, linear_max_speed, angular_max_speed, colors, size, std_acc):
+    def __init__(self, linear_max_speed, angular_max_speed, stage, colors, size, std_acc):
         self.lms = linear_max_speed
         self.ams = angular_max_speed
+        self.area = Rect(-size, -size, size*2, size*2) # modify this when the character begins with a given position
+        self.stage = stage
         # Kinematic data
         self.position = Vector3()
         self.orientation = 0.
@@ -44,7 +47,21 @@ class Character:
 
     def update(self, deacc=False):
         time = (1./FPS)
-        self.position += self.velocity * time
+        new_offset_pos = self.velocity * time
+        # Find out if the new position is out of the stage area
+        if self.stage.floor.area.contains(
+            self.area.move(new_offset_pos.x,
+                           new_offset_pos.z)):
+            self.position += new_offset_pos
+            if new_offset_pos.length > 0:
+                self.area.move_ip(new_offset_pos.x,
+                                  new_offset_pos.z)
+            print 'no he salido...', self.area, new_offset_pos
+        else:
+            # We calculate which sides of the character's area are out of
+            # the stage area and put the character right at the edge in
+            # those sides
+            print 'me sali, fuck...', self.area, self.stage.floor.area
         #self.orientation += self.rotation * time
         new_velocity = self.velocity + self.acceleration * time
         old_velocity = self.velocity
@@ -60,7 +77,6 @@ class Character:
         # get new orientation
         if self.velocity.length > 0:
             self.orientation = atan2(self.velocity.x, self.velocity.z)
-        print self.velocity
         return self
 
     def render(self):
@@ -104,15 +120,14 @@ class Slash(Character):
     """
     Super Slash object =)
     """
-    def __init__(self, lms, ams):
-        Character.__init__(self, lms, ams, colors=[(1., 155./255, 0.), (1., 85./255, 0.)], size=2., std_acc=1.)
+    def __init__(self, lms, ams, floor):
+        Character.__init__(self, lms, ams, floor, colors=[(1., 155./255, 0.), (1., 85./255, 0.)], size=2., std_acc=1.)
         #self.image, self.rect = load_image('main_character.png')
 
 class Enemy(Character):
     """
     An enemy
     """
-    def __init__(self, lms, ams):
-        Character.__init__(self, lms, ams, colors=[(126./255, 190./255, 228./255), (39./255, 107./255, 148./255)], size=1.5, std_acc=.2)
+    def __init__(self, lms, ams, floor):
+        Character.__init__(self, lms, ams, floor, colors=[(126./255, 190./255, 228./255), (39./255, 107./255, 148./255)], size=1.5, std_acc=.2)
         #self.image, self.rect = load_image('main_character.png')
-    
