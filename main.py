@@ -6,30 +6,30 @@ from OpenGL.GLU import *
 
 from stage import Stage
 from characters import Slash
-from utils import Camera, keymap_handler, MAIN_VIEW
+from utils import Camera, keymap_handler, MAIN_VIEW, FPS
 
 # First position
-camera = Camera().set(MAIN_VIEW.copy())
+camera = Camera().set(MAIN_VIEW)
 
 SCREEN = Rect(0, 0, 1000, 700)
 
 def drawAxes():
     # Space axes
-    #Eje X
+    # Axis X
     glBegin(GL_LINES)
     glColor3f(1.0,0.0,0.0)
     glVertex3f(-20000.0,0.0,0.0)
     glVertex3f(20000.0,0.0,0.0)
     glEnd()
-    
-    #Eje Y
+
+    # Axis Y
     glBegin(GL_LINES)
     glColor3f(0.,1.,0.)
     glVertex3f(0.0,-200.0,0.0)
     glVertex3f(0.0,200.0,0.0)
     glEnd()
-    
-    #Eje Z
+
+    # Axis Z
     glBegin(GL_LINES)
     glColor3f(0.,0.,1.)
     glVertex3f(0.0,0.0,-200.0)
@@ -76,7 +76,7 @@ def main():
 
     # Game's objects
     clock = pygame.time.Clock()
-    slash = Slash(1,1)
+    slash = Slash(20,20)
     stage = Stage(floor_size=20)
 
     global camera, view, up
@@ -90,7 +90,7 @@ def main():
 
         keymap_handler(slash, camera)
 
-        clock.tick(60)
+        clock.tick(FPS)
 
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
@@ -99,9 +99,10 @@ def main():
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         gluLookAt(*camera.to_args())
-        print camera
+#        print camera
 
         stage.render()
+        slash.update().render()
 
         drawAxes()
         pygame.display.flip()

@@ -1,11 +1,15 @@
 import os, pygame
 from pygame.locals import *
+from math import sin, pi
+
+from vector3 import Vector3
 
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
 
 # Some settings
 MEDIA_PATH = 'media'
+FPS = 60
 # Presets camera positions
 MAIN_VIEW = { 
     'position': { 'x': 0., 'y': 12., 'z': 54.5 },
@@ -47,20 +51,20 @@ class Camera:
         set the camera view, given a representive dict
         """
         if view_dict.has_key('position'):
-            self.position = view_dict['position']
+            self.position = view_dict['position'].copy()
         if view_dict.has_key('view'):
-            self.view = view_dict['view']
+            self.view = view_dict['view'].copy()
         if view_dict.has_key('up'):
-            self.up = view_dict['up']
+            self.up = view_dict['up'].copy()
         return self
 
 def keymap_handler(character, camera=None):
     pressed = pygame.key.get_pressed()
     # Camera
     if pressed[K_1]:
-        camera.set(MAIN_VIEW.copy())
+        camera.set(MAIN_VIEW)
     elif pressed[K_2]:
-        camera.set(SIDE_VIEW.copy())
+        camera.set(SIDE_VIEW)
     if pressed[K_LEFT]:
         camera.position['x'] += .5
     elif pressed[K_RIGHT]:
@@ -75,14 +79,34 @@ def keymap_handler(character, camera=None):
         camera.position['z'] += +.5
 
     # Character
+    # First handle two keys pressed at the same time.
+    if pressed[K_d] and pressed[K_w]:
+        character.accelerate(Vector3((character.std_acc * sin(pi/4)), 0., -(character.std_acc * sin(pi/4))))
+        return
+    elif pressed[K_d] and pressed[K_s]:
+        character.accelerate(Vector3((character.std_acc * sin(pi/4)), 0., (character.std_acc * sin(pi/4))))
+        return
+    elif pressed[K_a] and pressed[K_w]:
+        character.accelerate(Vector3(-(character.std_acc * sin(pi/4)), 0., -(character.std_acc * sin(pi/4))))
+        return
+    elif pressed[K_a] and pressed[K_s]:
+        character.accelerate(Vector3(-(character.std_acc * sin(pi/4)), 0., (character.std_acc * sin(pi/4))))
+        return
     if pressed[K_d]:
-        character.position['x'] += .1
+        character.accelerate(Vector3(character.std_acc, 0., 0.))
+        return
     elif pressed[K_a]:
-        character.position['x'] += -.1
+        character.accelerate(Vector3(-character.std_acc, 0., 0.))
+        return
     if pressed[K_s]:
-        character.position['z'] += -.1
-    elif pressed[K_w]:
-        character.position['z'] += +.1
+        character.accelerate(Vector3(0., 0., character.std_acc))
+        return
+    if pressed[K_w]:
+        character.accelerate(Vector3(0., 0., -character.std_acc))
+        return
+    elif not any([pressed[K_w], pressed[K_s], pressed[K_a], pressed[K_d]]):
+        character.accelerate(deacc=True)
+        return
 ##     if pressed[K_q]:
 ##         view['z'] += -.1
 ##     elif pressed[K_e]:
