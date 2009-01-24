@@ -5,7 +5,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 from stage import Stage
-from characters import Slash
+from characters import Slash, Enemy
 from utils import Camera, keymap_handler, MAIN_VIEW, FPS
 
 # First position
@@ -77,6 +77,7 @@ def main():
     # Game's objects
     clock = pygame.time.Clock()
     slash = Slash(20,20)
+    enemy = Enemy(6,6)
     stage = Stage(floor_size=20)
 
     global camera, view, up
@@ -102,7 +103,8 @@ def main():
 #        print camera
 
         stage.render()
-        slash.update().render()
+        enemy.render()
+#        slash.update().render()
 
         drawAxes()
         pygame.display.flip()

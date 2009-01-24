@@ -10,7 +10,7 @@ class Character:
     """
     Character properties, movement, size, etc..
     """
-    def __init__(self, linear_max_speed, angular_max_speed):
+    def __init__(self, linear_max_speed, angular_max_speed, colors, size, std_acc):
         self.lms = linear_max_speed
         self.ams = angular_max_speed
         # Kinematic data
@@ -21,16 +21,11 @@ class Character:
         # Steering output
         self.acceleration = Vector3()
         self.angular = 0.
+        self.std_acc = std_acc
 
-class Slash(Character):
-    """
-    Super Slash object =)
-    """
-    def __init__(self, lms, ams):
-        Character.__init__(self, lms, ams)
-        #self.image, self.rect = load_image('main_character.png')
-        self.size = 2. # static, for now...
-        self.std_acc = 1
+        # Optional, color and stuff
+        self.colors = colors
+        self.size = size
 
     def accelerate(self, acceleration=None, deacc=False):
         """
@@ -42,7 +37,7 @@ class Slash(Character):
             if self.velocity.length == 0:
                 self.acceleration.length = 0
             else:
-                self.acceleration = self.velocity.unit() * -12.
+                self.acceleration = self.velocity.unit() * -15.
             return
         if self.velocity.length < self.lms:
             self.acceleration += acceleration
@@ -65,25 +60,23 @@ class Slash(Character):
         # get new orientation
         if self.velocity.length > 0:
             self.orientation = atan2(self.velocity.x, self.velocity.z)
-        print self.orientation
+        print self.velocity
         return self
 
     def render(self):
-        # 255 153 0 #FF9900
-        # 255  85 0 #FF5500
         glPushMatrix()
         glTranslatef(self.position.x, self.size, self.position.z)
         glRotatef((self.orientation * 180. / pi), 0., 1., 0.)
         #solidCube(self.size)    -> to implement...
         glBegin(GL_QUADS)
         
-	glColor3f(1., 153./255, 0.)		# Set The Color To Light Orange
+	glColor3f(*self.colors[0])		# Set The Color To Primary Character Color
 	glVertex3f( self.size, self.size, self.size)		# Top Right Of The Quad (Front)
 	glVertex3f(-self.size, self.size, self.size)		# Top Left Of The Quad (Front)
 	glVertex3f(-self.size,-self.size, self.size)		# Bottom Left Of The Quad (Front)
 	glVertex3f( self.size,-self.size, self.size)		# Bottom Right Of The Quad (Front)
 
-	glColor3f(1., 85./255, 0.)			# Set The Color To Dark Orange
+	glColor3f(*self.colors[1])			# Set The Color To Secondary Character Color
 	glVertex3f( self.size, self.size,-self.size)		# Top Right Of The Quad (Top)
 	glVertex3f(-self.size, self.size,-self.size)		# Top Left Of The Quad (Top)
 	glVertex3f(-self.size, self.size, self.size)		# Bottom Left Of The Quad (Top)
@@ -106,3 +99,20 @@ class Slash(Character):
 
 	glEnd()				# Done Drawing The Quad
         glPopMatrix()
+
+class Slash(Character):
+    """
+    Super Slash object =)
+    """
+    def __init__(self, lms, ams):
+        Character.__init__(self, lms, ams, colors=[(1., 155./255, 0.), (1., 85./255, 0.)], size=2., std_acc=1.)
+        #self.image, self.rect = load_image('main_character.png')
+
+class Enemy(Character):
+    """
+    An enemy
+    """
+    def __init__(self, lms, ams):
+        Character.__init__(self, lms, ams, colors=[(126./255, 190./255, 228./255), (39./255, 107./255, 148./255)], size=1.5, std_acc=.2)
+        #self.image, self.rect = load_image('main_character.png')
+    
