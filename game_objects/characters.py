@@ -12,7 +12,8 @@ class Character:
     """
     Character properties, movement, size, etc..
     """
-    def __init__(self, linear_max_speed, angular_max_speed, colors, size, std_acc):
+    def __init__(self, linear_max_speed, angular_max_speed, colors, size,
+                 std_acc_step, max_acc):
         self.lms = linear_max_speed
         self.ams = angular_max_speed
         # Kinematic data
@@ -23,7 +24,8 @@ class Character:
         # Steering output
         self.acceleration = Vector3()
         self.angular = 0.
-        self.std_acc = std_acc
+        self.std_acc_step = std_acc_step
+        self.max_acc = max_acc
 
         # Optional, color and stuff
         self.colors = colors
@@ -53,8 +55,8 @@ class Character:
           2. updates the object's dinamic data (velocity) using its previous
              linear and angular acceleration.
           3. ensures that the maximum speed is being respected
-          4. Tries to handle negative acceleration properly, this needs some
-             improvement =S.
+          4. Tries to handle deceleration properly, this needs some
+             improvement though =S.
 
         Everything else will be removed.
         """
@@ -130,7 +132,9 @@ class Slash(Character):
     Super Slash object =)
     """
     def __init__(self, lms, ams):
-        Character.__init__(self, lms, ams, colors=[(1., 155./255, 0.), (1., 85./255, 0.)], size=2., std_acc=1.)
+        Character.__init__(self, lms, ams,
+                           colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
+                           size=2., std_acc_step=1., max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
 
 class Enemy(Character):
@@ -138,7 +142,10 @@ class Enemy(Character):
     An enemy
     """
     def __init__(self, lms, ams):
-        Character.__init__(self, lms, ams, colors=[(126./255, 190./255, 228./255), (39./255, 107./255, 148./255)], size=1.5, std_acc=.2)
+        Character.__init__(self, lms, ams,
+                           colors=[(126./255, 190./255, 228./255),
+                                   (39./255, 107./255, 148./255)],
+                           size=1.5, std_acc_step=.5, max_acc=20.)
         # Kinematic and Steering Behaviors flag.
         self.wandering = False
         self.seeking = None
