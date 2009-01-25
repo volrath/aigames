@@ -31,8 +31,8 @@ class Character:
 
     def accelerate(self, acceleration=None, deacc=False):
         """
-        Acceleration to slash, given a acceleration VECTOR. This
-        method ensures that slash isn't going at its maximum speed
+        Acceleratios the character, given a acceleration VECTOR. This
+        method ensures that the character isn't going at its maximum speed
         """
         if deacc:
             # Negative acceleration.
@@ -44,7 +44,20 @@ class Character:
         if self.velocity.length < self.lms:
             self.acceleration += acceleration
 
-    def update(self, deacc=False):
+    def update(self):
+        """
+        Updates the character steering data. This method only covers the
+        following:
+          1. updates the object's static data (position, and orientation) using
+             its linear and angular velocities.
+          2. updates the object's dinamic data (velocity) using its previous
+             linear and angular acceleration.
+          3. ensures that the maximum speed is being respected
+          4. Tries to handle negative acceleration properly, this needs some
+             improvement =S.
+
+        Everything else will be removed.
+        """
         time = (1./FPS)
         # Check for the kinematic movements i'm doing and execute them
         if hasattr(self, 'wandering') and self.wandering:
@@ -72,6 +85,10 @@ class Character:
         return self
 
     def render(self):
+        """
+        Draw the 3D character.
+        TODO: handle blending and textures...
+        """
         glPushMatrix()
         glTranslatef(self.position.x, self.size, self.position.z)
         glRotatef((self.orientation * 180. / pi), 0., 1., 0.)
