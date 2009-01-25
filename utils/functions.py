@@ -2,69 +2,21 @@ import os, pygame
 from pygame.locals import *
 from math import sin, cos, pi
 
-from vector3 import Vector3
+from physics.vector3 import Vector3
 
+# Check for dependencies.
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
 
 # Some settings
-MEDIA_PATH = 'media'
-FPS = 60
-# Presets camera positions
-MAIN_VIEW = { 
-    'position': { 'x': 0., 'y': 12., 'z': 54.5 },
-    'view': { 'x': 0., 'y': 12.6, 'z': 0.1 }
-    }
-SIDE_VIEW = { 
-    'position': { 'x': -26., 'y': 15.5, 'z': 37.5 },
-    'view': { 'x': 2.3, 'y': 2.2, 'z': 0.1 }
-    }
 
-class Camera:
-    """
-    Models an opengl camera
-    """
-    def __init__(self, position=(0.,0.,0.), view=(0.,0.,0.), up=(0.,1.,0.)):
-        self.position = {'x': position[0], 'y': position[1], 'z': position[2]}
-        self.view     = {'x': view[0], 'y': view[1], 'z': view[2]}
-        self.up       = {'x': up[0], 'y': up[1], 'z': up[2]}
-
-    def __unicode__(self):
-        args = self.to_args()
-        return 'POSITION: %s  VIEW: %s' % (args[:3], args[3:6])
-    __str__ = __unicode__
-
-    def to_args(self):
-        """
-        return a tuple of its values to be passed as arguments to a function
-        """
-        return (self.position['x'], self.position['y'], self.position['z']) + \
-               (self.view['x'], self.view['y'], self.view['z']) + \
-               (self.up['x'], self.up['y'], self.up['z'])
-# WTF?!
-#        return tuple(self.position.values()) + \
-#               tuple(self.view.values()) + \
-#               tuple(self.up.values())
-
-    def set(self, view_dict):
-        """
-        set the camera view, given a representive dict
-        """
-        if view_dict.has_key('position'):
-            self.position = view_dict['position'].copy()
-        if view_dict.has_key('view'):
-            self.view = view_dict['view'].copy()
-        if view_dict.has_key('up'):
-            self.up = view_dict['up'].copy()
-        return self
-
-def keymap_handler(character, camera=None):
+def keymap_handler(game, camera=None):
     pressed = pygame.key.get_pressed()
 
     # Debugging keys
     if pressed[K_SPACE]:
         print 'pressed space'
-        character.wandering = True
+        game.main_character.wandering = True
 
     # Camera
     if pressed[K_1]:
@@ -87,31 +39,31 @@ def keymap_handler(character, camera=None):
     # Character
     # First handle two keys pressed at the same time.
     if pressed[K_d] and pressed[K_w]:
-        character.accelerate(Vector3((character.std_acc * sin(pi/4)), 0., -(character.std_acc * sin(pi/4))))
+        game.main_character.accelerate(Vector3((game.main_character.std_acc * sin(pi/4)), 0., -(game.main_character.std_acc * sin(pi/4))))
         return
     elif pressed[K_d] and pressed[K_s]:
-        character.accelerate(Vector3((character.std_acc * sin(pi/4)), 0., (character.std_acc * sin(pi/4))))
+        game.main_character.accelerate(Vector3((game.main_character.std_acc * sin(pi/4)), 0., (game.main_character.std_acc * sin(pi/4))))
         return
     elif pressed[K_a] and pressed[K_w]:
-        character.accelerate(Vector3(-(character.std_acc * sin(pi/4)), 0., -(character.std_acc * sin(pi/4))))
+        game.main_character.accelerate(Vector3(-(game.main_character.std_acc * sin(pi/4)), 0., -(game.main_character.std_acc * sin(pi/4))))
         return
     elif pressed[K_a] and pressed[K_s]:
-        character.accelerate(Vector3(-(character.std_acc * sin(pi/4)), 0., (character.std_acc * sin(pi/4))))
+        game.main_character.accelerate(Vector3(-(game.main_character.std_acc * sin(pi/4)), 0., (game.main_character.std_acc * sin(pi/4))))
         return
     if pressed[K_d]:
-        character.accelerate(Vector3(character.std_acc, 0., 0.))
+        game.main_character.accelerate(Vector3(game.main_character.std_acc, 0., 0.))
         return
     elif pressed[K_a]:
-        character.accelerate(Vector3(-character.std_acc, 0., 0.))
+        game.main_character.accelerate(Vector3(-game.main_character.std_acc, 0., 0.))
         return
     if pressed[K_s]:
-        character.accelerate(Vector3(0., 0., character.std_acc))
+        game.main_character.accelerate(Vector3(0., 0., game.main_character.std_acc))
         return
     if pressed[K_w]:
-        character.accelerate(Vector3(0., 0., -character.std_acc))
+        game.main_character.accelerate(Vector3(0., 0., -game.main_character.std_acc))
         return
     elif not any([pressed[K_w], pressed[K_s], pressed[K_a], pressed[K_d]]):
-        character.accelerate(deacc=True)
+        game.main_character.accelerate(deacc=True)
         return
 ##
 # functions to load resources

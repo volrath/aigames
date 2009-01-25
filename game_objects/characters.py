@@ -3,8 +3,10 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from math import atan2, pi
 
-from utils import FPS, load_image, random_binomial, vector3_from_orientation
-from vector3 import Vector3
+from utils.functions import load_image, random_binomial,\
+     vector3_from_orientation
+from utils.locals import FPS
+from physics.vector3 import Vector3
 
 class Character:
     """
