@@ -24,9 +24,9 @@ def arrive(character, target, target_radius, slow_radius, time_to_target):
         return
     # Are we <slow_radius>near?
     if distance < slow_radius:
-        speed = character.lms * distance / slow_radius
+        speed = character.max_speed * distance / slow_radius
     else:
-        speed = character.lms
+        speed = character.max_speed
     velocity = direction.set_length(speed)
     character.acceleration = (velocity - character.velocity) / time_to_target
     # Check if the acceleration is too fast
@@ -42,14 +42,14 @@ def align(character, target, target_radius, slow_radius, time_to_target):
         character.angular = 0.
         return
     if rotation_size < slow_radius:  # Are we near?
-        rotation = character.ams * rotation_size / slow_radius
+        rotation = character.max_rotation * rotation_size / slow_radius
     else:
-        rotation = character.ams
+        rotation = character.max_rotation
     rotation *= rotation_direction / rotation_size
     angular_acc = abs(character.angular)
-##     if angular_acc > character.max_angular:
-##         character.angular /= angular_acc
-##         character.angular *= character.max_angular
+    if angular_acc > character.max_ang:
+        character.angular /= angular_acc
+        character.angular *= character.max_ang
 
 def velocity_match(character, target, time_to_target):
     character.acceleration = target.velocity - character.velocity

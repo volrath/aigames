@@ -14,8 +14,8 @@ class Character:
     """
     def __init__(self, linear_max_speed, angular_max_speed, position,
                  orientation, colors, size, std_acc_step, max_acc):
-        self.lms = linear_max_speed
-        self.ams = angular_max_speed
+        self.max_speed = linear_max_speed
+        self.max_rotation = angular_max_speed
         # Kinematic data
         self.position = position
         self.orientation = orientation
@@ -26,6 +26,8 @@ class Character:
         self.angular = 0.
         self.std_acc_step = std_acc_step
         self.max_acc = max_acc
+        self.std_ang_step = .1
+        self.max_ang = 5
 
         # Optional, color and stuff
         self.colors = colors
@@ -43,7 +45,7 @@ class Character:
             else:
                 self.acceleration = self.velocity.unit() * -15.
             return
-        if self.velocity.length < self.lms:
+        if self.velocity.length < self.max_speed:
             self.acceleration += acceleration
 
     def update(self):
@@ -72,8 +74,8 @@ class Character:
         self.velocity += self.acceleration * time
 #        self.rotation += self.angular * time
 
-        if self.velocity.length > self.lms:
-            self.velocity.set_length(self.lms)
+        if self.velocity.length > self.max_speed:
+            self.velocity.set_length(self.max_speed)
         else:
             old_velocity *= self.velocity
             if old_velocity.x < 0: self.velocity.x = 0.
@@ -131,8 +133,8 @@ class Slash(Character):
     """
     Super Slash object =)
     """
-    def __init__(self, lms, ams, position=Vector3(), orientation=0.):
-        Character.__init__(self, lms, ams, position, orientation,
+    def __init__(self, max_speed, max_rotation, position=Vector3(), orientation=0.):
+        Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
                            size=2., std_acc_step=1., max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
@@ -141,8 +143,8 @@ class Enemy(Character):
     """
     An enemy
     """
-    def __init__(self, lms, ams, position=Vector3(), orientation=0.):
-        Character.__init__(self, lms, ams, position, orientation,
+    def __init__(self, max_speed, max_rotation, position=Vector3(), orientation=0.):
+        Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
                            size=1.8, std_acc_step=.5, max_acc=10.)
@@ -154,5 +156,5 @@ class Enemy(Character):
 
     def do_wander(self):
         self.velocity = vector3_from_orientation((self.orientation * 180.)/pi,
-                                                 self.lms)
-        self.rotation = random_binomial() * self.ams
+                                                 self.max_speed)
+        self.rotation = random_binomial() * self.max_rotation
