@@ -6,6 +6,8 @@ from OpenGL.GLU import *
 
 from game_objects.stage import Stage
 from game_objects.characters import Slash, Enemy
+from physics.vector3 import Vector3
+from physics import steering_behaviors as behaviors
 from utils.camera import Camera
 from utils.functions import keymap_handler
 from utils.locals import MAIN_VIEW, FPS, STAGE_SIZE
@@ -43,7 +45,7 @@ class Game:
     def __init__(self):
         # Set the games objects
         self.clock = pygame.time.Clock()
-        self.main_character = Slash(20.,20.)
+        self.main_character = Slash(20.,20.,position=Vector3(-12.,0.,-17.), orientation=1.5)
         self.enemies = []
         self.stage = Stage(STAGE_SIZE)
 
@@ -55,14 +57,12 @@ class Game:
         glVertex3f(-20000.0,0.0,0.0)
         glVertex3f(20000.0,0.0,0.0)
         glEnd()
-
         # Axis Y
         glBegin(GL_LINES)
         glColor3f(0.,1.,0.)
         glVertex3f(0.0,-200.0,0.0)
         glVertex3f(0.0,200.0,0.0)
         glEnd()
-
         # Axis Z
         glBegin(GL_LINES)
         glColor3f(0.,0.,1.)
@@ -73,6 +73,24 @@ class Game:
     def render(self):
         # Renders all game's objects
         self.stage.render()   # TODO: improve stage rendering, use display lists
+        # Before update and render i have to check for the behaviors this
+        # character should be doing. TODO
         self.main_character.update().render()
         for enemy in self.enemies:
             enemy.update().render()
+        behaviors.arrive(self.enemies[0], self.main_character, .3, 6., .1)
+
+    def add_character(self, character):
+        """
+        Add a character to the game, for now only enemies..
+        To-do: allies?
+        """
+        self.enemies.append(character)
+
+    def random_enemies(self, number):
+        """
+        Add <number> random enemies...
+        Improve this when different type of enemies are complete.
+        """
+        for i in range(0,number):
+            self.add_character(Enemy(5.,5., position=Vector3(12., 0., 8.), orientation=0.))

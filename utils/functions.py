@@ -3,6 +3,7 @@ from pygame.locals import *
 from math import sin, cos, pi
 
 from physics.vector3 import Vector3
+from utils.locals import MAIN_VIEW, SIDE_VIEW
 
 # Check for dependencies.
 if not pygame.font: print 'Warning, fonts disabled'
@@ -39,28 +40,28 @@ def keymap_handler(game, camera=None):
     # Character
     # First handle two keys pressed at the same time.
     if pressed[K_d] and pressed[K_w]:
-        game.main_character.accelerate(Vector3((game.main_character.std_acc * sin(pi/4)), 0., -(game.main_character.std_acc * sin(pi/4))))
+        game.main_character.accelerate(Vector3((game.main_character.std_acc_step * sin(pi/4)), 0., -(game.main_character.std_acc_step * sin(pi/4))))
         return
     elif pressed[K_d] and pressed[K_s]:
-        game.main_character.accelerate(Vector3((game.main_character.std_acc * sin(pi/4)), 0., (game.main_character.std_acc * sin(pi/4))))
+        game.main_character.accelerate(Vector3((game.main_character.std_acc_step * sin(pi/4)), 0., (game.main_character.std_acc_step * sin(pi/4))))
         return
     elif pressed[K_a] and pressed[K_w]:
-        game.main_character.accelerate(Vector3(-(game.main_character.std_acc * sin(pi/4)), 0., -(game.main_character.std_acc * sin(pi/4))))
+        game.main_character.accelerate(Vector3(-(game.main_character.std_acc_step * sin(pi/4)), 0., -(game.main_character.std_acc_step * sin(pi/4))))
         return
     elif pressed[K_a] and pressed[K_s]:
-        game.main_character.accelerate(Vector3(-(game.main_character.std_acc * sin(pi/4)), 0., (game.main_character.std_acc * sin(pi/4))))
+        game.main_character.accelerate(Vector3(-(game.main_character.std_acc_step * sin(pi/4)), 0., (game.main_character.std_acc_step * sin(pi/4))))
         return
     if pressed[K_d]:
-        game.main_character.accelerate(Vector3(game.main_character.std_acc, 0., 0.))
+        game.main_character.accelerate(Vector3(game.main_character.std_acc_step, 0., 0.))
         return
     elif pressed[K_a]:
-        game.main_character.accelerate(Vector3(-game.main_character.std_acc, 0., 0.))
+        game.main_character.accelerate(Vector3(-game.main_character.std_acc_step, 0., 0.))
         return
     if pressed[K_s]:
-        game.main_character.accelerate(Vector3(0., 0., game.main_character.std_acc))
+        game.main_character.accelerate(Vector3(0., 0., game.main_character.std_acc_step))
         return
     if pressed[K_w]:
-        game.main_character.accelerate(Vector3(0., 0., -game.main_character.std_acc))
+        game.main_character.accelerate(Vector3(0., 0., -game.main_character.std_acc_step))
         return
     elif not any([pressed[K_w], pressed[K_s], pressed[K_a], pressed[K_d]]):
         game.main_character.accelerate(deacc=True)

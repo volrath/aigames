@@ -19,8 +19,9 @@ def main():
     pygame.display.set_caption("No title yet...")
 
     camera = Camera()
-    game = Game()         # Game object. This will handle all the game world
-                          # and its components
+    game = Game()             # Game object. This will handle all the game world
+                              # and its components
+    game.random_enemies(1)    # Creates one random enemy
 
     while True:
         for event in pygame.event.get():

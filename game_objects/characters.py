@@ -12,13 +12,13 @@ class Character:
     """
     Character properties, movement, size, etc..
     """
-    def __init__(self, linear_max_speed, angular_max_speed, colors, size,
-                 std_acc_step, max_acc):
+    def __init__(self, linear_max_speed, angular_max_speed, position,
+                 orientation, colors, size, std_acc_step, max_acc):
         self.lms = linear_max_speed
         self.ams = angular_max_speed
         # Kinematic data
-        self.position = Vector3()
-        self.orientation = 0.
+        self.position = position
+        self.orientation = orientation
         self.velocity = Vector3()
         self.rotation = 0.
         # Steering output
@@ -131,8 +131,8 @@ class Slash(Character):
     """
     Super Slash object =)
     """
-    def __init__(self, lms, ams):
-        Character.__init__(self, lms, ams,
+    def __init__(self, lms, ams, position=Vector3(), orientation=0.):
+        Character.__init__(self, lms, ams, position, orientation,
                            colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
                            size=2., std_acc_step=1., max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
@@ -141,11 +141,11 @@ class Enemy(Character):
     """
     An enemy
     """
-    def __init__(self, lms, ams):
-        Character.__init__(self, lms, ams,
+    def __init__(self, lms, ams, position=Vector3(), orientation=0.):
+        Character.__init__(self, lms, ams, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
-                           size=1.5, std_acc_step=.5, max_acc=20.)
+                           size=1.8, std_acc_step=.5, max_acc=10.)
         # Kinematic and Steering Behaviors flag.
         self.wandering = False
         self.seeking = None

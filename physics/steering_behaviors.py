@@ -1,13 +1,17 @@
-# Steering Behaviors.
+"""
+ Steering Behaviors.
+"""
+
+# Basic.
 
 def seek(character, target):
     new_acc = target.position - character.position
-    character.acceleration = new_acc.set_length(character.std_acc)
+    character.acceleration = new_acc.set_length(character.std_acc_step)
     character.angular = 0.
 
 def flee(character, target):
     new_acc = character.position - target.position
-    character.acceleration = new_acc.set_length(character.std_acc)
+    character.acceleration = new_acc.set_length(character.std_acc_step)
     character.angular = 0.
 
 def arrive(character, target, target_radius, slow_radius, time_to_target):
@@ -26,3 +30,5 @@ def arrive(character, target, target_radius, slow_radius, time_to_target):
     # Check if the acceleration is too fast
     if character.acceleration.length > character.max_acc:
         character.acceleration.set_length(character.max_acc)
+
+# Advanced.
