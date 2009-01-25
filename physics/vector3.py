@@ -389,7 +389,7 @@ class Vector3(object):
             x, y, z = self._v
             l = new_length / sqrt(x*x + y*y + z*z)
         except ZeroDivisionError:
-            self.v[:] = [0., 0., 0.]
+            self._v[:] = [0., 0., 0.]
             return self
             
         v = self._v
