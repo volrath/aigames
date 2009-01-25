@@ -51,21 +51,23 @@ class Character:
             self.do_wander()
 
         self.position += self.velocity * time
-        self.orientation += self.rotation * time
-        new_velocity = self.velocity + self.acceleration * time
-        old_velocity = self.velocity
-        if new_velocity.length > self.lms:
+#        self.orientation += self.rotation * time
+
+        old_velocity = self.velocity.copy()
+        self.velocity += self.acceleration * time
+#        self.rotation += self.angular * time
+
+        if self.velocity.length > self.lms:
             self.velocity.set_length(self.lms)
         else:
-            self.velocity = new_velocity
-            if new_velocity.x * old_velocity.x < 0: self.velocity.x = 0.
-            if new_velocity.y * old_velocity.y < 0: self.velocity.y = 0.
-            if new_velocity.z * old_velocity.z < 0: self.velocity.z = 0.
-        #self.rotation += self.angular * time
+            old_velocity *= self.velocity
+            if old_velocity.x < 0: self.velocity.x = 0.
+            if old_velocity.y < 0: self.velocity.y = 0.
+            if old_velocity.z < 0: self.velocity.z = 0.
 
         # get new orientation
-##         if self.velocity.length > 0:
-##             self.orientation = atan2(self.velocity.x, self.velocity.z)
+        if self.velocity.length > 0:
+            self.orientation = atan2(self.velocity.x, self.velocity.z)
         print self.velocity
         return self
 

@@ -84,10 +84,10 @@ class Vector3(object):
         v._v = [ float(it.next()), float(it.next()), float(it.next()) ]        
         return v
     
-    def copy():
+    def copy(self):
         """Returns a copy of this vector."""
                 
-        v = cls.__new__(sel.__class__, object)
+        v = self.__class__()
         v._v = self._v[:]
         return v
         #return self.from_floats(self._v[0], self._v[1], self._v[2])
