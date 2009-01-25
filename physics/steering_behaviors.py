@@ -5,11 +5,25 @@
 # Basic.
 
 def seek(character, target):
-    new_acc = target.position - character.position
+    """
+    Character will seek a given target.
+    The argument 'target' can be either a Character's instance or a simple
+    position in the space.
+    """
+    if hasattr(target, 'position'):
+        target = target.position
+    new_acc = target - character.position
     character.acceleration = new_acc.set_length(character.std_acc_step)
     character.angular = 0.
 
 def flee(character, target):
+    """
+    Character will flee from a given target.
+    The argument 'target' can be either a Character's instance or a simple
+    position in the space.
+    """
+    if hasattr(target, 'position'):
+        target = target.position
     new_acc = character.position - target.position
     character.acceleration = new_acc.set_length(character.std_acc_step)
     character.angular = 0.
@@ -59,4 +73,20 @@ def velocity_match(character, target, time_to_target):
         character.acceleration.set_length(character.max_acc)
     character.angular = 0.
 
+
 # Advanced.
+
+def pursue(character, target, max_prediction):
+    # First calculate the target to delegate the seek
+    distance = (target.position - character.position).length
+    if character.velocity.length <= distance / max_prediction:
+        prediction = max_prediction
+    else:
+        prediction = distance / character.velocity.length
+    # Now we tell seek to look after a target that have a
+    # position = real_target.velocity * prediction
+    seek(character, target.velocity * prediction)
+
+def evade(character, target, max_prediction):
+    pass
+

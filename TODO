@@ -5,3 +5,8 @@ GENERAL
   * Basic steering behaviors
   * Jumping =)
   * Collision avoidance
+
+Steering Behaviors
+==================
+  * Document the functions
+  * Create decorators

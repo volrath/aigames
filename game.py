@@ -78,7 +78,7 @@ class Game:
         self.main_character.update().render()
         for enemy in self.enemies:
             enemy.update().render()
-        behaviors.arrive(self.enemies[0], self.main_character, .1, 3., .1)
+        behaviors.pursue(self.enemies[0], self.main_character, .5)
 
     def add_character(self, character):
         """
