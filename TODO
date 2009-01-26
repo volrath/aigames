@@ -9,4 +9,7 @@ GENERAL
 Steering Behaviors
 ==================
   * Document the functions
-  * Create decorators
+
+Collision Avoidance
+===================
+  * FRECT CLASS!

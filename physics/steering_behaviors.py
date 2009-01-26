@@ -2,28 +2,36 @@
  Steering Behaviors.
 """
 
+from functools import wraps
+
 # Basic.
 
+def seek_flee_decorator(func):
+    @wraps(func)
+    def decorator(character, target, *args, **kwargs):
+        if hasattr(target, 'position'):
+            target = target.position
+        return func(character, target, *args, **kwargs)
+    return decorator
+
+@seek_flee_decorator
 def seek(character, target):
     """
     Character will seek a given target.
     The argument 'target' can be either a Character's instance or a simple
     position in the space.
     """
-    if hasattr(target, 'position'):
-        target = target.position
     new_acc = target - character.position
     character.acceleration = new_acc.set_length(character.std_acc_step)
     character.angular = 0.
 
+@seek_flee_decorator
 def flee(character, target):
     """
     Character will flee from a given target.
     The argument 'target' can be either a Character's instance or a simple
     position in the space.
     """
-    if hasattr(target, 'position'):
-        target = target.position
     new_acc = character.position - target.position
     character.acceleration = new_acc.set_length(character.std_acc_step)
     character.angular = 0.
@@ -76,17 +84,21 @@ def velocity_match(character, target, time_to_target):
 
 # Advanced.
 
-def pursue(character, target, max_prediction):
-    # First calculate the target to delegate the seek
-    distance = (target.position - character.position).length
-    if character.velocity.length <= distance / max_prediction:
-        prediction = max_prediction
-    else:
-        prediction = distance / character.velocity.length
-    # Now we tell seek to look after a target that have a
-    # position = real_target.velocity * prediction
-    seek(character, target.velocity * prediction)
+def pursue_evade(basic_behavior):
+    """
+    
+    """
+    def decorator(character, target, max_prediction, *args, **kwargs):
+        # First calculate the target to delegate the seek
+        distance = (target.position - character.position).length
+        if character.velocity.length <= distance / max_prediction:
+            prediction = max_prediction
+        else:
+            prediction = distance / character.velocity.length
+        # Now we tell seek to look after a target that have a
+        # position = real_target.velocity * prediction
+        basic_behavior(character, target.velocity * prediction)
+    return decorator
 
-def evade(character, target, max_prediction):
-    pass
-
+pursue = pursue_evade(seek)
+evade  = pursue_evade(flee)
