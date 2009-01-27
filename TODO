@@ -1,15 +1,16 @@
 =======
 GENERAL
 =======
-  * FRect class
-  * Basic steering behaviors
+  -- FRect class
+  -- Basic steering behaviors
   * Jumping =)
   * Collision avoidance
 
 Steering Behaviors
 ==================
   * Document the functions
+  * Check out all the bugs and strange behaviors. purse_evade?
 
 Collision Avoidance
 ===================
-  * FRECT CLASS!
+  -- FRECT CLASS!
