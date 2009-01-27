@@ -78,7 +78,13 @@ class Game:
         self.main_character.update().render()
         for enemy in self.enemies:
             enemy.update().render()
-        behaviors.pursue(self.enemies[0], self.main_character, .5)
+
+##        behaviors.arrive(self.enemies[0], self.main_character, .5, 3.5, .1)
+##        behaviors.pursue(self.enemies[0], self.main_character, .5)
+
+        behaviors.pursue_and_stop(self.enemies[0], self.main_character,
+                                  max_prediction=.5, target_radius=.5,
+                                  slow_radius=3.5, time_to_target=.1)
 
     def add_character(self, character):
         """

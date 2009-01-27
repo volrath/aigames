@@ -6,7 +6,7 @@ from functools import wraps
 
 # Basic.
 
-def seek_flee_decorator(func):
+def target_transform(func):
     @wraps(func)
     def decorator(character, target, *args, **kwargs):
         if hasattr(target, 'position'):
@@ -14,7 +14,7 @@ def seek_flee_decorator(func):
         return func(character, target, *args, **kwargs)
     return decorator
 
-@seek_flee_decorator
+@target_transform
 def seek(character, target):
     """
     Character will seek a given target.
@@ -25,19 +25,21 @@ def seek(character, target):
     character.acceleration = new_acc.set_length(character.std_acc_step)
     character.angular = 0.
 
-@seek_flee_decorator
+@target_transform
 def flee(character, target):
     """
     Character will flee from a given target.
     The argument 'target' can be either a Character's instance or a simple
     position in the space.
     """
-    new_acc = character.position - target.position
+    new_acc = character.position - target
     character.acceleration = new_acc.set_length(character.std_acc_step)
     character.angular = 0.
 
+@target_transform
 def arrive(character, target, target_radius, slow_radius, time_to_target):
-    direction = target.position - character.position
+    print target, target_radius, slow_radius, time_to_target
+    direction = target - character.position
     distance = direction.length
     # Are we there?
     if distance < target_radius:
@@ -97,8 +99,15 @@ def pursue_evade(basic_behavior):
             prediction = distance / character.velocity.length
         # Now we tell seek to look after a target that have a
         # position = real_target.velocity * prediction
-        basic_behavior(character, target.velocity * prediction)
+        ## ALERT: small modification, if the target.velocity == 0 we are
+        ## pursuing/evading the target itself, not some delegate target which
+        ## doesn't exists.
+        if target.velocity.length != 0:
+            basic_behavior(character, target.velocity * prediction, **kwargs)
+        else:
+            basic_behavior(character, target, **kwargs)
     return decorator
 
-pursue = pursue_evade(seek)
-evade  = pursue_evade(flee)
+pursue          = pursue_evade(seek)
+pursue_and_stop = pursue_evade(arrive)
+evade           = pursue_evade(flee)
