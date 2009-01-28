@@ -63,9 +63,6 @@ class Character:
         Everything else will be removed.
         """
         time = (1./FPS)
-        # Check for the kinematic movements i'm doing and execute them
-        if hasattr(self, 'wandering') and self.wandering:
-            self.do_wander()
 
         self.position += self.velocity * time
         self.orientation += self.rotation * time
@@ -153,8 +150,3 @@ class Enemy(Character):
         self.seeking = None
         self.evading = []
         #self.image, self.rect = load_image('main_character.png')
-
-    def do_wander(self):
-        self.velocity = vector3_from_orientation((self.orientation * 180.)/pi,
-                                                 self.max_speed)
-        self.rotation = random_binomial() * self.max_rotation
