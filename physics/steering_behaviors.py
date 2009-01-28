@@ -38,7 +38,7 @@ def flee(character, target):
 
 @target_transform
 def arrive(character, target, target_radius, slow_radius, time_to_target):
-    print target, target_radius, slow_radius, time_to_target
+#    print target, target_radius, slow_radius, time_to_target
     direction = target - character.position
     distance = direction.length
     # Are we there?
@@ -103,7 +103,9 @@ def pursue_evade(basic_behavior):
         ## pursuing/evading the target itself, not some delegate target which
         ## doesn't exists.
         if target.velocity.length != 0:
-            basic_behavior(character, target.velocity * prediction, **kwargs)
+            basic_behavior(character,
+                           target.position + (target.velocity * prediction),
+                           **kwargs)
         else:
             basic_behavior(character, target, **kwargs)
     return decorator
