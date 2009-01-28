@@ -83,9 +83,9 @@ class Character:
             if old_velocity.z < 0: self.velocity.z = 0.
 
         # get new orientation
-##         if self.velocity.length > 0:
-##             self.orientation = atan2(self.velocity.x, self.velocity.z)
-        print self.orientation
+        if self.velocity.length > 0:
+            self.orientation = atan2(self.velocity.x, self.velocity.z)
+#        print self.velocity
         return self
 
     def render(self):

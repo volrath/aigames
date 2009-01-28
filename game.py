@@ -86,7 +86,9 @@ class Game:
 ##                                   max_prediction=.5, target_radius=.5,
 ##                                   slow_radius=3.5, time_to_target=.1)
 
-        behaviors.align(self.enemies[0], self.main_character, .1, 3.5, .1)
+        behaviors.face(self.enemies[0], self.main_character, .03, 3.5, .1)
+
+##         behaviors.velocity_match(self.enemies[0], self.main_character, .5)
 
     def add_character(self, character):
         """

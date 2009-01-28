@@ -3,7 +3,7 @@
 """
 
 from functools import wraps
-from math import pi
+from math import pi, atan2
 
 # Basic.
 
@@ -61,7 +61,6 @@ def align(character, target, target_radius, slow_radius, time_to_target):
     """
     
     """
-    print target_radius, slow_radius, time_to_target
     def map_to_range(o):
         if o > pi:
             if o >= 0:
@@ -70,7 +69,9 @@ def align(character, target, target_radius, slow_radius, time_to_target):
                 return o + 2*pi
         else:
             return o
-    rotation_direction = target.orientation - character.orientation
+    if hasattr(target, 'orientation'):
+        target = target.orientation
+    rotation_direction = target - character.orientation
     rotation_direction = map_to_range(rotation_direction) # map the result to a (-pi, pi) interval
     rotation_size = abs(rotation_direction)
     if rotation_size < target_radius:  # Are we there?
@@ -89,6 +90,9 @@ def align(character, target, target_radius, slow_radius, time_to_target):
         character.angular *= character.max_ang
 
 def velocity_match(character, target, time_to_target):
+    """
+    
+    """
     character.acceleration = target.velocity - character.velocity
     character.acceleration /= time_to_target
     # Check if we are going too fast
@@ -126,3 +130,11 @@ def pursue_evade(basic_behavior):
 pursue          = pursue_evade(seek)
 pursue_and_stop = pursue_evade(arrive)
 evade           = pursue_evade(flee)
+
+def face(character, target, *args, **kwargs):
+    direction = target.position - character.position
+    if direction.length == 0:
+        return
+    orientation_to_look = atan2(direction.x, direction.z)
+    print direction, orientation_to_look
+    align(character, orientation_to_look, *args, **kwargs)
