@@ -68,11 +68,11 @@ class Character:
             self.do_wander()
 
         self.position += self.velocity * time
-#        self.orientation += self.rotation * time
+        self.orientation += self.rotation * time
 
         old_velocity = self.velocity.copy()
         self.velocity += self.acceleration * time
-#        self.rotation += self.angular * time
+        self.rotation += self.angular * time
 
         if self.velocity.length > self.max_speed:
             self.velocity.set_length(self.max_speed)
@@ -83,9 +83,9 @@ class Character:
             if old_velocity.z < 0: self.velocity.z = 0.
 
         # get new orientation
-        if self.velocity.length > 0:
-            self.orientation = atan2(self.velocity.x, self.velocity.z)
-        print self.velocity
+##         if self.velocity.length > 0:
+##             self.orientation = atan2(self.velocity.x, self.velocity.z)
+        print self.orientation
         return self
 
     def render(self):

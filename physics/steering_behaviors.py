@@ -3,6 +3,7 @@
 """
 
 from functools import wraps
+from math import pi
 
 # Basic.
 
@@ -38,7 +39,6 @@ def flee(character, target):
 
 @target_transform
 def arrive(character, target, target_radius, slow_radius, time_to_target):
-#    print target, target_radius, slow_radius, time_to_target
     direction = target - character.position
     distance = direction.length
     # Are we there?
@@ -58,8 +58,20 @@ def arrive(character, target, target_radius, slow_radius, time_to_target):
         character.acceleration.set_length(character.max_acc)
 
 def align(character, target, target_radius, slow_radius, time_to_target):
+    """
+    
+    """
+    print target_radius, slow_radius, time_to_target
+    def map_to_range(o):
+        if o > pi:
+            if o >= 0:
+                return o - 2*pi
+            else:
+                return o + 2*pi
+        else:
+            return o
     rotation_direction = target.orientation - character.orientation
-    #rotation_direction = map_to_range(rotation_direction) # map the result to a (-pi, pi) interval
+    rotation_direction = map_to_range(rotation_direction) # map the result to a (-pi, pi) interval
     rotation_size = abs(rotation_direction)
     if rotation_size < target_radius:  # Are we there?
         character.rotation = 0.
@@ -70,6 +82,7 @@ def align(character, target, target_radius, slow_radius, time_to_target):
     else:
         rotation = character.max_rotation
     rotation *= rotation_direction / rotation_size
+    character.angular = (rotation - character.rotation) / time_to_target
     angular_acc = abs(character.angular)
     if angular_acc > character.max_ang:
         character.angular /= angular_acc
