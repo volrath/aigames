@@ -5,6 +5,8 @@
 from functools import wraps
 from math import pi, atan2
 
+from utils.function import random_binomial
+
 # Basic.
 
 def target_transform(func):
@@ -107,6 +109,7 @@ def pursue_evade(basic_behavior):
     """
     
     """
+    @wraps(basic_behavior)
     def decorator(character, target, max_prediction, *args, **kwargs):
         # First calculate the target to delegate the seek
         distance = (target.position - character.position).length
@@ -131,10 +134,24 @@ pursue          = pursue_evade(seek)
 pursue_and_stop = pursue_evade(arrive)
 evade           = pursue_evade(flee)
 
+@target_transform
 def face(character, target, *args, **kwargs):
-    direction = target.position - character.position
+    direction = target - character.position
     if direction.length == 0:
         return
     orientation_to_look = atan2(direction.x, direction.z)
     print direction, orientation_to_look
     align(character, orientation_to_look, *args, **kwargs)
+
+def wander(character, target, wander_offset, wander_radius, wander_rate,
+           wander_orientation, *args, **kwargs):
+    # Updates the wander orientation
+    wander_orientation += random_binomial() * wander_rate
+    orientation = wander_orientation + character.orientation
+    target_circle = character.position + \
+        wander_offset #* Vector3.from_orientation(character.orientation)
+    target_circle += wander_radius * Vector3.from_orientation(character.orientation)
+    # Delegates to face
+    face(character, target_circle, *args, **kwargs)
+    # Set the character linear acceleration to be at full
+    character.acceleration = Vector3.from_orientation(character.orientation, character.max_acc)
