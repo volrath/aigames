@@ -4,83 +4,26 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-from stage import Stage
-from characters import Slash, Enemy
-from utils import Camera, keymap_handler, MAIN_VIEW, FPS
-
-# First position
-camera = Camera().set(MAIN_VIEW)
-
-SCREEN = Rect(0, 0, 1000, 700)
-
-def drawAxes():
-    # Space axes
-    # Axis X
-    glBegin(GL_LINES)
-    glColor3f(1.0,0.0,0.0)
-    glVertex3f(-20000.0,0.0,0.0)
-    glVertex3f(20000.0,0.0,0.0)
-    glEnd()
-
-    # Axis Y
-    glBegin(GL_LINES)
-    glColor3f(0.,1.,0.)
-    glVertex3f(0.0,-200.0,0.0)
-    glVertex3f(0.0,200.0,0.0)
-    glEnd()
-
-    # Axis Z
-    glBegin(GL_LINES)
-    glColor3f(0.,0.,1.)
-    glVertex3f(0.0,0.0,-200.0)
-    glVertex3f(0.0,0.0,200.0)
-    glEnd()
-
-class GLUTManager:
-    @classmethod
-    def init(self, width, height):
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glShadeModel(GL_SMOOTH)
-        glClearColor(0., 1., 0., 1.)
-        glClearDepth(1.)
-        glEnable(GL_ALPHA_TEST)
-        glEnable(GL_DEPTH_TEST)
-        glDepthFunc(GL_LESS)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluPerspective(45.0, float(width)/float(height), 0.1, 100.0)
-        glMatrixMode(GL_MODELVIEW)
-        # GLUT
-        glutInit()
-
-    @classmethod
-    def resize(self, width, height):
-        if height == 0:
-            height = 1
-        glViewport(0, 0, width, height)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluPerspective(45.0, float(width)/height, .1, 100.)
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
+from game import Game, OGLManager
+from utils.camera import Camera
+from utils.functions import keymap_handler
+from utils.locals import SCREEN, FPS
 
 def main():
     global camera
 
     pygame.init()
-    screen = pygame.display.set_mode(SCREEN.size, HWSURFACE|OPENGL|DOUBLEBUF)
+    screen = pygame.display.set_mode(map(int, SCREEN.size), HWSURFACE|OPENGL|DOUBLEBUF)
 
-    GLUTManager.resize(*SCREEN.size)
-    GLUTManager.init(*SCREEN.size)
+    OGLManager.resize(*(map(int, SCREEN.size)))
+    OGLManager.init(*(map(int, SCREEN.size)))
 
     pygame.display.set_caption("No title yet...")
 
-    # Game's objects
-    clock = pygame.time.Clock()
-    stage = Stage(floor_size=20)
-    slash = Slash(20, 20, stage)
-#    enemy = Enemy(6,6)
+    camera = Camera()
+    game = Game()             # Game object. This will handle all the game world
+                              # and its components
+    game.random_enemies(1)    # Creates one random enemy
 
     while True:
         for event in pygame.event.get():
@@ -89,24 +32,27 @@ def main():
             if event.type == KEYUP and event.key == K_ESCAPE:
                 return
 
-        keymap_handler(slash, camera)
+        keymap_handler(game, camera)
 
-        clock.tick(FPS)
+        # Set FPS
+        game.clock.tick(FPS)
 
+        # Draw the camera
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-
         glClearColor(0.0,0.0,0.0,0.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
         gluLookAt(*camera.to_args())
 #        print camera
 
-        stage.render()
-#        enemy.render()
-        slash.update().render()
+        # Draw the game
+        game.render()
+        print game.stage.floor.area
 
-        drawAxes()
+        # Draw game's axes <optional, remove after debugging...>
+        game.draw_axes()
+
+        # Flip and display view.
         pygame.display.flip()
 
 if __name__ == '__main__': main()

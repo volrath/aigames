@@ -83,11 +83,20 @@ class Vector3(object):
         v = cls.__new__(cls, object)
         v._v = [ float(it.next()), float(it.next()), float(it.next()) ]        
         return v
+
+    @classmethod
+    def from_orientation(cls, orientation, length):
+        """
+        Calculates velocity from a character's orientation in a 2D(1/2) space
+        """
+        v = cls.__new__(cls, object)
+        v._v = [ length * sin(orientation), 0., length * cos(orientation) ]
+        return v
     
-    def copy():
+    def copy(self):
         """Returns a copy of this vector."""
                 
-        v = cls.__new__(sel.__class__, object)
+        v = self.__class__()
         v._v = self._v[:]
         return v
         #return self.from_floats(self._v[0], self._v[1], self._v[2])
@@ -389,7 +398,7 @@ class Vector3(object):
             x, y, z = self._v
             l = new_length / sqrt(x*x + y*y + z*z)
         except ZeroDivisionError:
-            self.v[:] = [0., 0., 0.]
+            self._v[:] = [0., 0., 0.]
             return self
             
         v = self._v
