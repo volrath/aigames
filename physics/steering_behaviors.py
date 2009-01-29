@@ -5,7 +5,8 @@
 from functools import wraps
 from math import pi, atan2
 
-from utils.function import random_binomial
+from utils.functions import random_binomial
+from physics.vector3 import Vector3
 
 # Basic.
 
@@ -149,9 +150,11 @@ def wander(character, target, wander_offset, wander_radius, wander_rate,
     wander_orientation += random_binomial() * wander_rate
     orientation = wander_orientation + character.orientation
     target_circle = character.position + \
-        wander_offset #* Vector3.from_orientation(character.orientation)
-    target_circle += wander_radius * Vector3.from_orientation(character.orientation)
+            Vector3.from_orientation(character.orientation, wander_offset)
+    target_circle += \
+            Vector3.from_orientation(character.orientation, wander_radius)
     # Delegates to face
     face(character, target_circle, *args, **kwargs)
     # Set the character linear acceleration to be at full
-    character.acceleration = Vector3.from_orientation(character.orientation, character.max_acc)
+    character.acceleration = \
+        Vector3.from_orientation(character.orientation, character.max_acc)

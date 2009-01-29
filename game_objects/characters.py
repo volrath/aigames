@@ -3,10 +3,9 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from math import atan2, pi
 
-from utils.functions import load_image, random_binomial,\
-     vector3_from_orientation
+from utils.functions import load_image, random_binomial
 from utils.locals import FPS
-from physics.vector3 import Vector3
+from physics.vector3 import Vector3, Rect
 
 class Character:
     """
@@ -16,6 +15,8 @@ class Character:
                  orientation, colors, size, std_acc_step, max_acc):
         self.max_speed = linear_max_speed
         self.max_rotation = angular_max_speed
+        self.area = Rect(position.x, position.z, size*2, size*2)
+        self.height = size*2
         # Kinematic data
         self.position = position
         self.orientation = orientation
@@ -82,6 +83,8 @@ class Character:
         # get new orientation
         if self.velocity.length > 0:
             self.orientation = atan2(self.velocity.x, self.velocity.z)
+
+        self.position
 #        print self.velocity
         return self
 

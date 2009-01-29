@@ -83,6 +83,15 @@ class Vector3(object):
         v = cls.__new__(cls, object)
         v._v = [ float(it.next()), float(it.next()), float(it.next()) ]        
         return v
+
+    @classmethod
+    def from_orientation(cls, orientation, length):
+        """
+        Calculates velocity from a character's orientation in a 2D(1/2) space
+        """
+        v = cls.__new__(cls, object)
+        v._v = [ length * cos(orientation), 0., length * sin(orientation) ]
+        return v
     
     def copy(self):
         """Returns a copy of this vector."""
