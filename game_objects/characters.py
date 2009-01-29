@@ -4,7 +4,7 @@ from OpenGL.GLU import *
 from math import atan2, pi
 
 from utils.functions import load_image, random_binomial
-from utils.locals import FPS
+from utils.locals import FPS, GRAVITY
 from physics.vector3 import Vector3
 from physics.rect import Rect
 
@@ -34,6 +34,10 @@ class Character:
         # Optional, color and stuff
         self.colors = colors
         self.size = size
+
+        # Control options
+        self.jumping = False
+        self.jumping_initial_speed = 30.
 
     def accelerate(self, acceleration=None, deacc=False):
         """
@@ -66,7 +70,16 @@ class Character:
         """
         time = (1./FPS)
 
-        self.position += self.velocity * time
+        if self.jumping:
+            self.acceleration += GRAVITY
+            self.position += self.velocity * time + ((self.acceleration + GRAVITY) * time * time) / 2
+            print self.velocity, self.position
+            if self.position.y <= 0:
+                self.position.y = self.velocity.y = 0.
+                self.acceleration -= GRAVITY
+                self.jumping = False
+        else:
+            self.position += self.velocity * time
         self.orientation += self.rotation * time
 
         old_velocity = self.velocity.copy()
@@ -91,7 +104,6 @@ class Character:
     def update_position(self, stage):
         self.area.left = self.position.x
         self.area.top  = self.position.z
-        print self.area
         if not stage.move_dup(self.size, self.size).inflate_dup(-self.size, -self.size).contains(self.area):
             self.area.left = self.position.x = \
                 self.position.x - Vector3.from_orientation(self.orientation, 25*(1./FPS)).x
@@ -99,13 +111,17 @@ class Character:
                 self.position.z - Vector3.from_orientation(self.orientation, 25*(1./FPS)).z
             self.velocity.length = 0
 
+    def jump(self):
+        self.jumping = True
+        self.velocity.y = self.jumping_initial_speed
+
     def render(self):
         """
         Draw the 3D character.
         TODO: handle blending and textures...
         """
         glPushMatrix()
-        glTranslatef(self.position.x, self.size, self.position.z)
+        glTranslatef(self.position.x, self.size + self.position.y, self.position.z)
         glRotatef((self.orientation * 180. / pi), 0., 1., 0.)
         #solidCube(self.size)    -> to implement...
         glBegin(GL_QUADS)

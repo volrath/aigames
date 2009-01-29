@@ -1,4 +1,5 @@
 from physics.rect import Rect
+from physics.vector3 import Vector3
 
 # Game's local constants
 
@@ -6,6 +7,7 @@ SCREEN = Rect(0, 0, 1000, 700)
 STAGE_SIZE = 20
 MEDIA_PATH = 'media'
 FPS = 60
+GRAVITY = Vector3(0., -9.81, 0.)
 
 # Presets camera positions
 MAIN_VIEW = { 

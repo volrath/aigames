@@ -14,11 +14,6 @@ if not pygame.mixer: print 'Warning, sound disabled'
 def keymap_handler(game, camera=None):
     pressed = pygame.key.get_pressed()
 
-    # Debugging keys
-    if pressed[K_SPACE]:
-        print 'pressed space'
-        game.main_character.wandering = True
-
     # Camera
     if pressed[K_1]:
         camera.set(MAIN_VIEW)
@@ -41,6 +36,11 @@ def keymap_handler(game, camera=None):
 
     # Character
     # First handle two keys pressed at the same time.
+    if game.main_character.jumping:
+        return
+    if pressed[K_SPACE]:
+        game.main_character.jump()
+        return
     if pressed[K_d] and pressed[K_w]:
         game.main_character.accelerate(Vector3((game.main_character.std_acc_step * sin(pi/4)), 0., -(game.main_character.std_acc_step * sin(pi/4))))
         return

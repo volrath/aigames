@@ -47,7 +47,6 @@ def main():
 
         # Draw the game
         game.render()
-        print game.stage.floor.area
 
         # Draw game's axes <optional, remove after debugging...>
         game.draw_axes()
