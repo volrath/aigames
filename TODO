@@ -4,16 +4,35 @@ GENERAL
   -- FRect class
   -- Basic steering behaviors
   * Jumping =)
+  * Firing and shooting
   * Collision avoidance
+  * Flocking
 
 Steering Behaviors
 ==================
   * Document the functions
   -- Check out all the bugs and strange behaviors. purse_evade?
-  
+
+Jumping
+=======
+  * Main character jumping
+  * ai jumping! =S!
+  * landing path jumping for ai, when wandering it just wander,
+    when pursuing or evading jumps every thing jumpable in the way
+
+Firing and shooting
+===================
+  * firing something from ai
+  * first person shooting with angles
+  * granade previsions
 
 Collision Avoidance
 ===================
   -- FRECT CLASS!
-  * Semi collision avoidance for the main character
+  -- Semi collision avoidance for the main character
+  * Restructurate Rect Class for positioning in the middle
   * Collision avoidance for ia
+
+Flocking
+========
+  * Do flocking
