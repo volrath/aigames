@@ -1,12 +1,14 @@
 =======
 GENERAL
 =======
+  * Improve the general workflow
   -- FRect class
   -- Basic steering behaviors
   * Jumping =)
   * Firing and shooting
   * Collision avoidance
   * Flocking
+  * Watching
 
 Steering Behaviors
 ==================
