@@ -41,7 +41,8 @@ def flee(character, target):
     character.angular = 0.
 
 @target_transform
-def arrive(character, target, target_radius, slow_radius, time_to_target):
+def arrive(character, target, target_radius=.3, slow_radius=3.5,
+           time_to_target=.1):
     direction = target - character.position
     distance = direction.length
     # Are we there?
@@ -60,7 +61,8 @@ def arrive(character, target, target_radius, slow_radius, time_to_target):
     if character.acceleration.length > character.max_acc:
         character.acceleration.set_length(character.max_acc)
 
-def align(character, target, target_radius, slow_radius, time_to_target):
+def align(character, target, target_radius=.3, slow_radius=3.5,
+          time_to_target=.1):
     """
     
     """
@@ -92,7 +94,7 @@ def align(character, target, target_radius, slow_radius, time_to_target):
         character.angular /= angular_acc
         character.angular *= character.max_ang
 
-def velocity_match(character, target, time_to_target):
+def velocity_match(character, target, time_to_target=.1):
     """
     
     """
@@ -111,7 +113,7 @@ def pursue_evade(basic_behavior):
     
     """
     @wraps(basic_behavior)
-    def decorator(character, target, max_prediction, *args, **kwargs):
+    def decorator(character, target, max_prediction=.5, *args, **kwargs):
         # First calculate the target to delegate the seek
         distance = (target.position - character.position).length
         if character.velocity.length <= distance / max_prediction:
