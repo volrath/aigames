@@ -5,8 +5,10 @@ from math import atan2, pi
 
 from utils.functions import load_image, random_binomial
 from utils.locals import FPS, GRAVITY
+from utils import BehaviorNotAssociated
 from physics.vector3 import Vector3
 from physics.rect import Rect
+from physics.behavior import *
 
 class Character:
     """
@@ -170,7 +172,8 @@ class Enemy(Character):
     """
     An enemy
     """
-    def __init__(self, max_speed, max_rotation, position=Vector3(), orientation=0.):
+    def __init__(self, max_speed, max_rotation, position=Vector3(),
+                 orientation=0., behaviors=[]):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
@@ -179,4 +182,31 @@ class Enemy(Character):
         self.wandering = False
         self.seeking = None
         self.evading = []
+        # Behaviors
+        try:
+            self.current_behavior = behaviors[0]
+        except IndexError:
+            self.current_behavior = None
+        self.behaviors = set(behaviors)
+
         #self.image, self.rect = load_image('main_character.png')
+
+    #
+    # Behaviors
+    #
+    def _set_current_behavior(self, b):
+        """ Sets the current behavior of this character """
+        if b in self.behaviors:
+            self.current_behavior = b
+        else:
+            raise BehaviorNotAssociated()
+    def _get_current_behavior(self):
+        """ Gets the current behavior of this character """
+        return self.current_behavior
+    behavior = property(_get_current_behavior, _set_current_behavior, None,
+                        "Current behavior of this character")
+
+    def add_behavior(self, b):
+        self.behaviors.add(b)
+        if len(self.behaviors) == 1:
+            self.current_behavior = b

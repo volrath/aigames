@@ -7,7 +7,7 @@ from OpenGL.GLU import *
 from game_objects.stage import Stage
 from game_objects.characters import Slash, Enemy
 from physics.vector3 import Vector3
-from physics import steering_behaviors as behaviors
+from physics.behavior import *
 from utils.camera import Camera
 from utils.functions import keymap_handler
 from utils.locals import MAIN_VIEW, FPS, STAGE_SIZE
@@ -70,27 +70,40 @@ class Game:
         glVertex3f(0.0,0.0,200.0)
         glEnd()
 
+    def prepare_behave(self):
+        """
+        For the main character, catch keyboards interruptions and execute the
+        appropiate behavior according to the key stroke catched.
+        For AI characters (enemies), gets the current behavior they are doing
+        and updates its kinematic and steering data.
+        """
+        # Slash behavior
+        keymap_handler(self) # Maybe i can just pass self.main_character
+
+        # AI characters behavior
+        for enemy in self.enemies:
+            enemy.behavior.execute()
+
     def render(self):
         # Renders all game's objects
         self.stage.render()   # TODO: improve stage rendering, use display lists
-        # Before update and render i have to check for the behaviors this
-        # character should be doing. TODO
+
         self.main_character.update()
         self.main_character.update_position(self.stage.floor.area)
         self.main_character.render()
         for enemy in self.enemies:
             enemy.update().render()
 
-##        behaviors.arrive(self.enemies[0], self.main_character, .5, 3.5, .1)
-##        behaviors.pursue(self.enemies[0], self.main_character, .5)
+##         behaviors.arrive(self.enemies[0], self.main_character, .5, 3.5, .1)
+##         behaviors.pursue(self.enemies[0], self.main_character, .5)
 
 ##         behaviors.pursue_and_stop(self.enemies[0], self.main_character,
 ##                                   max_prediction=.5, target_radius=.5,
 ##                                   slow_radius=3.5, time_to_target=.1)
 
-##        behaviors.face(self.enemies[0], self.main_character, .03, 3.5, .1)
+##         behaviors.face(self.enemies[0], self.main_character, .03, 3.5, .1)
 
-        behaviors.velocity_match(self.enemies[0], self.main_character, .5)
+##         behaviors.velocity_match(self.enemies[0], self.main_character, .5)
 
 ##         behaviors.wander(self.enemies[0], self.main_character, 3., 1.5, 1., 3.,
 ##                          .03, 3.5, .1)
@@ -108,4 +121,8 @@ class Game:
         Improve this when different type of enemies are complete.
         """
         for i in range(0,number):
-            self.add_character(Enemy(5.,5., position=Vector3(12., 0., 8.), orientation=0.))
+            enemy = Enemy(20.,20., position=Vector3(12., 0., 8.), orientation=0.)
+            enemy.add_behavior(PURSUE)
+            enemy.behavior.character = enemy
+            enemy.behavior.target = self.main_character
+            self.add_character(enemy)

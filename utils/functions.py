@@ -11,30 +11,10 @@ if not pygame.mixer: print 'Warning, sound disabled'
 
 # Some settings
 
-def keymap_handler(game, camera=None):
+def keymap_handler(game):
     pressed = pygame.key.get_pressed()
 
-    # Camera
-    if pressed[K_1]:
-        camera.set(MAIN_VIEW)
-    elif pressed[K_2]:
-        camera.set(SIDE_VIEW)
-    elif pressed[K_3]:
-        camera.set(TOP_VIEW)
-    if pressed[K_LEFT]:
-        camera.position['x'] += .5
-    elif pressed[K_RIGHT]:
-        camera.position['x'] += -.5
-    if pressed[K_UP]:
-        camera.position['y'] += -.5
-    elif pressed[K_DOWN]:
-        camera.position['y'] += +.5
-    if pressed[K_z]:
-        camera.position['z'] += -.5
-    elif pressed[K_x]:
-        camera.position['z'] += +.5
-
-    # Character
+    # Main Character
     # First handle two keys pressed at the same time.
     if game.main_character.jumping:
         return

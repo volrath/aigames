@@ -1,3 +1,6 @@
+import pygame
+from pygame.locals import *
+
 from utils.locals import MAIN_VIEW
 
 class Camera:
@@ -39,3 +42,24 @@ class Camera:
         if view_dict.has_key('up'):
             self.up = view_dict['up'].copy()
         return self
+
+    def handle_keys(self):
+        pressed = pygame.key.get_pressed()
+        if pressed[K_1]:
+            self.set(MAIN_VIEW)
+        elif pressed[K_2]:
+            self.set(SIDE_VIEW)
+        elif pressed[K_3]:
+            self.set(TOP_VIEW)
+        if pressed[K_LEFT]:
+            self.position['x'] += .5
+        elif pressed[K_RIGHT]:
+            self.position['x'] += -.5
+        if pressed[K_UP]:
+            self.position['y'] += -.5
+        elif pressed[K_DOWN]:
+            self.position['y'] += +.5
+        if pressed[K_z]:
+            self.position['z'] += -.5
+        elif pressed[K_x]:
+            self.position['z'] += +.5
