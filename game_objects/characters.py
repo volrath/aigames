@@ -39,7 +39,7 @@ class Character:
 
         # Control options
         self.jumping = False
-        self.jumping_initial_speed = 30.
+        self.jumping_initial_speed = 13.
 
     def accelerate(self, acceleration=None, deacc=False):
         """
@@ -72,20 +72,20 @@ class Character:
         """
         time = (1./FPS)
 
+        old_velocity = self.velocity.copy()
         if self.jumping:
-            self.acceleration += GRAVITY
-            self.position += self.velocity * time + ((self.acceleration + GRAVITY) * time * time) / 2
-            print self.velocity, self.position
+            self.position += self.velocity * time + \
+                             (GRAVITY * time * time) / 2
+            self.orientation += self.rotation * time
+            self.velocity += (self.acceleration + GRAVITY) * time
             if self.position.y <= 0:
-                self.position.y = self.velocity.y = 0.
-                self.acceleration -= GRAVITY
+                self.position.y = self.velocity.y = self.acceleration.y = 0.
                 self.jumping = False
         else:
             self.position += self.velocity * time
-        self.orientation += self.rotation * time
+            self.orientation += self.rotation * time
+            self.velocity += self.acceleration * time
 
-        old_velocity = self.velocity.copy()
-        self.velocity += self.acceleration * time
         self.rotation += self.angular * time
 
         if self.velocity.length > self.max_speed:
@@ -177,7 +177,7 @@ class Enemy(Character):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
-                           size=1.8, std_acc_step=.5, max_acc=10.)
+                           size=1.8, std_acc_step=3.5, max_acc=10.)
         # Kinematic and Steering Behaviors flag.
         self.wandering = False
         self.seeking = None
