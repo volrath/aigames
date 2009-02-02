@@ -3,7 +3,7 @@ from physics.vector3 import Vector3
 
 # Game's local constants
 
-SCREEN = Rect(0, 0, 1000, 700)
+SCREEN = Rect((0, 0), 1000, 700)
 STAGE_SIZE = 20
 MEDIA_PATH = 'media'
 FPS = 60

@@ -1,18 +1,14 @@
 class Rect(object):
-    def __init__(self, left, top, width, height):
-        self.left   = float(left)
-        self.top    = float(top)
+    def __init__(self, center, width, height):
+        self.center = tuple(map(float, center))
         self.width  = float(width)
         self.height = float(height)
         # Rect instances will have virtual attributes such as right and bottom
         # and attributes to modify the rectangle by its vertices (top_left,
         # top_right, bottom_left and bottom_right, center)
 
-    def _get_left(self):
-        return self.left
-
-    def _get_top(self):
-        return self.top
+    def _get_center(self):
+        return self.center
 
     def _get_width(self):
         return self.width
@@ -20,11 +16,10 @@ class Rect(object):
     def _get_height(self):
         return self.height
 
-    def _set_left(self, value):
-        self.left = value
-
-    def _set_top(self, value):
-        self.top = value
+    def _set_center(self, value):
+        assert isinstance( value, tuple ), "Center must be a tuple of the form\
+        (x_coord, y_coord)"
+        self.center = tuple(map(float, value))
 
     def _set_width(self, value):
         self.width = value
@@ -32,37 +27,48 @@ class Rect(object):
     def _set_height(self, value):
         self.height = value
 
-    _getters = (_get_left, _get_top, _get_width, _get_height)
-    _setters = (_set_left, _set_top, _set_width, _set_height)
+    _getters = (_get_center, _get_width, _get_height)
+    _setters = (_set_center, _set_width, _set_height)
+
+    def _get_left(self):
+        return self.center[0] - self.width/2.
+
+    def _set_left(self, value):
+        assert value < self.center[0] + self.width/2.
+        self.width = (self.center[0] + self.width/2.) - value
+        self.center[0] = self.width / 2.
+
+    left = property(_get_left, _set_left, None, "rectangle's left side.")
 
     def _get_right(self):
-        return self.left + self.width
+        return self.center[0] + self.width / 2.
 
     def _set_right(self, value):
         assert self.left < value, "Right side must be greater than left side"
-        self.width = self.left + value
+        self.width = value - self.left
+        self.center[0] = self.width / 2.
     
     right = property(_get_right, _set_right, None, "rectangle's right side.")
 
+    def _get_top(self):
+        return self.center[1] - self.height / 2.
+
+    def _set_top(self, value):
+        assert value < self.center[1] + self.height/2.
+        self.height = (self.center[1] + self.height/2.) - value
+        self.center[1] = self.height / 2.
+
+    top = property(_get_top, _set_top, None, "rectangle's top side.")
+
     def _get_bottom(self):
-        return self.top + self.height
+        return self.center[1] + self.height / 2.
 
     def _set_bottom(self, value):
         assert self.top < value, "Bottom side must be greater than top side"
-        self.height = self.top + value
+        self.height = self.top - value
+        self.center[1] = self.height / 2.
     
     bottom = property(_get_bottom, _set_bottom, None, "rectangle's bottom side.")
-
-    def _get_center(self):
-        return (self.left+self.right/2), (self.top+self.bottom/2)
-
-    def _set_center(self, value):
-        assert isinstance( value, tuple ), "Center must be a tuple of the form\
-        (x_coord, y_coord)"
-        self.left = self.width/2 - value[0]
-        self.top  = self.height/2 - value[1]
-    
-    center = property(_get_center, _set_center, None, "rectangle's center point.")
 
     def _get_top_left(self):
         return self.left, self.top
@@ -90,10 +96,10 @@ class Rect(object):
     ## TO DO: implement the rest of virtual attributes
 
     def _as_tuple(self):
-        return self.left, self.top, self.width, self.height
+        return self.center + (self.width, self.height)
 
     def __str__(self):
-        return "(left: %s, top: %s, width: %s, height: %s)" % self._as_tuple()
+        return "(center: (x: %s, y: %s), width: %s, height: %s)" % self._as_tuple()
 
     def __repr__(self):
         return "Rect%s" % self.__str__()
@@ -110,10 +116,10 @@ class Rect(object):
         """
         Moves the rectangle in place
         """
-        self.left   += x
-        self.top    += y
-        self.width  += x
-        self.height += y
+        self.center[0] += x
+        self.center[1] += y
+        self.width     += x
+        self.height    += y
 
     def move_dup(self, x, y):
         """

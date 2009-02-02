@@ -18,7 +18,7 @@ class Character:
                  orientation, colors, size, std_acc_step, max_acc):
         self.max_speed = linear_max_speed
         self.max_rotation = angular_max_speed
-        self.area = Rect(position.x-size*2, position.z-size*2, size*2, size*2)
+        self.area = Rect((position.x, position.z), size*2, size*2)
         self.height = size*2
         # Kinematic data
         self.position = position
@@ -104,14 +104,16 @@ class Character:
         return self
 
     def update_position(self, stage):
-        self.area.left = self.position.x
-        self.area.top  = self.position.z
-        if not stage.move_dup(self.size, self.size).inflate_dup(-self.size, -self.size).contains(self.area):
-            self.area.left = self.position.x = \
-                self.position.x - Vector3.from_orientation(self.orientation, 25*(1./FPS)).x
-            self.area.top = self.position.z = \
-                self.position.z - Vector3.from_orientation(self.orientation, 25*(1./FPS)).z
+        self.area.center = (self.position.x, self.position.z)
+        #if not stage.move_dup(self.size, self.size).inflate_dup(-self.size, -self.size).contains(self.area):
+        if not stage.contains(self.area):
+            print stage, self.area
+            self.position.x = self.position.x - \
+                    Vector3.from_orientation(self.orientation, 25*(1./FPS)).x
+            self.position.z = self.position.z - \
+                    Vector3.from_orientation(self.orientation, 25*(1./FPS)).z
             self.velocity.length = 0
+            self.area.center = (self.position.x, self.position.z)
 
     def jump(self):
         self.jumping = True
