@@ -1,11 +1,18 @@
 class Rect(object):
-    def __init__(self, center, width, height):
-        self.center = tuple(map(float, center))
-        self.width  = float(width)
-        self.height = float(height)
-        # Rect instances will have virtual attributes such as right and bottom
-        # and attributes to modify the rectangle by its vertices (top_left,
-        # top_right, bottom_left and bottom_right, center)
+    def __init__(self, *args):
+        if len(args) == 4:
+            self.center = (float(args[0]), float(args[1]))
+            i = 2
+        elif len(args) == 3:
+            self.center = tuple(map(float, args[0]))
+            i = 1
+        else:
+            raise ValueError("Rect.__init__ takes 3 or 4 parameters")
+        self.width  = float(args[i])
+        self.height = float(args[i+1])
+        # Rect instances will have virtual attributes such as left, top, right
+        # and bottom and attributes to modify the rectangle by its vertices
+        # (top_left, top_right, bottom_left and bottom_right)
 
     def _get_center(self):
         return self.center
@@ -81,6 +88,42 @@ class Rect(object):
     
     top_left = property(_get_top_left, _set_top_left, None, "rectangle's\
     (top, left) coordinate.")
+
+    def _get_top_right(self):
+        return self.right, self.top
+
+    def _set_top_right(self, value):
+        assert isinstance( value, tuple ), "Coordinates must be a tuple of the\
+        form (x_coord, y_coord)"
+        self.right = value[0]
+        self.top   = value[1]
+    
+    top_right = property(_get_top_right, _set_top_right, None, "rectangle's\
+    (top, left) coordinate.")
+
+    def _get_bottom_left(self):
+        return self.left, self.bottom
+
+    def _set_bottom_left(self, value):
+        assert isinstance( value, tuple ), "Coordinates must be a tuple of the\
+        form (x_coord, y_coord)"
+        self.left   = value[0]
+        self.bottom = value[1]
+    
+    bottom_left = property(_get_bottom_left, _set_bottom_left, None,
+                           "rectangle's (bottom, left) coordinate.")
+
+    def _get_bottom_right(self):
+        return self.right, self.bottom
+
+    def _set_bottom_right(self, value):
+        assert isinstance( value, tuple ), "Coordinates must be a tuple of the\
+        form (x_coord, y_coord)"
+        self.right = value[0]
+        self.bottom   = value[1]
+    
+    bottom_right = property(_get_bottom_right, _set_bottom_right, None,
+                            "rectangle's (bottom, right) coordinate.")
 
     def _get_size(self):
         return self.width, self.height
@@ -175,7 +218,7 @@ class Rect(object):
         elif self.left < r.left and r.left < self.right:
             left = r.left
         else:
-            return self.__class__(self.left, self.top, 0, 0)
+            return self.__class__(self.center, 0, 0)
 
         # Check if the right side is intersected to get the width
         if self.right > r.left and self.right <= r.right:
@@ -183,7 +226,7 @@ class Rect(object):
         elif r.right > self.left and r.right <= self.right:
             width = r.right - left;
         else:
-            return self.__class__(self.left, self.top, 0, 0)
+            return self.__class__(self.center, 0, 0)
 
         # Check if the top side is intersected
         if self.top >= r.top and self.top < r.bottom:
@@ -191,7 +234,7 @@ class Rect(object):
         elif self.top < r.top and r.top < self.bottom:
             top = r.top
         else:
-            return self.__class__(self.left, self.top, 0, 0)
+            return self.__class__(self.center, 0, 0)
 
         # Check if the bottom side is intersected to get the height
         if self.bottom > r.top and self.bottom <= r.bottom:
@@ -199,9 +242,10 @@ class Rect(object):
         elif r.bottom > self.top and r.bottom <= self.bottom:
             height = r.bottom - top;
         else:
-            return self.__class__(self.left, self.top, 0, 0)
+            return self.__class__(self.center, 0, 0)
 
-        return self.__class__(left, top, width, height)
+        return self.__class__(left + width / 2., top + height / 2.,
+                              width, height)
 
     def union(self, r):
         """
@@ -209,11 +253,12 @@ class Rect(object):
         provided rectangles. There may be area inside the new Rect that is not
         covered by the originals.
         """
-        left = min(self.left, r.left)
-        top = min(self.top, r.top)
-        right = max(self.right, r.right)
-        bottom = max(self.bottom, r.bottom)
-        return self.__class__(left, top, right-left, bottom-top)
+        left   = min(self.left, r.left)
+        top    = min(self.top, r.top)
+        width  = max(self.right, r.right) - left
+        height = max(self.bottom, r.bottom) - top
+        return self.__class__(left + width / 2., top + height / 2.,
+                              width, height)
 
     def union_all(self, r_seq):
         """
@@ -241,7 +286,7 @@ class Rect(object):
         Returns true if any portion of either rectangle overlap (except the
         top+bottom or left+right edges).
         """
-        return self.collide_point(r.top_left) or \
-               self.collide_point(r.top_right) or \
-               self.collide_point(r.bottom_left) or \
-               self.collide_point(r.bottom_right)
+        return self.collide_point(*r.top_left) or \
+               self.collide_point(*r.top_right) or \
+               self.collide_point(*r.bottom_left) or \
+               self.collide_point(*r.bottom_right)
