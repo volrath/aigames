@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 
-from utils.locals import MAIN_VIEW
+from utils.locals import MAIN_VIEW, SIDE_VIEW, TOP_VIEW
 
 class Camera:
     """

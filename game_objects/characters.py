@@ -56,7 +56,7 @@ class Character:
         if self.velocity.length < self.max_speed:
             self.acceleration += acceleration
 
-    def update(self):
+    def update(self, game):
         """
         Updates the character steering data. This method only covers the
         following:
@@ -100,20 +100,33 @@ class Character:
         if self.velocity.length > 0:
             self.orientation = atan2(self.velocity.x, self.velocity.z)
 
-#        print self.velocity
+        self.update_position(game)
         return self
 
-    def update_position(self, stage):
+    def update_position(self, game):
+        """
+        Updates the position/area of a character. ensures it doesn't
+        collide with some specific elements of the game.
+        """
         self.area.center = (self.position.x, self.position.z)
-        #if not stage.move_dup(self.size, self.size).inflate_dup(-self.size, -self.size).contains(self.area):
-        if not stage.contains(self.area):
-            print stage, self.area
-            self.position.x = self.position.x - \
+        if not game.stage.floor.area.contains(self.area):
+            print game.stage.floor.area, self.area
+            self.reset_velocity()
+        # For every other character check if they are colliding
+        for ch in game.characters:
+            if self.area.collide_rect(ch.area):
+                self.reset_velocity()
+
+    def reset_velocity(self):
+        """
+        
+        """
+        self.position.x = self.position.x - \
                     Vector3.from_orientation(self.orientation, 25*(1./FPS)).x
-            self.position.z = self.position.z - \
+        self.position.z = self.position.z - \
                     Vector3.from_orientation(self.orientation, 25*(1./FPS)).z
-            self.velocity.length = 0
-            self.area.center = (self.position.x, self.position.z)
+        self.velocity.length = 0
+        self.area.center = (self.position.x, self.position.z)
 
     def jump(self):
         self.jumping = True

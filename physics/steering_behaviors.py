@@ -3,7 +3,7 @@
 """
 
 from functools import wraps
-from math import pi, atan2
+from math import pi, atan2, sqrt
 
 from utils.functions import random_binomial
 from physics.vector3 import Vector3
@@ -19,7 +19,7 @@ def target_transform(func):
     return decorator
 
 @target_transform
-def seek(character, target):
+def seek(character, target, target_radius=None):
     """
     Character will seek a given target.
     The argument 'target' can be either a Character's instance or a simple
@@ -30,7 +30,7 @@ def seek(character, target):
     character.angular = 0.
 
 @target_transform
-def flee(character, target):
+def flee(character, target, target_radius=None):
     """
     Character will flee from a given target.
     The argument 'target' can be either a Character's instance or a simple
@@ -125,6 +125,9 @@ def pursue_evade(basic_behavior):
         ## ALERT: small modification, if the target.velocity == 0 we are
         ## pursuing/evading the target itself, not some delegate target which
         ## doesn't exists.
+        
+        # Target radius depends on target's size
+        kwargs['target_radius'] = sqrt(2 * (2*target.size) * (2*target.size))
         if target.velocity.length != 0:
             basic_behavior(character,
                            target.position + (target.velocity * prediction),

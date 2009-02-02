@@ -47,6 +47,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.main_character = Slash(20.,20.,position=Vector3(-12.,0.,-17.), orientation=1.5)
         self.enemies = []
+        self.characters = [self.main_character]
         self.stage = Stage(STAGE_SIZE)
 
     def draw_axes(self):
@@ -88,11 +89,9 @@ class Game:
         # Renders all game's objects
         self.stage.render()   # TODO: improve stage rendering, use display lists
 
-        self.main_character.update()
-        self.main_character.update_position(self.stage.floor.area)
-        self.main_character.render()
+        self.main_character.update(self).render()
         for enemy in self.enemies:
-            enemy.update().render()
+            enemy.update(self).render()
 
     def add_character(self, character):
         """
@@ -100,6 +99,7 @@ class Game:
         To-do: allies?
         """
         self.enemies.append(character)
+        self.characters.append(character)
 
     def random_enemies(self, number):
         """
