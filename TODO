@@ -17,7 +17,7 @@ Steering Behaviors
 
 Jumping
 =======
-  * Main character jumping
+  -- Main character jumping
   * ai jumping! =S!
   * landing path jumping for ai, when wandering it just wander,
     when pursuing or evading jumps every thing jumpable in the way

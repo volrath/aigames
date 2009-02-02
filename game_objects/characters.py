@@ -77,7 +77,7 @@ class Character:
             self.position += self.velocity * time + \
                              (GRAVITY * time * time) / 2
             self.orientation += self.rotation * time
-            self.velocity += (self.acceleration + GRAVITY) * time
+            self.velocity += GRAVITY * time
             if self.position.y <= 0:
                 self.position.y = self.velocity.y = self.acceleration.y = 0.
                 self.jumping = False
