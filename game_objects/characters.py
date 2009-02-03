@@ -1,10 +1,13 @@
+import sys
+
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from math import atan2, pi
+from sympy.matrices import Matrix
 
 from utils.functions import load_image, random_binomial
-from utils.locals import FPS, GRAVITY
+from utils.locals import FPS, GRAVITY, FLOOR_FRICTION, STANDARD_INITIAL_FORCE
 from utils import BehaviorNotAssociated
 from physics.vector3 import Vector3
 from physics.rect import Rect
@@ -15,11 +18,16 @@ class Character:
     Character properties, movement, size, etc..
     """
     def __init__(self, linear_max_speed, angular_max_speed, position,
-                 orientation, colors, size, std_acc_step, max_acc):
+                 orientation, colors, size, max_acc, std_initial_force=None):
         self.max_speed = linear_max_speed
         self.max_rotation = angular_max_speed
         self.area = Rect((position.x, position.z), size*2, size*2)
         self.height = size*2
+
+        # Optional, color and stuff
+        self.colors = colors
+        self.size = self.mass = size # For now, all characters will be
+                                     # equally dense
         # Kinematic data
         self.position = position
         self.orientation = orientation
@@ -28,14 +36,13 @@ class Character:
         # Steering output
         self.acceleration = Vector3()
         self.angular = 0.
-        self.std_acc_step = std_acc_step
+        if std_initial_force is None:
+            self.std_acc_step = STANDARD_INITIAL_FORCE / self.mass
+        else:
+            self.std_acc_step = std_initial_force / self.mass
         self.max_acc = max_acc
         self.std_ang_step = .1
         self.max_ang = 5
-
-        # Optional, color and stuff
-        self.colors = colors
-        self.size = size
 
         # Control options
         self.jumping = False
@@ -51,7 +58,7 @@ class Character:
             if self.velocity.length == 0:
                 self.acceleration.length = 0
             else:
-                self.acceleration = self.velocity.unit() * -15.
+                self.acceleration = self.velocity.unit() * -FLOOR_FRICTION
             return
         if self.velocity.length < self.max_speed:
             self.acceleration += acceleration
@@ -110,23 +117,46 @@ class Character:
         """
         self.area.center = (self.position.x, self.position.z)
         if not game.stage.floor.area.contains(self.area):
-            print game.stage.floor.area, self.area
+            print 'fuera'
             self.reset_velocity()
         # For every other character check if they are colliding
         for ch in game.characters:
-            if self.area.collide_rect(ch.area):
-                self.reset_velocity()
+            if self.area.collide_rect(ch.area) and \
+                   ((self.position.y < ch.position.y + ch.height and \
+                    self.position.y > ch.position.y) \
+                    or \
+                    (self.position.y + self.height > ch.position.y and \
+                     self.position.y + self.height < ch.position.y + ch.height)):
+                ch.velocity = self.reset_velocity(ch)
 
-    def reset_velocity(self):
+    def reset_velocity(self, obj=None):
         """
+        Solve tridimensional calculation of velocities after a collision.
+        Returns the velocity of the colliding object
+        """
+        class Wall(object):
+            def __init__(self, position):
+                self.velocity = Vector3()
+                self.mass = sys.maxint
+                self.position = position
+        if obj is None:
+            obj = Wall(position=self.position)
+            
+        collision_axis = (self.position - obj.position).normalize()
+        self_velocity_x = self.velocity.projection(collision_axis)
+        self_velocity_z = self.velocity - self_velocity_x
+        obj_velocity_x  = obj.velocity.projection(collision_axis)
+        obj_velocity_z  = obj.velocity - obj_velocity_x
         
-        """
-        self.position.x = self.position.x - \
-                    Vector3.from_orientation(self.orientation, 25*(1./FPS)).x
-        self.position.z = self.position.z - \
-                    Vector3.from_orientation(self.orientation, 25*(1./FPS)).z
-        self.velocity.length = 0
-        self.area.center = (self.position.x, self.position.z)
+        self_velocity_x = (self_velocity_x * (self.mass - obj.mass) + \
+                           obj_velocity_x * 2 * obj.mass) / (self.mass + obj.mass)
+        obj_velocity_x  = (self_velocity_x * 2 * self.mass + \
+                           obj_velocity_x * (self.mass - obj.mass)) / \
+                           (self.mass + obj.mass)
+        self.velocity = self_velocity_x + self_velocity_z
+        print collision_axis, self_velocity_x, self_velocity_z
+        # Return obj_velocity
+        return obj_velocity_x + obj_velocity_z
 
     def jump(self):
         self.jumping = True
@@ -180,7 +210,7 @@ class Slash(Character):
     def __init__(self, max_speed, max_rotation, position=Vector3(), orientation=0.):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
-                           size=2., std_acc_step=1., max_acc=20.)
+                           size=2., max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
 
 class Enemy(Character):
@@ -192,7 +222,7 @@ class Enemy(Character):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
-                           size=1.8, std_acc_step=3.5, max_acc=10.)
+                           size=5.8, max_acc=10.)
         # Kinematic and Steering Behaviors flag.
         self.wandering = False
         self.seeking = None

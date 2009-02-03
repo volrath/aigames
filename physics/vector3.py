@@ -438,17 +438,22 @@ class Vector3(object):
         x, y, z = self._v        
         l = sqrt(x*x + y*y + z*z)
         v = self._v
-        v[0] = x/l
-        v[1] = y/l
-        v[2] = z/l
-        return self        
+        try:
+            v[0] = x/l
+            v[1] = y/l
+            v[2] = z/l
+            return self
+        except ZeroDivisionError:
+            return self.__class__()
     normalize = normalise
         
     def get_normalised(self):
-        
-        x, y, z = self._v        
-        l = sqrt(x*x + y*y + z*z)
-        return self.from_floats(x/l, y/l, z/l)
+        try:
+            x, y, z = self._v        
+            l = sqrt(x*x + y*y + z*z)
+            return self.from_floats(x/l, y/l, z/l)
+        except ZeroDivisionError:
+            return self.__class__()
     get_normalized = get_normalised
     
     
@@ -484,6 +489,16 @@ class Vector3(object):
         return self.from_floats( y*bz - by*z,
                                  z*bx - bz*x,
                                  x*by - bx*y )
+
+    def projection(self, other):
+        """
+        Returns the projection of this vector onto the 'other' vector
+        """
+        try:
+            return other.normalize() * \
+                   (self.dot(other) / (other.length * other.length))
+        except ZeroDivisionError:
+            return self.__class__()
 
     
 

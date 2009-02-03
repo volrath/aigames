@@ -83,7 +83,8 @@ class Game:
 
         # AI characters behavior
         for enemy in self.enemies:
-            enemy.behavior.execute()
+            if enemy.behavior is not None:
+                enemy.behavior.execute()
 
     def render(self):
         # Renders all game's objects
@@ -108,7 +109,7 @@ class Game:
         """
         for i in range(0,number):
             enemy = Enemy(20.,20., position=Vector3(12., 0., 8.), orientation=0.)
-            enemy.add_behavior(PURSUE)
-            enemy.behavior.character = enemy
-            enemy.behavior.target = self.main_character
+            #enemy.add_behavior(PURSUE)
+            #enemy.behavior.character = enemy
+            #enemy.behavior.target = self.main_character
             self.add_character(enemy)

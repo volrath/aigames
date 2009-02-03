@@ -18,7 +18,7 @@ def main():
     OGLManager.resize(*(map(int, SCREEN.size)))
     OGLManager.init(*(map(int, SCREEN.size)))
 
-    pygame.display.set_caption("No title yet...")
+    pygame.display.set_caption("Reggaetonator")
 
     # Game's objects initialization
     camera = Camera()

@@ -9,6 +9,10 @@ MEDIA_PATH = 'media'
 FPS = 60
 GRAVITY = Vector3(0., -19.62, 0.)
 
+# Character's constants
+STANDARD_INITIAL_FORCE = 2.
+FLOOR_FRICTION = 22.
+
 # Presets camera positions
 MAIN_VIEW = { 
     'position': { 'x': 0., 'y': 12., 'z': 54.5 },
