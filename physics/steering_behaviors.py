@@ -5,6 +5,7 @@
 from functools import wraps
 from math import pi, atan2
 
+from utils.locals import FPS
 from utils.functions import random_binomial
 from physics.vector3 import Vector3
 
@@ -94,6 +95,14 @@ def align(character, target, target_radius=.3, slow_radius=3.5,
         character.angular /= angular_acc
         character.angular *= character.max_ang
 
+def look_where_you_are_going(character):
+    """
+    Makes the character looks where he's going.. duh
+    """
+    velocity = character.velocity + character.acceleration * (1./FPS)
+    if velocity.length > 0:
+        character.orientation = atan2(velocity.x, velocity.z)
+
 def velocity_match(character, target, time_to_target=.1):
     """
     
@@ -149,7 +158,7 @@ class Wander:
     def __init__(self):
         self.wander_orientation = 0;
 
-    def execute(self, character, wander_offset=14.5, wander_radius=5.3,
+    def execute(self, character, wander_offset=15.5, wander_radius=5.3,
                 wander_rate=20.1, *args, **kwargs):
         # Updates the wander orientation
         self.wander_orientation += random_binomial() * wander_rate
@@ -158,8 +167,9 @@ class Wander:
                 Vector3.from_orientation(character.orientation, wander_offset)
         target_circle += \
                 Vector3.from_orientation(orientation, wander_radius)
-        # Delegates to face
-        face(character, target_circle, *args, **kwargs)
+        # Delegates to seek
+        seek(character, target_circle, *args, **kwargs)
+        look_where_you_are_going(character)
         # Set the character linear acceleration to be at full
-        character.acceleration = \
-            Vector3.from_orientation(character.orientation, character.max_acc)
+##         character.acceleration = \
+##             Vector3.from_orientation(character.orientation, character.max_acc)

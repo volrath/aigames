@@ -88,9 +88,9 @@ class Game:
         # Renders all game's objects
         self.stage.render()   # TODO: improve stage rendering, use display lists
 
-        self.main_character.update()
-        self.main_character.update_position(self.stage.floor.area)
-        self.main_character.render()
+#        self.main_character.update()
+#        self.main_character.update_position(self.stage.floor.area)
+#        self.main_character.render()
         for enemy in self.enemies:
             enemy.update().render()
 
@@ -107,7 +107,7 @@ class Game:
         Improve this when different type of enemies are complete.
         """
         for i in range(0,number):
-            enemy = Enemy(20.,20., position=Vector3(12., 0., 8.), orientation=0.)
+            enemy = Enemy(2.,2., position=Vector3(0., 0., -17.), orientation=0.)
             enemy.add_behavior(WANDER)
             enemy.behavior.character = enemy
             self.add_character(enemy)
