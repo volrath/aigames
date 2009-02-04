@@ -16,7 +16,7 @@ class Behavior:
             return self.handler(character=self.character,
                                 target=self.target, **self.args)
         else:
-            return self.handler(character=self.with_character, **self.args)
+            return self.handler(character=self.character, **self.args)
 
     def __str__(self):
         return self.name
@@ -24,3 +24,5 @@ class Behavior:
 # Current behaviors
 PURSUE = Behavior('Pursue', pursue_and_stop)
 EVADE  = Behavior('Evade', evade)
+WANDER = Behavior('Wander', Wander().execute)
+FACE   = Behavior('Face', face)

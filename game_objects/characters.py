@@ -31,7 +31,7 @@ class Character:
         self.std_acc_step = std_acc_step
         self.max_acc = max_acc
         self.std_ang_step = .1
-        self.max_ang = 5
+        self.max_ang = 50.
 
         # Optional, color and stuff
         self.colors = colors
@@ -87,6 +87,7 @@ class Character:
             self.velocity += self.acceleration * time
 
         self.rotation += self.angular * time
+        print self.orientation, self.rotation, self.angular
 
         if self.velocity.length > self.max_speed:
             self.velocity.set_length(self.max_speed)
@@ -97,8 +98,8 @@ class Character:
             if old_velocity.z < 0: self.velocity.z = 0.
 
         # get new orientation
-        if self.velocity.length > 0:
-            self.orientation = atan2(self.velocity.x, self.velocity.z)
+#         if self.velocity.length > 0:
+#             self.orientation = atan2(self.velocity.x, self.velocity.z)
 
 #        print self.velocity
         return self
