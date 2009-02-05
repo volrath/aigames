@@ -107,7 +107,11 @@ class Game:
         Improve this when different type of enemies are complete.
         """
         for i in range(0,number):
-            enemy = Enemy(2.,2., position=Vector3(0., 0., -17.), orientation=0.)
-            enemy.add_behavior(WANDER)
+            enemy = Enemy(2.,2., position=Vector3(14., 0., -17.), orientation=0.)
+            enemy.add_behavior(Behavior(**WANDER))
             enemy.behavior.character = enemy
             self.add_character(enemy)
+            enemy1 = Enemy(2.,2., position=Vector3(-14., 0., -17.), orientation=0.)
+            enemy1.add_behavior(Behavior(**WANDER))
+            enemy1.behavior.character = enemy1
+            self.add_character(enemy1)

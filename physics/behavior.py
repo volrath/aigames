@@ -4,9 +4,13 @@ class Behavior:
     """
     Character's behavior
     """
-    def __init__(self, name, handler, character=None, target=None, args={}):
+    def __init__(self, name, handler, method=None, character=None, target=None, args={}):
         self.name = name
-        self.handler = handler
+        if method is not None:
+            self.handler = handler()
+            self.handler = getattr(self.handler, method)
+        else:
+            self.handler = handler
         self.character = character
         self.target = target
         self.args = args
@@ -22,7 +26,7 @@ class Behavior:
         return self.name
 
 # Current behaviors
-PURSUE = Behavior('Pursue', pursue_and_stop)
-EVADE  = Behavior('Evade', evade)
-WANDER = Behavior('Wander', Wander().execute)
-FACE   = Behavior('Face', face)
+PURSUE = { 'name': 'Pursue', 'handler': pursue_and_stop }
+EVADE  = { 'name': 'Evade', 'handler': evade }
+WANDER = { 'name': 'Wander', 'handler': Wander, 'method':'execute' }
+FACE   = { 'name': 'Face', 'handler': face }
