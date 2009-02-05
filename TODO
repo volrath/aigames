@@ -38,3 +38,12 @@ Collision Avoidance
 Flocking
 ========
   * Do flocking
+
+First Version
+=============
+  * Wandering
+  * Separation and Flocking
+  * Shooting with angle
+  * AI Jumping
+  * Collision Detection
+  * Collision Avoidance

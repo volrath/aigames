@@ -42,7 +42,7 @@ class Character:
             self.std_acc_step = std_initial_force / self.mass
         self.max_acc = max_acc
         self.std_ang_step = .1
-        self.max_ang = 5
+        self.max_ang = 15.
 
         # Control options
         self.jumping = False
@@ -103,11 +103,6 @@ class Character:
             if old_velocity.y < 0: self.velocity.y = 0.
             if old_velocity.z < 0: self.velocity.z = 0.
 
-        # get new orientation
-        if self.velocity.length > 0:
-            self.orientation = atan2(self.velocity.x, self.velocity.z)
-
-        self.update_position(game)
         return self
 
     def update_position(self, game):

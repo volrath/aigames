@@ -108,8 +108,7 @@ class Game:
         Improve this when different type of enemies are complete.
         """
         for i in range(0,number):
-            enemy = Enemy(20.,20., position=Vector3(12., 0., 8.), orientation=0.)
-            #enemy.add_behavior(PURSUE)
-            #enemy.behavior.character = enemy
-            #enemy.behavior.target = self.main_character
+            enemy = Enemy(2.,2., position=Vector3(0., 0., -17.), orientation=0.)
+            enemy.add_behavior(WANDER)
+            enemy.behavior.character = enemy
             self.add_character(enemy)
