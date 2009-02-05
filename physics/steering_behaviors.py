@@ -161,7 +161,7 @@ class Wander:
     def __init__(self):
         self.wander_orientation = 0;
 
-    def execute(self, character, wander_offset=15.5, wander_radius=5.3,
+    def execute(self, character, wander_offset=5.5, wander_radius=5.3,
                 wander_rate=20.1, *args, **kwargs):
         # Updates the wander orientation
         self.wander_orientation += random_binomial() * wander_rate
