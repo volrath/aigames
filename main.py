@@ -5,6 +5,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 from game import Game, OGLManager
+from physics.vector3 import Vector3
 from utils.camera import Camera
 from utils.functions import keymap_handler
 from utils.locals import SCREEN, FPS
@@ -24,7 +25,7 @@ def main():
     camera = Camera()
     game = Game()             # Game object. This will handle all the game world
                               # and its components
-    game.random_enemies(1)    # Creates one random enemy
+    game.random_enemies([Vector3(-17, 0, -15), Vector3(17, 0, -15)])    # Creates one random enemy
 
     while True:
         for event in pygame.event.get():
@@ -47,8 +48,8 @@ def main():
 #        print camera
 
         # Draw the game
-        game.prepare_behave() # Follows behaviors in game.characters
         game.render()         # Render all game's elements
+        game.behave()         # Follows behaviors in game.characters
 
         # Draw game's axes <optional, remove after debugging...
         game.draw_axes()

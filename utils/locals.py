@@ -13,6 +13,9 @@ GRAVITY = Vector3(0., -19.62, 0.)
 STANDARD_INITIAL_FORCE = 2.
 FLOOR_FRICTION = 22.
 
+# Steering constants
+LOW_STEERING_UMBRAL = .2
+
 # Presets camera positions
 MAIN_VIEW = { 
     'position': { 'x': 0., 'y': 12., 'z': 54.5 },

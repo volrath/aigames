@@ -46,6 +46,7 @@ class Game:
         # Set the games objects
         self.clock = pygame.time.Clock()
         self.main_character = Slash(20.,20.,position=Vector3(-12.,0.,-17.), orientation=1.5)
+
         self.enemies = []
         self.characters = [self.main_character]
         self.stage = Stage(STAGE_SIZE)
@@ -71,7 +72,7 @@ class Game:
         glVertex3f(0.0,0.0,200.0)
         glEnd()
 
-    def prepare_behave(self):
+    def behave(self):
         """
         For the main character, catch keyboards interruptions and execute the
         appropiate behavior according to the key stroke catched.
@@ -80,11 +81,11 @@ class Game:
         """
         # Slash behavior
         keymap_handler(self) # Maybe i can just pass self.main_character
+        self.main_character.behavior.execute()
 
         # AI characters behavior
         for enemy in self.enemies:
-            if enemy.behavior is not None:
-                enemy.behavior.execute()
+            enemy.behave()
 
     def render(self):
         # Renders all game's objects
@@ -102,17 +103,24 @@ class Game:
         self.enemies.append(character)
         self.characters.append(character)
 
-    def random_enemies(self, number):
+    def random_enemies(self, positions):
         """
         Add <number> random enemies...
         Improve this when different type of enemies are complete.
         """
-        for i in range(0,number):
-            enemy = Enemy(2.,2., position=Vector3(14., 0., -17.), orientation=0.)
-            enemy.add_behavior(Behavior(**WANDER))
-            enemy.behavior.character = enemy
+        for position in positions:
+            enemy = Enemy(2.,2., position=position, orientation=0.)
+
+            pursue_evade_behaviors = [Behavior(character=enemy, active=True,
+                                               target=self.main_character,
+                                               **PURSUE),
+                                      Behavior(character=enemy, active=False,
+                                               target=self.main_character,
+                                               **EVADE)]
+            wander_behaviors = [Behavior(character=enemy, active=True, **WANDER)]
+            
+            enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
+                                                   **PURSUE_EVADE_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,
+                                                   **WANDER_GROUP))
             self.add_character(enemy)
-            enemy1 = Enemy(2.,2., position=Vector3(-14., 0., -17.), orientation=0.)
-            enemy1.add_behavior(Behavior(**WANDER))
-            enemy1.behavior.character = enemy1
-            self.add_character(enemy1)

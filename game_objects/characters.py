@@ -55,8 +55,9 @@ class Character:
         """
         if deacc:
             # Negative acceleration.
-            if self.velocity.length == 0:
-                self.acceleration.length = 0
+            if self.velocity.length <= 0:
+                self.velocity = Vector3()
+                self.acceleration = Vector3()
             else:
                 self.acceleration = self.velocity.unit() * -FLOOR_FRICTION
             return
@@ -97,12 +98,12 @@ class Character:
 
         if self.velocity.length > self.max_speed:
             self.velocity.set_length(self.max_speed)
-        else:
-            old_velocity *= self.velocity
-            if old_velocity.x < 0: self.velocity.x = 0.
-            if old_velocity.y < 0: self.velocity.y = 0.
-            if old_velocity.z < 0: self.velocity.z = 0.
+        old_velocity *= self.velocity
+        if old_velocity.x < 0: self.velocity.x = 0.
+        if old_velocity.y < 0: self.velocity.y = 0.
+        if old_velocity.z < 0: self.velocity.z = 0.
 
+        #self.update_position(game)
         return self
 
     def update_position(self, game):
@@ -123,6 +124,7 @@ class Character:
                     (self.position.y + self.height > ch.position.y and \
                      self.position.y + self.height < ch.position.y + ch.height)):
                 ch.velocity = self.reset_velocity(ch)
+        return self
 
     def reset_velocity(self, obj=None):
         """
@@ -149,7 +151,6 @@ class Character:
                            obj_velocity_x * (self.mass - obj.mass)) / \
                            (self.mass + obj.mass)
         self.velocity = self_velocity_x + self_velocity_z
-        print collision_axis, self_velocity_x, self_velocity_z
         # Return obj_velocity
         return obj_velocity_x + obj_velocity_z
 
@@ -207,46 +208,60 @@ class Slash(Character):
                            colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
                            size=2., max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
+        self.behavior = Behavior(character=self, active=True,
+                                 **LOOK_WHERE_YOU_ARE_GOING)
 
 class Enemy(Character):
     """
     An enemy
     """
     def __init__(self, max_speed, max_rotation, position=Vector3(),
-                 orientation=0., behaviors=[]):
+                 orientation=0., behavior_groups=[]):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
-                           size=5.8, max_acc=10.)
-        # Kinematic and Steering Behaviors flag.
-        self.wandering = False
-        self.seeking = None
-        self.evading = []
+                           size=1.8, max_acc=10.)
         # Behaviors
-        try:
-            self.current_behavior = behaviors[0]
-        except IndexError:
-            self.current_behavior = None
-        self.behaviors = set(behaviors)
+        self.behaviors = set(behavior_groups)
 
         #self.image, self.rect = load_image('main_character.png')
 
     #
     # Behaviors
     #
-    def _set_current_behavior(self, b):
-        """ Sets the current behavior of this character """
-        if b in self.behaviors:
-            self.current_behavior = b
-        else:
-            raise BehaviorNotAssociated()
-    def _get_current_behavior(self):
-        """ Gets the current behavior of this character """
-        return self.current_behavior
-    behavior = property(_get_current_behavior, _set_current_behavior, None,
-                        "Current behavior of this character")
+    def add_behavior_group(self, bg):
+        self.behaviors.add(bg)
 
-    def add_behavior(self, b):
-        self.behaviors.add(b)
-        if len(self.behaviors) == 1:
-            self.current_behavior = b
+    def add_behavior_in_group(self, b, bg):
+        group = None
+        for g in self.behaviors:
+            if g.name == bg:
+                group = g
+                break
+        if group is not None:
+            group.behavior_set.add(b)
+
+    def behave(self):
+        def group_priority_cmp(g1, g2):
+            if g1['priority'] > g2['priority']:
+                return 1
+            elif g1['priority'] == g2['priority']:
+                return 0
+            else: # <
+                return -1
+        group_outputs = [group.execute() for group in self.behaviors]
+        # Sort by priorities
+        group_outputs.sort(group_priority_cmp)
+        try:
+            # We have a winner
+            steering = group_outputs[0]['steering']
+            # Apply to the character.
+            linear  = steering.get('linear', None)
+            angular = steering.get('angular', None)
+            if linear is not None:
+                self.acceleration += linear
+            if angular is not None:
+                self.angular += angular
+        except IndexError:
+            pass
+
