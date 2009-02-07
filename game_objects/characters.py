@@ -61,8 +61,9 @@ class Character:
             else:
                 self.acceleration = self.velocity.unit() * -FLOOR_FRICTION
             return
-        if self.velocity.length < self.max_speed:
-            self.acceleration += acceleration
+        self.acceleration += acceleration
+        if self.velocity.length > self.max_speed:
+            self.velocity.set_length(self.max_speed)
 
     def update(self, game):
         """
@@ -102,7 +103,6 @@ class Character:
         if old_velocity.x < 0: self.velocity.x = 0.
         if old_velocity.y < 0: self.velocity.y = 0.
         if old_velocity.z < 0: self.velocity.z = 0.
-
         #self.update_position(game)
         return self
 
