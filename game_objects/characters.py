@@ -264,7 +264,7 @@ class Enemy(Character):
             try:
                 steering = group_outputs.pop()
                 if steering is not None:
-                    print steering['name'], steering['steering']
+#                    print steering['name'], steering['steering']
                     steering = steering['steering']
             except IndexError:
                 continue

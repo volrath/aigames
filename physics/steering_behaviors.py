@@ -217,7 +217,7 @@ class CollisionAvoidance:
             # Check if it is going to be collision at all
             min_separation = relative_pos.length - \
                              relative_vel.length * shortest_time
-            print target, ':', shortest_time, time_to_collision, min_separation
+#            print target, ':', shortest_time, time_to_collision, min_separation
             if min_separation > 2 * self.radius:
                 continue
             if time_to_collision > 0:
@@ -233,10 +233,8 @@ class CollisionAvoidance:
         # If we are going to hit exactly, or if we are alredy colliding,
         # then do the separation based on the current position
         if first_min_separation <= 0 or first_distance < 2 * self.radius:
-            print 'iffff'
             relative_pos = first_target.position - self.character.position
         else:
-            print 'elseeee'
             relative_pos = first_relative_pos + \
                            first_relative_vel * shortest_time
         relative_pos.normalize()
