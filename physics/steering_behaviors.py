@@ -193,9 +193,9 @@ class Wander:
 ##             Vector3.from_orientation(character.orientation, character.max_acc)
 
 class CollisionAvoidance:
-    def __init__(self, character, targets, radius=None):
+    def __init__(self, character, target, radius=None):
         self.character = character
-        self.targets = targets
+        self.targets = target
         self.radius = radius or 3.
         self.first_target = None
 
@@ -204,17 +204,23 @@ class CollisionAvoidance:
         shortest_time = sys.maxint
         first_target = None
 
-        for target in targets:
+        for target in self.targets:
             relative_pos = target.position - self.character.position
             relative_vel = target.velocity - self.character.velocity
-            time_to_collision = relative_pos.dot(relative_vel) \
-                                / (relative_pos * relative_vel)
+            try:
+                time_to_collision = -1* relative_pos.dot(relative_vel) \
+                            / (relative_vel.length * relative_vel.length)
+            except ZeroDivisionError:
+                time_to_collision = 0
+            if time_to_collision > 0 and time_to_collision < shortest_time:
+                shortest_time = time_to_collision
             # Check if it is going to be collision at all
-            min_separation = relative_pos.length + \
+            min_separation = relative_pos.length - \
                              relative_vel.length * shortest_time
+            print target, ':', shortest_time, time_to_collision, min_separation
             if min_separation > 2 * self.radius:
                 continue
-            if time_to_collision > 0 and time_to_collision < shortest_time:
+            if time_to_collision > 0:
                 first_target = target
                 first_min_separation = min_separation
                 first_distance = relative_pos.length
@@ -223,14 +229,16 @@ class CollisionAvoidance:
 
         # Get the steering
         if first_target is None:
-            return
+            return None
         # If we are going to hit exactly, or if we are alredy colliding,
         # then do the separation based on the current position
-        if first_min_separation <= 0 or first_distance < 2 * radius:
+        if first_min_separation <= 0 or first_distance < 2 * self.radius:
+            print 'iffff'
             relative_pos = first_target.position - self.character.position
         else:
+            print 'elseeee'
             relative_pos = first_relative_pos + \
                            first_relative_vel * shortest_time
         relative_pos.normalize()
         # Avoid the target
-        self.character.velocity = relative_pos * self.character.max_acc
+        return { 'linear': relative_pos * self.character.max_acc, 'angular': 0. }

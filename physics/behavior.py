@@ -46,16 +46,17 @@ class BehaviorGroup(object):
         total_steering = { 'linear': Vector3(), 'angular': 0, }
         for behavior in self.behavior_set:
             b_steering = behavior.execute()
+            if b_steering is None:
+                continue
             if b_steering.has_key('linear'):
                 total_steering['linear'] += b_steering['linear']
             if b_steering.has_key('angular'):
                 total_steering['angular'] += b_steering['angular']
 
-        if total_steering['linear'].length <= LOW_STEERING_UMBRAL:
-            total_steering['linear'] = None
-        if total_steering['angular'] <= LOW_STEERING_UMBRAL:
-            total_steering['angular'] = None
-        return { 'steering': total_steering, 'priority': self.priority }
+        if total_steering['linear'].length <= LOW_STEERING_UMBRAL and \
+           total_steering['angular'] <= LOW_STEERING_UMBRAL:
+            return None
+        return { 'steering': total_steering, 'priority': self.priority, 'name': self.name }
 
 # Current behaviors
 PURSUE = { 'name': 'Pursue', 'weight': 3, 'handler': pursue_and_stop }
@@ -63,9 +64,13 @@ EVADE  = { 'name': 'Evade', 'weight': 3, 'handler': evade }
 WANDER = { 'name': 'Wander', 'weight': 1, 'handler': Wander, 'method': 'execute' }
 FACE   = { 'name': 'Face', 'weight': 2, 'handler': face }
 LOOK_WHERE_YOU_ARE_GOING = { 'name': 'Look', 'weight': 2, 'handler': look_where_you_are_going }
+COLLISION_AVOIDANCE = { 'name': 'Collision Avoidance', 'weight': 5, 'handler': CollisionAvoidance, 'method': 'execute' }
 
 # DEFAULT GROUPS
-COLLISION_AVOIDANCE_GROUP = {}
+COLLISION_AVOIDANCE_GROUP = {
+    'name': 'collision_avoidance',
+    'default_priority': 5,
+}
 PURSUE_EVADE_GROUP = {
     'name': 'pursue_evade',
     'default_priority': 3

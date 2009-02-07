@@ -25,7 +25,7 @@ def main():
     camera = Camera()
     game = Game()             # Game object. This will handle all the game world
                               # and its components
-    game.random_enemies([Vector3(-17, 0, -15), Vector3(17, 0, -15)])    # Creates one random enemy
+    game.random_enemies([Vector3(-17, 0, -15)])    # Creates one random enemy
 
     while True:
         for event in pygame.event.get():

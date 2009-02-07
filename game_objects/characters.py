@@ -211,6 +211,9 @@ class Slash(Character):
         self.behavior = Behavior(character=self, active=True,
                                  **LOOK_WHERE_YOU_ARE_GOING)
 
+    def __str__(self):
+        return 'Slash'
+
 class Enemy(Character):
     """
     An enemy
@@ -225,6 +228,9 @@ class Enemy(Character):
         self.behaviors = set(behavior_groups)
 
         #self.image, self.rect = load_image('main_character.png')
+
+    def __str__(self):
+        return 'Enemy'
 
     #
     # Behaviors
@@ -243,6 +249,8 @@ class Enemy(Character):
 
     def behave(self):
         def group_priority_cmp(g1, g2):
+            if g1 is None: return -1
+            if g2 is None: return 1
             if g1['priority'] > g2['priority']:
                 return 1
             elif g1['priority'] == g2['priority']:
@@ -252,16 +260,24 @@ class Enemy(Character):
         group_outputs = [group.execute() for group in self.behaviors]
         # Sort by priorities
         group_outputs.sort(group_priority_cmp)
-        try:
-            # We have a winner
-            steering = group_outputs[0]['steering']
+        while True:
+            try:
+                steering = group_outputs.pop()
+                if steering is not None:
+                    print steering['name'], steering['steering']
+                    steering = steering['steering']
+            except IndexError:
+                continue
+            if steering is None:
+                continue
             # Apply to the character.
             linear  = steering.get('linear', None)
             angular = steering.get('angular', None)
             if linear is not None:
+                if linear.length > self.max_acc:
+                    linear.set_length(self.max_acc)
                 self.acceleration += linear
             if angular is not None:
                 self.angular += angular
-        except IndexError:
-            pass
+            break
 

@@ -111,16 +111,24 @@ class Game:
         for position in positions:
             enemy = Enemy(2.,2., position=position, orientation=0.)
 
-            pursue_evade_behaviors = [Behavior(character=enemy, active=True,
-                                               target=self.main_character,
-                                               **PURSUE),
-                                      Behavior(character=enemy, active=False,
-                                               target=self.main_character,
-                                               **EVADE)]
+            pursue_evade_behaviors = [
+                Behavior(character=enemy, active=True,
+                         target=self.main_character,
+                         **PURSUE),
+                Behavior(character=enemy, active=False,
+                         target=self.main_character,
+                         **EVADE)
+                ]
             wander_behaviors = [Behavior(character=enemy, active=True, **WANDER)]
+            collision_behaviors = [
+                Behavior(character=enemy, active=True, target=self.characters,
+                         **COLLISION_AVOIDANCE)
+                ]
             
-            enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
-                                                   **PURSUE_EVADE_GROUP))
+#             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
+#                                                    **PURSUE_EVADE_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
+                                                   **COLLISION_AVOIDANCE_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,
                                                    **WANDER_GROUP))
             self.add_character(enemy)
