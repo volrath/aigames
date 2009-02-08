@@ -3,6 +3,7 @@
 """
 import sys
 
+from sympy.geometry import *
 from functools import wraps
 from math import pi, atan2, sqrt
 
@@ -42,6 +43,8 @@ def flee(character, target, target_radius=None):
     """
     steering = {}
     new_acc = character.position - target
+    if target_radius is not None and new_acc.length > target_radius:
+        return None
     steering['linear'] = new_acc.set_length(character.std_acc_step)
     steering['angular'] = 0.
     return steering
@@ -192,51 +195,122 @@ class Wander:
 ##         steering['linear'] = \
 ##             Vector3.from_orientation(character.orientation, character.max_acc)
 
-class CollisionAvoidance:
+class Separation:
     def __init__(self, character, target, radius=None):
         self.character = character
         self.targets = target
         self.radius = radius or 3.
-        self.first_target = None
+
+    def execute(self):
+        steering = {'linear': Vector3(), 'angular': 0.}
+        for target in self.targets:
+            if self.character == target:
+                continue
+            relative_pos = self.character.position - target.position
+            try:
+                steering['linear'] += (relative_pos * self.radius) \
+                                      / relative_pos.length**2
+            except ZeroDivisionError:
+                steering['linear'] += (self.radius * relative_pos) / 0.01**2
+        return steering
+
+obstacle_side_normal = {
+    0: Vector3(0., 0., -1.),
+    1: Vector3(-1., 0., 0.),
+    2: Vector3(0., 0., 1.),
+    3: Vector3(1., 0., 0.),
+}
+
+class ObstacleAvoidance:
+    def __init__(self, character, game, look_ahead, fan_angle=None,
+                 fan_size=None, avoid_distance=None, target=None):
+        self.character = character
+        self.game = game
+        self.look_ahead = look_ahead
+        self.fan_angle = fan_angle or pi/4.
+        self.fan_size  = fan_size or sqrt(2 * self.character.size**2) + .5
+        self.avoid_distance = avoid_distance or self.character.size + .5
 
     def execute(self, *args, **kwargs):
         steering = {}
-        shortest_time = sys.maxint
-        first_target = None
 
-        for target in self.targets:
-            relative_pos = target.position - self.character.position
-            relative_vel = target.velocity - self.character.velocity
-            try:
-                time_to_collision = -1* relative_pos.dot(relative_vel) \
-                            / (relative_vel.length * relative_vel.length)
-            except ZeroDivisionError:
-                time_to_collision = 0
-            if time_to_collision > 0 and time_to_collision < shortest_time:
-                shortest_time = time_to_collision
-            # Check if it is going to be collision at all
-            min_separation = relative_pos.length - \
-                             relative_vel.length * shortest_time
-#            print target, ':', shortest_time, time_to_collision, min_separation
-            if min_separation > 2 * self.radius:
-                continue
-            if time_to_collision > 0:
-                first_target = target
-                first_min_separation = min_separation
-                first_distance = relative_pos.length
-                first_relative_pos = relative_pos
-                first_relative_vel = relative_vel
-
-        # Get the steering
-        if first_target is None:
+        collision = self.predict_collision(self.game)
+        if collision is None:
             return None
-        # If we are going to hit exactly, or if we are alredy colliding,
-        # then do the separation based on the current position
-        if first_min_separation <= 0 or first_distance < 2 * self.radius:
-            relative_pos = first_target.position - self.character.position
-        else:
-            relative_pos = first_relative_pos + \
-                           first_relative_vel * shortest_time
-        relative_pos.normalize()
-        # Avoid the target
-        return { 'linear': relative_pos * self.character.max_acc, 'angular': 0. }
+
+        target = collision['position'] + collision['normal'] * self.avoid_distance
+        print 'returning', flee(self.character, target, 3)
+        return flee(self.character, target, 3)
+
+    def predict_collision(self, game):
+        """
+        """
+        ray_vector = self.character.velocity.copy()
+        ray_vector.set_length(self.look_ahead)
+        ray_vector += self.character.position
+
+        # Creates a sympy segment to check for intersection
+        begin = Point(self.character.position.x, self.character.position.z)
+        end   = Point(ray_vector.x, ray_vector.z)
+        if begin == end:
+            return None
+        ray_seg = Segment(begin, end)
+        # AND THE FANS
+
+        # Creates a sympy polygon to check for intersections
+        st = Polygon(*(map(Point, game.stage.floor.area.corners())))
+        
+        intersection_points = set()
+        # Check for intersections with all the game's obstacles
+        for obstacle in game.stage.obstacles:
+            obs_area = Polygon(*(map(Point, obstacle.area.corners())))
+            intersection_points.add(self.intersection_and_normal(obs_area,
+                                                                 ray_seg,
+                                                                 begin))
+            # AND BETWEEN THE FANS
+#            intersection_points.extend(intersection(obstacle, left_fan))
+#            intersection_points.extend(intersection(obstacle, right_fan))
+
+        # And dont forget the entire stage
+        intersection_points.add(self.intersection_and_normal(st, ray_seg,
+                                                             begin))
+#        intersection_points.extend(intersection(st, left_fan))
+#        intersection_points.extend(intersection(st, right_fan))
+
+        # Removes any None in the intersection_points set
+        intersection_points.remove(None)
+
+        # Order the points according to its distance to character.position
+        def order_collisions(x, y):
+            x = Point.distance(begin, x[0])
+            y = Point.distance(begin, y[0])
+            return cmp(x, y)
+        intersection_points = list(intersection_points)
+        intersection_points.sort(order_collisions)
+        try:
+            intersection = intersection_points[0]
+        except IndexError:
+            return None
+        return {
+            'position': Vector3(intersection[0][0], 0., intersection[0][1]),
+            'normal': intersection[1],
+        }
+
+    def intersection_and_normal(self, obs_area, seg, begin):
+        def order_points(x, y):
+            x = Point.distance(begin, x)
+            y = Point.distance(begin, y)
+            return cmp(x, y)
+        print 'intersection between', obs_area, seg, intersection(obs_area, seg)
+        points = intersection(obs_area, seg)
+        points.sort(order_points)
+        try:
+            point = points[0]
+        except IndexError: # We didn't hit this obstacle
+            return None
+        # search witch side of the obstacle we hit
+        for i in range(0, len(obs_area.sides)):
+            if intersection(obs_area.sides[i], point):
+                normal = obstacle_side_normal[i]
+                break
+        return (point, normal)

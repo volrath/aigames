@@ -3,6 +3,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 from physics.rect import Rect
+from physics.vector3 import Vector3
 
 class Floor:
     def __init__(self, floor):
@@ -35,31 +36,45 @@ class Floor:
 	glEnd()				# Done Drawing The Quad
         glPopMatrix()
 
-class Amplificator:
-    def __init__(self, size=1, position=(0,0), color=(1.,1.,1.), rotation=0):
+class Obstacle:
+    def __init__(self, size=1, position=Vector3(), color=(1.,1.,1.),
+                 rotation=0.):
+        self.area = Rect((position.x, position.z), size*2, size*2)
         self.size = size
-        self.xpos, self.zpos = position
+        self.position = position
         self.color = color
         self.rotation = rotation
 
     def render(self):
         glPushMatrix()
-        glTranslatef(self.xpos, self.size/2., self.zpos)
+        glTranslatef(self.position.x, self.size/2., self.position.z)
         glRotatef(self.rotation, 0., 1., 0.)
         glColor3f(*self.color)
         glutSolidCube(self.size)
         glPopMatrix()
 
+class Amplificator(Obstacle):
+    """
+    An amplificator.
+    """
+    pass
+
+class Drum(Obstacle):
+    """
+    Some drums =)
+    """
+    pass
+
 class Stage:
     def __init__(self, floor_size):
         self.floor = Floor(floor_size)
-        self.amps = []
+        self.obstacles = []
 
-    def default_amplificators(self):
+    def default_obstacles(self):
         """
         Set 2 amplificator in the default position
         """
-        self.amps = [
+        self.obstacles = [
             Amplificator(size=5., position=(15.5, 7.), color=(1.,0.,0.), rotation=35),
             Amplificator(size=5., position=(-15.5, 7.), color=(1.,0.,0.), rotation=-35),
             ]
@@ -67,5 +82,5 @@ class Stage:
 
     def render(self):
         self.floor.render()
-        for amp in self.amps:
-            amp.render()
+        for obstacle in self.obstacles:
+            obstacle.render()

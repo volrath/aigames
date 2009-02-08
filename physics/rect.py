@@ -119,8 +119,8 @@ class Rect(object):
     def _set_bottom_right(self, value):
         assert isinstance( value, tuple ), "Coordinates must be a tuple of the\
         form (x_coord, y_coord)"
-        self.right = value[0]
-        self.bottom   = value[1]
+        self.right  = value[0]
+        self.bottom = value[1]
     
     bottom_right = property(_get_bottom_right, _set_bottom_right, None,
                             "rectangle's (bottom, right) coordinate.")
@@ -154,6 +154,13 @@ class Rect(object):
         nr = self.__class__(*self._as_tuple())
         return nr
     __copy__ = copy
+
+    def corners(self):
+        """
+        returns a list of the corners as tuples
+        """
+        return [self.bottom_left, self.bottom_right,
+                self.top_right, self.top_left]
 
     def move(self, x, y):
         """

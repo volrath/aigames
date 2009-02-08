@@ -122,7 +122,12 @@ class Game:
             wander_behaviors = [Behavior(character=enemy, active=True, **WANDER)]
             collision_behaviors = [
                 Behavior(character=enemy, active=True, target=self.characters,
-                         **COLLISION_AVOIDANCE)
+                         **SEPARATION),
+                Behavior(character=enemy, active=True,
+                         args={'game': self, 'look_ahead': 7.},
+                         **OBSTACLE_AVOIDANCE)
+#                Behavior(character=enemy, active=True, target=self.characters,
+#                         **COLLISION_AVOIDANCE)
                 ]
             
 #             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
