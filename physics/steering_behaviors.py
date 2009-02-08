@@ -3,13 +3,13 @@
 """
 import sys
 
-from sympy.geometry import *
 from functools import wraps
 from math import pi, atan2, sqrt
 
 from utils.locals import FPS
 from utils.functions import random_binomial
 from physics.vector3 import Vector3
+from physics.geometric import *
 
 # Basic.
 
@@ -214,6 +214,29 @@ class Separation:
                 steering['linear'] += (self.radius * relative_pos) / 0.01**2
         return steering
 
+class Cohesion:
+    def __init__(self, character, target, radius):
+        self.character = character
+        self.targets = target
+        self.radius = radius or 3.
+
+    def execute(self):
+        steering = {'linear': Vector3(), 'angular': 0.}
+        mass_center = Vector3()
+        weight = 0
+        for target in self.targets:
+            if target == self.character: continue
+            mass_center += target.position
+            weight += 1
+        if weight == 0:
+            return None
+        mass_center /= weight
+        steering['linear'] = mass_center - self.character.position
+        steering['linear'] /= steering['linear'].length
+        steering['linear'] *= self.character.max_speed
+        steering['linear'] -= self.character.velocity
+        return steering
+
 obstacle_side_normal = {
     0: Vector3(0., 0., -1.),
     1: Vector3(-1., 0., 0.),
@@ -250,21 +273,21 @@ class ObstacleAvoidance:
         ray_vector += self.character.position
 
         # Creates a sympy segment to check for intersection
-        begin = Point(self.character.position.x, self.character.position.z)
-        end   = Point(ray_vector.x, ray_vector.z)
+        begin = self.character.position.x, self.character.position.z
+        end   = ray_vector.x, ray_vector.z
         if begin == end:
             return None
-        ray_seg = Segment(begin, end)
+        ray_seg = begin, end
         # AND THE FANS
 
         # Creates a sympy polygon to check for intersections
-        st = Polygon(*(map(Point, game.stage.floor.area.corners())))
+        stage_sides = game.stage.floor.area.sides()
         
         intersection_points = set()
         # Check for intersections with all the game's obstacles
         for obstacle in game.stage.obstacles:
-            obs_area = Polygon(*(map(Point, obstacle.area.corners())))
-            intersection_points.add(self.intersection_and_normal(obs_area,
+            obs_area_sides = obstacle.area.sides()
+            intersection_points.add(self.intersection_and_normal(obs_area_sides,
                                                                  ray_seg,
                                                                  begin))
             # AND BETWEEN THE FANS
@@ -272,13 +295,16 @@ class ObstacleAvoidance:
 #            intersection_points.extend(intersection(obstacle, right_fan))
 
         # And dont forget the entire stage
-        intersection_points.add(self.intersection_and_normal(st, ray_seg,
-                                                             begin))
+        intersection_points.add(self.intersection_and_normal(stage_sides,
+                                                             ray_seg, begin))
 #        intersection_points.extend(intersection(st, left_fan))
 #        intersection_points.extend(intersection(st, right_fan))
 
         # Removes any None in the intersection_points set
-        intersection_points.remove(None)
+        try:
+            intersection_points.remove(None)
+        except KeyError:
+            pass
 
         # Order the points according to its distance to character.position
         def order_collisions(x, y):
@@ -296,21 +322,53 @@ class ObstacleAvoidance:
             'normal': intersection[1],
         }
 
-    def intersection_and_normal(self, obs_area, seg, begin):
+    def intersection_and_normal(self, obs_sides, seg, begin):
+        """
+        Returns the closest point of collision and its normal
+        """
         def order_points(x, y):
             x = Point.distance(begin, x)
             y = Point.distance(begin, y)
             return cmp(x, y)
-        print 'intersection between', obs_area, seg, intersection(obs_area, seg)
-        points = intersection(obs_area, seg)
+        print 'intersection between', obs_sides, seg, self.intersect_obstacle(obs_sides, seg)
+        points = self.intersect_obstacle(obs_sides, seg)
         points.sort(order_points)
         try:
             point = points[0]
         except IndexError: # We didn't hit this obstacle
             return None
         # search witch side of the obstacle we hit
-        for i in range(0, len(obs_area.sides)):
-            if intersection(obs_area.sides[i], point):
+        for i in range(0, len(obs_sides)):
+            if Point.is_between(point, obs_sides[i]):
                 normal = obstacle_side_normal[i]
                 break
         return (point, normal)
+
+    def intersect_obstacle(self, obstacle_sides, seg):
+        """
+        Returns a list of all intersections with the sides of an obstacle
+        """
+        intersections = []
+        for side in obstacle_sides:
+            intersections.extend(self.intersect_segments(side, seg))
+        return intersections
+
+    def intersect_segments(self, seg1, seg2):
+        """
+        Returns the point of intersection between two segments, if any
+        """
+        d = (seg1[0][0] - seg1[1][0]) * (seg2[0][1] - seg2[1][1]) - \
+            (seg1[0][1] - seg1[1][1]) * (seg2[0][0] - seg2[1][0])
+        if d == 0:
+            return []
+        xi = ((seg2[0][0] - seg2[1][0]) * (seg1[0][0]*seg1[1][1] - seg1[0][1]*seg1[1][0]) - \
+              (seg1[0][0] - seg1[1][0]) * (seg2[0][0]*seg2[1][1] - seg2[0][1]*seg2[1][0])) / d
+        yi = ((seg2[0][1] - seg2[1][1]) * (seg1[0][0]*seg1[1][1] - seg1[0][1]*seg1[1][0]) - \
+              (seg1[0][1] - seg1[1][1]) * (seg2[0][0]*seg2[1][1] - seg2[0][1]*seg2[1][0])) / d
+        if xi < min(seg1[0][0], seg1[1][0]) or \
+           xi > max(seg1[0][0], seg1[1][0]) or \
+           xi < min(seg2[0][0], seg2[1][0]) or \
+           xi > max(seg2[0][0], seg2[1][0]):
+            return []
+        return [(xi, yi)]
+           

@@ -162,6 +162,12 @@ class Rect(object):
         return [self.bottom_left, self.bottom_right,
                 self.top_right, self.top_left]
 
+    def sides(self):
+        return [(self.bottom_left, self.top_right),
+                (self.top_right, self.bottom_right),
+                (self.top_left, self.top_right),
+                (self.top_left, self.bottom_left)]
+
     def move(self, x, y):
         """
         Moves the rectangle in place
