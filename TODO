@@ -45,7 +45,7 @@ First Version
 - * Separation and Flocking
 - * Shooting with angle
 - * AI Jumping
-  * Collision Detection
-  * Collision Avoidance
+  -- Collision Detection
+  -- Collision Avoidance
   * Hitting
   -- Blending with arbitration

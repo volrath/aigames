@@ -11,7 +11,7 @@ GRAVITY = Vector3(0., -19.62, 0.)
 
 # Character's constants
 STANDARD_INITIAL_FORCE = 2.
-FLOOR_FRICTION = 22.
+FLOOR_FRICTION = 35.
 
 # Steering constants
 LOW_STEERING_UMBRAL = .2

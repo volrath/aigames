@@ -25,7 +25,8 @@ def main():
     camera = Camera()
     game = Game()             # Game object. This will handle all the game world
                               # and its components
-    game.random_enemies([Vector3(-17, 0, -15)])    # Creates one random enemy
+    game.random_enemies([Vector3(4., 0., -5.), Vector3(-4., 0., -5.),
+                         Vector3(-1., 0., 10.)])    # Creates one random enemy
 
     while True:
         for event in pygame.event.get():
@@ -50,9 +51,6 @@ def main():
         # Draw the game
         game.render()         # Render all game's elements
         game.behave()         # Follows behaviors in game.characters
-
-        # Draw game's axes <optional, remove after debugging...
-        game.draw_axes()
 
         # Flip and display view.
         pygame.display.flip()

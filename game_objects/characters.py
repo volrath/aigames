@@ -3,7 +3,7 @@ import sys
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
-from math import atan2, pi
+from math import atan2, pi, atan, degrees, cos, sin, radians
 from sympy.matrices import Matrix
 
 from utils.functions import load_image, random_binomial
@@ -103,7 +103,7 @@ class Character:
         if old_velocity.x < 0: self.velocity.x = 0.
         if old_velocity.y < 0: self.velocity.y = 0.
         if old_velocity.z < 0: self.velocity.z = 0.
-        #self.update_position(game)
+        self.update_position(game)
         return self
 
     def update_position(self, game):
@@ -113,47 +113,91 @@ class Character:
         """
         self.area.center = (self.position.x, self.position.z)
         if not game.stage.floor.area.contains(self.area):
-            print 'fuera'
-            self.reset_velocity()
+            self.reset_velocity(game=game, wall=True)
+        # For every stage obstacle
+        for obstacle in game.stage.obstacles:
+            if (self.area.collide_rect(obstacle.area) or \
+                obstacle.area.collide_rect(self.area)) and \
+               self.position.y < obstacle.height:
+                self.reset_velocity(game=game, obj=obstacle)
         # For every other character check if they are colliding
         for ch in game.characters:
-            if self.area.collide_rect(ch.area) and \
-                   ((self.position.y < ch.position.y + ch.height and \
-                    self.position.y > ch.position.y) \
-                    or \
-                    (self.position.y + self.height > ch.position.y and \
-                     self.position.y + self.height < ch.position.y + ch.height)):
-                ch.velocity = self.reset_velocity(ch)
+            if ch == self:
+                continue
+            if (self.area.collide_rect(ch.area) or \
+                ch.area.collide_rect(self.area)) and \
+                self.position.y < ch.position.y + ch.height and \
+                ch.position.y < self.position.y + self.height:
+                self.reset_velocity(game=game, obj=ch)
+        # Check for negative position.y and corrects it
+        if self.position.y < 0:
+            self.position.y = 0.
+            self.velocity.y = 0.
+            self.acceleration.y = 0.
         return self
 
-    def reset_velocity(self, obj=None):
+    def reset_velocity(self, game, obj=None, wall=False):
         """
         Solve tridimensional calculation of velocities after a collision.
         Returns the velocity of the colliding object
         """
-        class Wall(object):
-            def __init__(self, position):
-                self.velocity = Vector3()
-                self.mass = sys.maxint
-                self.position = position
-        if obj is None:
-            obj = Wall(position=self.position)
-            
-        collision_axis = (self.position - obj.position).normalize()
-        self_velocity_x = self.velocity.projection(collision_axis)
-        self_velocity_z = self.velocity - self_velocity_x
-        obj_velocity_x  = obj.velocity.projection(collision_axis)
-        obj_velocity_z  = obj.velocity - obj_velocity_x
-        
-        self_velocity_x = (self_velocity_x * (self.mass - obj.mass) + \
-                           obj_velocity_x * 2 * obj.mass) / (self.mass + obj.mass)
-        obj_velocity_x  = (self_velocity_x * 2 * self.mass + \
-                           obj_velocity_x * (self.mass - obj.mass)) / \
-                           (self.mass + obj.mass)
-        self.velocity = self_velocity_x + self_velocity_z
-        # Return obj_velocity
-        return obj_velocity_x + obj_velocity_z
+        if wall:
+            # Has to guess with wich side are we hitting
+            if game.stage.floor.area.collide_point(*self.area.center):
+                # If my center is still on the stage
+                if game.stage.floor.size - abs(self.area.center[0]) <= \
+                   game.stage.floor.size - abs(self.area.center[1]):
+                    # We are closer to an horizontal edge
+                    self.velocity.x *= -1
+                    self.acceleration.x *= -1
+                else:
+                    # We are closer to an vertical edge
+                    self.velocity.z *= -1
+                    self.acceleration.z *= -1
+            else:
+                # My center is out of the stage
+                self.velocity *= -1
+                self.acceleration *= -1
+            return None
 
+        relative_pos = self.position - obj.position # x_diff & y_diff
+        if relative_pos.x > 0:
+            angle = degrees(atan(relative_pos.z/relative_pos.x))
+            if relative_pos.z < 0:
+                angle *= -1
+            vel_x = -self.velocity.length * cos(radians(angle))
+            vel_z = -self.velocity.length * sin(radians(angle))
+        elif relative_pos.x < 0:
+            angle = 180 + degrees(atan(relative_pos.z/relative_pos.x))
+            if relative_pos.z < 0:
+                angle -= 360
+            vel_x = -self.velocity.length * cos(radians(angle))
+            vel_z = -self.velocity.length * sin(radians(angle))
+        elif relative_pos.x == 0:
+            if relative_pos.z > 0:
+                angle = -90
+            else:
+                angle = 90
+            vel_x = self.velocity.length * cos(radians(angle))
+            vel_z = self.velocity.length * sin(radians(angle))
+        elif relative_pos.z == 0:
+            if relative_pos.x < 0:
+                angle = 0
+            else:
+                angle = 180
+            vel_x = self.velocity.length * cos(radians(angle))
+            vel_z = self.velocity.length * sin(radians(angle))
+        new_velocity = Vector3(vel_x, self.velocity.y, vel_z)
+        new_position = self.position + new_velocity * (1./FPS)
+        new_rect = Rect((new_position.x, new_position.z), self.size*2, self.size*2)
+        if new_rect.collide_rect(obj.area) or obj.area.collide_rect(new_rect):
+            self.velocity *= -1
+        else:
+            self.velocity.set(vel_x, self.velocity.y, vel_z)
+        acc_length = self.acceleration.length / 2.
+        self.acceleration = self.velocity.copy()
+        self.acceleration.set_length(acc_length)
+                
     def jump(self):
         self.jumping = True
         self.velocity.y = self.jumping_initial_speed
@@ -199,6 +243,29 @@ class Character:
 	glEnd()				# Done Drawing The Quad
         glPopMatrix()
 
+        # Delineare el area para ver :S
+        glPushMatrix()
+        glTranslatef(0.,0.,0.)
+        glColor3f(0.0,1.0,0.0)
+        glBegin(GL_LINES)
+        glVertex3f(self.area.top_left[0], 2.0, self.area.top_left[1])
+        glVertex3f(self.area.top_right[0], 2.0, self.area.top_right[1])
+        glEnd()
+        glBegin(GL_LINES)
+        glVertex3f(self.area.top_left[0], 2.0, self.area.top_left[1])
+        glVertex3f(self.area.bottom_left[0], 2.0, self.area.bottom_left[1])
+        glEnd()
+        glBegin(GL_LINES)
+        glVertex3f(self.area.top_right[0], 2.0, self.area.top_right[1])
+        glVertex3f(self.area.bottom_right[0], 2.0, self.area.bottom_right[1])
+        glEnd()
+        glBegin(GL_LINES)
+        glVertex3f(self.area.bottom_left[0], 2.0, self.area.bottom_left[1])
+        glVertex3f(self.area.bottom_right[0], 2.0, self.area.bottom_right[1])
+        glEnd()
+        glPopMatrix()
+
+
 class Slash(Character):
     """
     Super Slash object =)
@@ -223,7 +290,7 @@ class Enemy(Character):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
-                           size=1.8, max_acc=10.)
+                           size=1.8, max_acc=80.)
         # Behaviors
         self.behaviors = set(behavior_groups)
 
@@ -264,7 +331,6 @@ class Enemy(Character):
             try:
                 steering = group_outputs.pop()
                 if steering is not None:
-#                    print steering['name'], steering['steering']
                     steering = steering['steering']
             except IndexError:
                 continue

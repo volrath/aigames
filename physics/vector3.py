@@ -495,8 +495,9 @@ class Vector3(object):
         Returns the projection of this vector onto the 'other' vector
         """
         try:
-            return other.normalize() * \
-                   (self.dot(other) / (other.length * other.length))
+            o = other.copy()
+            o.normalize()
+            return o * (self.dot(o) / (o.length**2))
         except ZeroDivisionError:
             return self.__class__()
 

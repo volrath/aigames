@@ -45,11 +45,12 @@ class Game:
     def __init__(self):
         # Set the games objects
         self.clock = pygame.time.Clock()
-        self.main_character = Slash(20.,20.,position=Vector3(-12.,0.,-17.), orientation=1.5)
+        self.main_character = Slash(20.,20.,position=Vector3(0.,0.,-17.), orientation=1.5)
 
         self.enemies = []
         self.characters = [self.main_character]
         self.stage = Stage(STAGE_SIZE)
+        self.stage.default_obstacles()
 
     def draw_axes(self):
         # Space axes
@@ -109,7 +110,7 @@ class Game:
         Improve this when different type of enemies are complete.
         """
         for position in positions:
-            enemy = Enemy(2.,2., position=position, orientation=0.)
+            enemy = Enemy(3.5,3., position=position, orientation=0.)
 
             pursue_evade_behaviors = [
                 Behavior(character=enemy, active=True,
@@ -121,17 +122,17 @@ class Game:
                 ]
             wander_behaviors = [Behavior(character=enemy, active=True, **WANDER)]
             collision_behaviors = [
-                Behavior(character=enemy, active=True, target=self.characters,
+                Behavior(character=enemy, active=True, target=self.enemies,
                          **SEPARATION),
                 Behavior(character=enemy, active=True,
-                         args={'game': self, 'look_ahead': 7.},
+                         args={'game': self, 'look_ahead': 15.},
                          **OBSTACLE_AVOIDANCE)
 #                Behavior(character=enemy, active=True, target=self.characters,
 #                         **COLLISION_AVOIDANCE)
                 ]
             
-#             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
-#                                                    **PURSUE_EVADE_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
+                                                   **PURSUE_EVADE_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
                                                    **COLLISION_AVOIDANCE_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,

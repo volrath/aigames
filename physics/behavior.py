@@ -49,9 +49,9 @@ class BehaviorGroup(object):
             if b_steering is None:
                 continue
             if b_steering.has_key('linear'):
-                total_steering['linear'] += b_steering['linear']
+                total_steering['linear'] += b_steering['linear'] * behavior.weight
             if b_steering.has_key('angular'):
-                total_steering['angular'] += b_steering['angular']
+                total_steering['angular'] += b_steering['angular'] * behavior.weight
 
         if total_steering['linear'].length <= LOW_STEERING_UMBRAL and \
            total_steering['angular'] <= LOW_STEERING_UMBRAL:
@@ -64,8 +64,8 @@ EVADE  = { 'name': 'Evade', 'weight': 3, 'handler': evade }
 WANDER = { 'name': 'Wander', 'weight': 1, 'handler': Wander, 'method': 'execute' }
 FACE   = { 'name': 'Face', 'weight': 2, 'handler': face }
 LOOK_WHERE_YOU_ARE_GOING = { 'name': 'Look', 'weight': 2, 'handler': look_where_you_are_going }
-SEPARATION = { 'name': 'Separation', 'weight': 5, 'handler': Separation, 'method': 'execute' }
-OBSTACLE_AVOIDANCE = {'name': 'Obstacle Avoidance', 'weight': 5, 'handler': ObstacleAvoidance, 'method': 'execute'}
+SEPARATION = { 'name': 'Separation', 'weight': 2, 'handler': Separation, 'method': 'execute' }
+OBSTACLE_AVOIDANCE = {'name': 'Obstacle Avoidance', 'weight': 6, 'handler': ObstacleAvoidance, 'method': 'execute'}
 #COLLISION_AVOIDANCE = { 'name': 'Collision Avoidance', 'weight': 5, 'handler': CollisionAvoidance, 'method': 'execute' }
 
 # DEFAULT GROUPS

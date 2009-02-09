@@ -58,7 +58,7 @@ class Rect(object):
     right = property(_get_right, _set_right, None, "rectangle's right side.")
 
     def _get_top(self):
-        return self.center[1] - self.height / 2.
+        return self.center[1] + self.height / 2.
 
     def _set_top(self, value):
         assert value < self.center[1] + self.height/2.
@@ -68,7 +68,7 @@ class Rect(object):
     top = property(_get_top, _set_top, None, "rectangle's top side.")
 
     def _get_bottom(self):
-        return self.center[1] + self.height / 2.
+        return self.center[1] - self.height / 2.
 
     def _set_bottom(self, value):
         assert self.top < value, "Bottom side must be greater than top side"
@@ -163,7 +163,7 @@ class Rect(object):
                 self.top_right, self.top_left]
 
     def sides(self):
-        return [(self.bottom_left, self.top_right),
+        return [(self.bottom_left, self.bottom_right),
                 (self.top_right, self.bottom_right),
                 (self.top_left, self.top_right),
                 (self.top_left, self.bottom_left)]
@@ -283,16 +283,16 @@ class Rect(object):
         """
         Returns true when the argument is completely inside the rectangle.
         """
-        return self.left < r.left and self.top < r.top and \
-               self.right > r.right and self.bottom > r.bottom
+        return self.left < r.left and self.bottom < r.bottom and \
+               self.right > r.right and self.top > r.top
 
     def collide_point(self, x, y):
         """
         Returns true if the given point is inside the rectangle. A point along
         the right or bottom edge is not considered to be inside the rectangle.
         """
-        return self.left < x and self.top < y and \
-               self.right > x and self.bottom > y
+        return self.left < x and self.bottom < y and \
+               self.right > x and self.top > y
 
     def collide_rect(self, r):
         """

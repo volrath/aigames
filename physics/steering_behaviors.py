@@ -3,6 +3,10 @@
 """
 import sys
 
+from OpenGL.GL import *
+from OpenGL.GLUT import *
+from OpenGL.GLU import *
+
 from functools import wraps
 from math import pi, atan2, sqrt
 
@@ -134,7 +138,7 @@ def pursue_evade(basic_behavior):
     
     """
     @wraps(basic_behavior)
-    def decorator(character, target, max_prediction=.5, *args, **kwargs):
+    def decorator(character, target, max_prediction=1., *args, **kwargs):
         # First calculate the target to delegate the seek
         distance = (target.position - character.position).length
         if character.velocity.length <= distance / max_prediction:
@@ -199,7 +203,7 @@ class Separation:
     def __init__(self, character, target, radius=None):
         self.character = character
         self.targets = target
-        self.radius = radius or 3.
+        self.radius = radius or 1.
 
     def execute(self):
         steering = {'linear': Vector3(), 'angular': 0.}
@@ -252,7 +256,7 @@ class ObstacleAvoidance:
         self.look_ahead = look_ahead
         self.fan_angle = fan_angle or pi/4.
         self.fan_size  = fan_size or sqrt(2 * self.character.size**2) + .5
-        self.avoid_distance = avoid_distance or self.character.size + .5
+        self.avoid_distance = avoid_distance or self.character.size + 2.5
 
     def execute(self, *args, **kwargs):
         steering = {}
@@ -262,8 +266,7 @@ class ObstacleAvoidance:
             return None
 
         target = collision['position'] + collision['normal'] * self.avoid_distance
-        print 'returning', flee(self.character, target, 3)
-        return flee(self.character, target, 3)
+        return flee(self.character, target)
 
     def predict_collision(self, game):
         """
@@ -279,6 +282,16 @@ class ObstacleAvoidance:
             return None
         ray_seg = begin, end
         # AND THE FANS
+
+        # printing ray_segments
+        glPushMatrix()
+        glTranslatef(0., 0., 0.)
+        glColor3f(0., 1., 0.)
+        glBegin(GL_LINES)
+        glVertex3f(begin[0], self.character.size, begin[1])
+        glVertex3f(end[0], self.character.size, end[1])
+        glEnd()
+        glPopMatrix()
 
         # Creates a sympy polygon to check for intersections
         stage_sides = game.stage.floor.area.sides()
@@ -330,14 +343,24 @@ class ObstacleAvoidance:
             x = Point.distance(begin, x)
             y = Point.distance(begin, y)
             return cmp(x, y)
-        print 'intersection between', obs_sides, seg, self.intersect_obstacle(obs_sides, seg)
         points = self.intersect_obstacle(obs_sides, seg)
         points.sort(order_points)
         try:
             point = points[0]
         except IndexError: # We didn't hit this obstacle
             return None
-        # search witch side of the obstacle we hit
+
+        # search which side of the obstacle we hit
+        if abs(obs_sides[0][0][0]) != abs(point[0]) and \
+           abs(obs_sides[0][0][0]) != abs(point[1]):
+            if abs(obs_sides[0][0][0]) - abs(point[0]) < \
+               abs(obs_sides[0][0][0]) - abs(point[1]):
+                point = (abs(obs_sides[0][0][0]) * (point[0] / abs(point[0])), point[1])
+            else:
+                point = (point[0], abs(obs_sides[0][0][0]) * (point[1] / abs(point[1])))
+        normal = self.character.velocity.copy()
+        normal.normalize()
+        normal *= -1
         for i in range(0, len(obs_sides)):
             if Point.is_between(point, obs_sides[i]):
                 normal = obstacle_side_normal[i]
@@ -369,6 +392,12 @@ class ObstacleAvoidance:
            xi > max(seg1[0][0], seg1[1][0]) or \
            xi < min(seg2[0][0], seg2[1][0]) or \
            xi > max(seg2[0][0], seg2[1][0]):
+            return []
+        if seg1[0][0] == seg1[1][0] and (yi > max(seg1[0][1], seg1[1][1]) or \
+                                         yi < min(seg1[0][1], seg1[1][1])):
+            return []
+        if seg2[0][0] == seg2[1][0] and (yi > max(seg2[0][1], seg2[1][1]) or \
+                                         yi < min(seg2[0][1], seg2[1][1])):
             return []
         return [(xi, yi)]
            
