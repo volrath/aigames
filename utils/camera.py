@@ -12,7 +12,7 @@ class Camera:
         self.view     = {'x': view[0], 'y': view[1], 'z': view[2]}
         self.up       = {'x': up[0], 'y': up[1], 'z': up[2]}
         # initialize with the main view.
-        self.set(MAIN_VIEW)
+        self.set(TOP_VIEW)
 
     def __unicode__(self):
         args = self.to_args()

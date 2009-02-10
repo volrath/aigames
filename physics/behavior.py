@@ -6,10 +6,11 @@ class Behavior(object):
     """
     Character's behavior
     """
-    def __init__(self, name, weight, handler, active, method=None,
+    def __init__(self, name, weight, handler, active=True, method=None,
                  character=None, target=None, args={}):
         self.name = name
         self.weight = weight
+        self.active = active
         self.character = character
         self.target = target
         self.args = args
@@ -46,7 +47,10 @@ class BehaviorGroup(object):
         """
         total_steering = { 'linear': Vector3(), 'angular': 0, }
         for behavior in self.behavior_set:
+            if not behavior.active:
+                continue
             b_steering = behavior.execute()
+            print behavior.name, b_steering
             if b_steering is None:
                 continue
             if b_steering.has_key('linear'):
@@ -54,7 +58,7 @@ class BehaviorGroup(object):
             if b_steering.has_key('angular'):
                 total_steering['angular'] += b_steering['angular'] * behavior.weight
 
-        print total_steering['linear'].length
+#        print self.name, total_steering['linear'].length
         if total_steering['linear'].length <= LOW_STEERING_UMBRAL and \
            total_steering['angular'] <= LOW_STEERING_UMBRAL:
             return None
@@ -67,7 +71,7 @@ WANDER = { 'name': 'Wander', 'weight': 1, 'handler': Wander, 'method': 'execute'
 FACE   = { 'name': 'Face', 'weight': 2, 'handler': face }
 LOOK_WHERE_YOU_ARE_GOING = { 'name': 'Look', 'weight': 2, 'handler': look_where_you_are_going }
 VELOCITY_MATCHING = { 'name': 'Velocity Matching', 'weight': .5, 'handler': velocity_match }
-COHESION = { 'name': 'Cohesion', 'weight': .9, 'handler': Cohesion, 'method': 'execute' }
+COHESION = { 'name': 'Cohesion', 'weight': .01, 'handler': Cohesion, 'method': 'execute' }
 SEPARATION = { 'name': 'Separation', 'weight': 5, 'handler': Separation, 'method': 'execute' }
 OBSTACLE_AVOIDANCE = {'name': 'Obstacle Avoidance', 'weight': 6, 'handler': ObstacleAvoidance, 'method': 'execute'}
 

@@ -40,7 +40,7 @@ def seek(character, target, target_radius=None):
     return steering
 
 @target_transform
-def flee(character, target, target_radius=5.):
+def flee(character, target, target_radius=None):
     """
     Character will flee from a given target.
     The argument 'target' can be either a Character's instance or a simple
@@ -118,7 +118,7 @@ def look_where_you_are_going(character):
         character.orientation = atan2(character.velocity.x,
                                       character.velocity.z)
 
-def velocity_match(character, target, time_to_target=.1, radius=16.):
+def velocity_match(character, target, time_to_target=.1, radius=14.):
     """
     The character tries to match the velocity of a list of targets
     Note: parameter 'target' represents a list of targets
@@ -219,7 +219,7 @@ class Separation:
     def __init__(self, character, target, radius=None):
         self.character = character
         self.targets = target
-        self.radius = radius or character.size + 2.
+        self.radius = radius or character.size + 7.
 
     def execute(self):
         steering = {'linear': Vector3(), 'angular': 0.}
@@ -227,6 +227,7 @@ class Separation:
             if self.character == target:
                 continue
             relative_pos = self.character.position - target.position
+            if relative_pos.length > self.radius: continue
             try:
                 steering['linear'] += (relative_pos * self.radius) \
                                       / relative_pos.length**2
@@ -238,7 +239,7 @@ class Cohesion:
     def __init__(self, character, target, radius=None):
         self.character = character
         self.targets = target
-        self.radius = radius or 16.
+        self.radius = radius or self.character.size + 16.
 
     def execute(self):
         steering = {'linear': Vector3(), 'angular': 0.}
@@ -281,7 +282,7 @@ class ObstacleAvoidance:
         collision = self.predict_collision(self.game)
         if collision is None:
             return None
-
+        
         target = collision['position'] + collision['normal'] * self.avoid_distance
         return flee(self.character, target)
 

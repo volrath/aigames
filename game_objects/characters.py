@@ -291,7 +291,6 @@ class Slash(Character):
             bullet_velocity = bullet_position.copy()
             bullet_velocity.y -= self.size
             bullet_position += self.position
-            print bullet_velocity, bullet_position
             bullet_velocity.set_length(self.shooting_force)
             bullet = Bullet(position=bullet_position, velocity=bullet_velocity,
                             radius=1.)
@@ -306,7 +305,6 @@ class Slash(Character):
         glTranslatef(self.position.x, self.size, self.position.z)
         glRotatef((self.orientation * 180. / pi), 0., 1., 0.)
         glRotatef(self.canon, -1., 0., 0.)
-#        print 'canon', self.canon, 'orientation', self.orientation
         glRotatef(-90, 0., 0., 1.)
         glColor3f(1., 234/255., 0.)
         glutSolidCylinder(1., 4., 360, 50)

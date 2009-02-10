@@ -51,7 +51,7 @@ class Game:
         self.characters = [self.main_character]
         self.projectiles = [] # projectiles pool
         self.stage = Stage(STAGE_SIZE)
-#        self.stage.default_obstacles()
+        self.stage.default_obstacles()
 
     def draw_axes(self):
         # Space axes
@@ -93,7 +93,7 @@ class Game:
         # Renders all game's objects
         self.stage.render()   # TODO: improve stage rendering, use display lists
 
-        self.main_character.update(self).render()
+#        self.main_character.update(self).render()
         for enemy in self.enemies:
             enemy.update(self).render()
 
@@ -120,27 +120,25 @@ class Game:
             enemy = Enemy(3.5,3., position=position, orientation=0.)
 
             pursue_evade_behaviors = [
-                Behavior(character=enemy, active=False,
+                Behavior(character=enemy,
                          target=self.main_character,
                          **PURSUE),
-                Behavior(character=enemy, active=True,
+                Behavior(character=enemy, active=False,
                          target=self.main_character,
                          **EVADE)
                 ]
 
-            wander_behaviors = [Behavior(character=enemy, active=True, **WANDER)]
+            wander_behaviors = [Behavior(character=enemy, **WANDER)]
 
             flocking = [
-                Behavior(character=enemy, active=True, target=self.enemies,
-                         **SEPARATION),
-                Behavior(character=enemy, active=True, target=self.enemies,
-                         **COHESION),
-                Behavior(character=enemy, active=True, target=self.enemies,
+                Behavior(character=enemy, target=self.enemies, **SEPARATION),
+                Behavior(character=enemy, target=self.enemies, **COHESION),
+                Behavior(character=enemy, target=self.enemies,
                          **VELOCITY_MATCHING),
                 ]
 
             collision_behaviors = [
-                Behavior(character=enemy, active=True,
+                Behavior(character=enemy,
                          args={'game': self, 'look_ahead': 15.},
                          **OBSTACLE_AVOIDANCE)
                 ]
