@@ -43,9 +43,10 @@ First Version
 =============
   -- Wandering
   - Separation and Flocking
-  * Shooting with angle
+  -- Shooting with angle
 - * AI Jumping
   - Collision Detection
   -- Collision Avoidance
   * Hitting
+  * Key handling for main character
   -- Blending with arbitration
