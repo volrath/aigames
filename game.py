@@ -49,6 +49,7 @@ class Game:
 
         self.enemies = []
         self.characters = [self.main_character]
+        self.projectiles = [] # projectiles pool
         self.stage = Stage(STAGE_SIZE)
 #        self.stage.default_obstacles()
 
@@ -82,7 +83,7 @@ class Game:
         """
         # Slash behavior
         keymap_handler(self) # Maybe i can just pass self.main_character
-        self.main_character.behave()
+        self.main_character.behave(game=self)
 
         # AI characters behavior
         for enemy in self.enemies:
@@ -95,6 +96,12 @@ class Game:
         self.main_character.update(self).render()
         for enemy in self.enemies:
             enemy.update(self).render()
+
+        # Renders projectiles
+        for projectile in self.projectiles:
+            projectile.update(self).render()
+            if projectile.position.y < 0:
+                self.projectiles.remove(projectile)
 
     def add_character(self, character):
         """

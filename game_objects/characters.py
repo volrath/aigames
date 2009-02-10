@@ -6,6 +6,7 @@ from OpenGL.GLU import *
 from math import atan2, pi, atan, degrees, cos, sin, radians
 from sympy.matrices import Matrix
 
+from game_objects.projectiles import Bullet
 from utils.functions import load_image, random_binomial
 from utils.locals import FPS, GRAVITY, FLOOR_FRICTION, STANDARD_INITIAL_FORCE
 from utils import BehaviorNotAssociated
@@ -84,8 +85,7 @@ class Character(object):
 
         old_velocity = self.velocity.copy()
         if self.jumping:
-            self.position += self.velocity * time + \
-                             (GRAVITY * time * time) / 2
+            self.position += self.velocity * time + (GRAVITY * time * time) / 2
             self.orientation += self.rotation * time
             self.velocity += GRAVITY * time
             if self.position.y <= 0:
@@ -274,6 +274,7 @@ class Slash(Character):
         self.behavior = Behavior(character=self, active=True,
                                  **LOOK_WHERE_YOU_ARE_GOING)
         self.canon = 45
+        self.shooting_force = 20.
         self.shoot = False
 
     def __str__(self):
@@ -281,10 +282,19 @@ class Slash(Character):
 
     __repr__ = __str__
 
-    def behave(self):
+    def behave(self, game):
         # Handle shooting
         if self.shoot:
-            print 'shoot!!'
+            bullet_position = Vector3(4. * sin(self.orientation) * cos(radians(self.canon)),
+                                      4. * sin(radians(self.canon)) + self.size,
+                                      4. * cos(self.orientation) * cos(radians(self.canon)))
+            bullet_velocity = bullet_position.copy()
+            bullet_position += self.position
+            print bullet_velocity, bullet_position
+            bullet_velocity.set_length(self.shooting_force)
+            bullet = Bullet(position=bullet_position, velocity=bullet_velocity,
+                            radius=1.)
+            game.projectiles.append(bullet)
             self.shoot = False
         # Behave
         self.behavior.execute()
@@ -294,7 +304,8 @@ class Slash(Character):
         glPushMatrix()
         glTranslatef(self.position.x, self.size, self.position.z)
         glRotatef((self.orientation * 180. / pi), 0., 1., 0.)
-        glRotatef(-self.canon, 1., 0., 0.)
+        glRotatef(self.canon, -1., 0., 0.)
+#        print 'canon', self.canon, 'orientation', self.orientation
         glRotatef(-90, 0., 0., 1.)
         glColor3f(1., 234/255., 0.)
         glutSolidCylinder(1., 4., 360, 50)
