@@ -31,6 +31,7 @@ class Behavior(object):
 
     def __str__(self):
         return self.name
+    __repr__ = __str__
 
 class BehaviorGroup(object):
     def __init__(self, name, b_set, default_priority):
@@ -53,6 +54,7 @@ class BehaviorGroup(object):
             if b_steering.has_key('angular'):
                 total_steering['angular'] += b_steering['angular'] * behavior.weight
 
+        print total_steering['linear'].length
         if total_steering['linear'].length <= LOW_STEERING_UMBRAL and \
            total_steering['angular'] <= LOW_STEERING_UMBRAL:
             return None
@@ -64,20 +66,27 @@ EVADE  = { 'name': 'Evade', 'weight': 3, 'handler': evade }
 WANDER = { 'name': 'Wander', 'weight': 1, 'handler': Wander, 'method': 'execute' }
 FACE   = { 'name': 'Face', 'weight': 2, 'handler': face }
 LOOK_WHERE_YOU_ARE_GOING = { 'name': 'Look', 'weight': 2, 'handler': look_where_you_are_going }
-SEPARATION = { 'name': 'Separation', 'weight': 2, 'handler': Separation, 'method': 'execute' }
+VELOCITY_MATCHING = { 'name': 'Velocity Matching', 'weight': .5, 'handler': velocity_match }
+COHESION = { 'name': 'Cohesion', 'weight': .9, 'handler': Cohesion, 'method': 'execute' }
+SEPARATION = { 'name': 'Separation', 'weight': 5, 'handler': Separation, 'method': 'execute' }
 OBSTACLE_AVOIDANCE = {'name': 'Obstacle Avoidance', 'weight': 6, 'handler': ObstacleAvoidance, 'method': 'execute'}
+
 #COLLISION_AVOIDANCE = { 'name': 'Collision Avoidance', 'weight': 5, 'handler': CollisionAvoidance, 'method': 'execute' }
 
 # DEFAULT GROUPS
 COLLISION_AVOIDANCE_GROUP = {
     'name': 'collision_avoidance',
+    'default_priority': 4,
+}
+FLOCKING_GROUP = {
+    'name': 'flocking',
     'default_priority': 5,
 }
 PURSUE_EVADE_GROUP = {
     'name': 'pursue_evade',
-    'default_priority': 3
+    'default_priority': 6,
 }
 WANDER_GROUP = {
     'name': 'wander',
-    'default_priority': 1
+    'default_priority': 1,
 }

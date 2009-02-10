@@ -332,14 +332,14 @@ class Enemy(Character):
         group_outputs = [group.execute() for group in self.behaviors]
         # Sort by priorities
         group_outputs.sort(group_priority_cmp)
-        while True:
+        while not group_outputs == []:
             try:
                 steering = group_outputs.pop()
                 if steering is not None:
                     steering = steering['steering']
+                else:
+                    continue
             except IndexError:
-                continue
-            if steering is None:
                 continue
             # Apply to the character.
             linear  = steering.get('linear', None)

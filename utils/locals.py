@@ -4,7 +4,7 @@ from physics.vector3 import Vector3
 # Game's local constants
 
 SCREEN = Rect((0, 0), 1000, 700)
-STAGE_SIZE = 26
+STAGE_SIZE = 30
 MEDIA_PATH = 'media'
 FPS = 60
 GRAVITY = Vector3(0., -19.62, 0.)

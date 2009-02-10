@@ -34,12 +34,13 @@ def seek(character, target, target_radius=None):
     """
     steering = {}
     new_acc = target - character.position
+    if new_acc.length > 5.: return None
     steering['linear'] = new_acc.set_length(character.std_acc_step)
     steering['angular'] = 0.
     return steering
 
 @target_transform
-def flee(character, target, target_radius=None):
+def flee(character, target, target_radius=5.):
     """
     Character will flee from a given target.
     The argument 'target' can be either a Character's instance or a simple
@@ -111,18 +112,33 @@ def align(character, target, target_radius=.3, slow_radius=3.5,
 
 def look_where_you_are_going(character):
     """
-    Makes the character looks where he's going.. duh
+    Makes the character look where he's going.. duh
     """
     if character.velocity.length > 0:
         character.orientation = atan2(character.velocity.x,
                                       character.velocity.z)
 
-def velocity_match(character, target, time_to_target=.1):
+def velocity_match(character, target, time_to_target=.1, radius=16.):
     """
+    The character tries to match the velocity of a list of targets
+    Note: parameter 'target' represents a list of targets
+    """
+    steering = {'linear': Vector3(), 'angular': 0.}
+    vel_center_mass = Vector3()
+    weight = 0
     
-    """
-    steering = {}
-    steering['linear'] = target.velocity - character.velocity
+    for boid in target:
+        if boid == character: continue
+        relative_pos = boid.position - character.position
+        relative_vel = boid.velocity - character.velocity
+        if relative_pos.length > radius: continue
+        vel_center_mass += boid.velocity
+        weight += 1
+    if weight == 0:
+        return None
+    vel_center_mass /= weight
+    
+    steering['linear'] = vel_center_mass - character.velocity
     steering['linear'] /= time_to_target
     # Check if we are going too fast
     if steering['linear'].length > character.max_acc:
@@ -203,7 +219,7 @@ class Separation:
     def __init__(self, character, target, radius=None):
         self.character = character
         self.targets = target
-        self.radius = radius or 1.
+        self.radius = radius or character.size + 2.
 
     def execute(self):
         steering = {'linear': Vector3(), 'angular': 0.}
@@ -219,26 +235,27 @@ class Separation:
         return steering
 
 class Cohesion:
-    def __init__(self, character, target, radius):
+    def __init__(self, character, target, radius=None):
         self.character = character
         self.targets = target
-        self.radius = radius or 3.
+        self.radius = radius or 16.
 
     def execute(self):
         steering = {'linear': Vector3(), 'angular': 0.}
-        mass_center = Vector3()
+        center_mass = Vector3()
         weight = 0
         for target in self.targets:
             if target == self.character: continue
-            mass_center += target.position
+            relative_pos = target.position - self.character.position
+            if relative_pos.length > self.radius: continue
+            center_mass += target.position
             weight += 1
         if weight == 0:
             return None
-        mass_center /= weight
-        steering['linear'] = mass_center - self.character.position
-        steering['linear'] /= steering['linear'].length
-        steering['linear'] *= self.character.max_speed
-        steering['linear'] -= self.character.velocity
+        center_mass /= weight
+        steering['linear'] = center_mass - self.character.position
+        steering['linear'].set_length(self.character.max_speed)
+#        steering['linear'] -= self.character.velocity
         return steering
 
 obstacle_side_normal = {
