@@ -82,7 +82,7 @@ class Game:
         """
         # Slash behavior
         keymap_handler(self) # Maybe i can just pass self.main_character
-        self.main_character.behavior.execute()
+        self.main_character.behave()
 
         # AI characters behavior
         for enemy in self.enemies:

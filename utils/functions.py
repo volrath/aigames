@@ -15,6 +15,19 @@ def keymap_handler(game):
     pressed = pygame.key.get_pressed()
 
     # Main Character
+    # ==============
+
+    # Canon and shooting
+    if pressed[K_LEFTBRACKET]:
+        if game.main_character.canon < 90:
+            game.main_character.canon += 1
+    if pressed[K_RIGHTBRACKET]:
+        if game.main_character.canon > 0:
+            game.main_character.canon -= 1
+    if pressed[K_RETURN]:
+        game.main_character.shoot = True
+
+    # Movement
     # First handle two keys pressed at the same time.
     if game.main_character.jumping:
         return

@@ -13,7 +13,7 @@ from physics.vector3 import Vector3
 from physics.rect import Rect
 from physics.behavior import *
 
-class Character:
+class Character(object):
     """
     Character properties, movement, size, etc..
     """
@@ -158,15 +158,6 @@ class Character:
                 # My center is out of the stage
                 self.velocity *= -1
                 self.acceleration *= -1
-            # Check if i'm completely on stage, if not, move my position
-##             new_position = self.position + self.velocity * (1./FPS)
-##             new_rect = Rect((new_position.x, new_position.z), self.size, self.size)
-##             if not game.stage.floor.area.contains(new_rect):
-##                 while not game.stage.floor.area.contains(new_rect):
-##                     new_position += self.velocity * (1./FPS)
-##                     new_rect.center = (new_position.x, new_position.z)
-##                 self.position = new_position.copy()
-##                 self.area.center = new_rect.center
             return
 
         relative_pos = self.position - obj.position # x_diff & y_diff
@@ -282,9 +273,33 @@ class Slash(Character):
         #self.image, self.rect = load_image('main_character.png')
         self.behavior = Behavior(character=self, active=True,
                                  **LOOK_WHERE_YOU_ARE_GOING)
+        self.canon = 45
+        self.shoot = False
 
     def __str__(self):
         return 'Slash'
+
+    __repr__ = __str__
+
+    def behave(self):
+        # Handle shooting
+        if self.shoot:
+            print 'shoot!!'
+            self.shoot = False
+        # Behave
+        self.behavior.execute()
+
+    def render(self, *args, **kwargs):
+        # Slash weapon
+        glPushMatrix()
+        glTranslatef(self.position.x, self.size, self.position.z)
+        glRotatef((self.orientation * 180. / pi), 0., 1., 0.)
+        glRotatef(-self.canon, 1., 0., 0.)
+        glRotatef(-90, 0., 0., 1.)
+        glColor3f(1., 234/255., 0.)
+        glutSolidCylinder(1., 4., 360, 50)
+        glPopMatrix()
+        super(Slash, self).render(**kwargs)
 
 class Enemy(Character):
     """
