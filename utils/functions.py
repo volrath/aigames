@@ -24,6 +24,12 @@ def keymap_handler(game):
     if pressed[K_RIGHTBRACKET]:
         if game.main_character.canon > 0:
             game.main_character.canon -= 1
+    if pressed[K_BACKSLASH]:
+        if game.main_character.shooting_force > 0:
+            game.main_character.shooting_force -= 1
+    if pressed[K_QUOTE]:
+        if game.main_character.shooting_force < 40:
+            game.main_character.shooting_force += 1
     if pressed[K_RETURN]:
         game.main_character.shoot = True
 

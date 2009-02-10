@@ -289,6 +289,7 @@ class Slash(Character):
                                       4. * sin(radians(self.canon)) + self.size,
                                       4. * cos(self.orientation) * cos(radians(self.canon)))
             bullet_velocity = bullet_position.copy()
+            bullet_velocity.y -= self.size
             bullet_position += self.position
             print bullet_velocity, bullet_position
             bullet_velocity.set_length(self.shooting_force)
