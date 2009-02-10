@@ -1,9 +1,12 @@
+from math import sqrt
+
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 from physics.rect import Rect
 from physics.vector3 import Vector3
+import graphics
 
 class Floor:
     def __init__(self, floor):
@@ -45,14 +48,16 @@ class Obstacle:
         self.position = position
         self.color = color
         self.rotation = rotation
+        self.radius = size - (sqrt(2 * size**2)) / 4
 
     def render(self):
         glPushMatrix()
         glTranslatef(self.position.x, self.size/2., self.position.z)
-#        glRotatef(self.rotation, 0., 1., 0.)
+        glRotatef(self.rotation, 0., 1., 0.)
         glColor3f(*self.color)
         glutSolidCube(self.size)
         glPopMatrix()
+        graphics.draw_circle(self.position, self.radius, (195./255, 1./255, 243./255))
 
 class Amplificator(Obstacle):
     """
@@ -76,8 +81,8 @@ class Stage:
         Set 2 amplificator in the default position
         """
         self.obstacles = [
-            Amplificator(size=6.5, position=Vector3(17.5, 0., 18.), color=(1.,0.,0.), rotation=0),
-            Amplificator(size=6.5, position=Vector3(-17.5, 0., 18.), color=(1.,0.,0.), rotation=0),
+            Amplificator(size=6.5, position=Vector3(17.5, 0., 18.), color=(1.,0.,0.), rotation=-35),
+            Amplificator(size=6.5, position=Vector3(-17.5, 0., 18.), color=(1.,0.,0.), rotation=35),
             ]
         return self
 

@@ -42,10 +42,10 @@ Flocking
 First Version
 =============
   -- Wandering
-- * Separation and Flocking
-- * Shooting with angle
+  * Separation and Flocking
+  * Shooting with angle
 - * AI Jumping
-  -- Collision Detection
+  - Collision Detection
   -- Collision Avoidance
   * Hitting
   -- Blending with arbitration

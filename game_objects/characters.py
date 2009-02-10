@@ -22,6 +22,7 @@ class Character:
         self.max_speed = linear_max_speed
         self.max_rotation = angular_max_speed
         self.area = Rect((position.x, position.z), size*2, size*2)
+        self.radius = sqrt(2 * (size**2))
         self.height = size*2
 
         # Optional, color and stuff
@@ -116,18 +117,18 @@ class Character:
             self.reset_velocity(game=game, wall=True)
         # For every stage obstacle
         for obstacle in game.stage.obstacles:
-            if (self.area.collide_rect(obstacle.area) or \
-                obstacle.area.collide_rect(self.area)) and \
+            distance = (self.position - obstacle.position).length
+            if distance < self.radius + obstacle.radius and \
                self.position.y < obstacle.height:
                 self.reset_velocity(game=game, obj=obstacle)
         # For every other character check if they are colliding
         for ch in game.characters:
             if ch == self:
                 continue
-            if (self.area.collide_rect(ch.area) or \
-                ch.area.collide_rect(self.area)) and \
-                self.position.y < ch.position.y + ch.height and \
-                ch.position.y < self.position.y + self.height:
+            distance = (self.position - ch.position).length
+            if distance < self.radius + ch.radius and \
+               self.position.y < ch.position.y + ch.height and \
+               ch.position.y < self.position.y + self.height:
                 self.reset_velocity(game=game, obj=ch)
         # Check for negative position.y and corrects it
         if self.position.y < 0:
@@ -139,7 +140,6 @@ class Character:
     def reset_velocity(self, game, obj=None, wall=False):
         """
         Solve tridimensional calculation of velocities after a collision.
-        Returns the velocity of the colliding object
         """
         if wall:
             # Has to guess with wich side are we hitting
@@ -158,19 +158,30 @@ class Character:
                 # My center is out of the stage
                 self.velocity *= -1
                 self.acceleration *= -1
-            return None
+            # Check if i'm completely on stage, if not, move my position
+##             new_position = self.position + self.velocity * (1./FPS)
+##             new_rect = Rect((new_position.x, new_position.z), self.size, self.size)
+##             if not game.stage.floor.area.contains(new_rect):
+##                 while not game.stage.floor.area.contains(new_rect):
+##                     new_position += self.velocity * (1./FPS)
+##                     new_rect.center = (new_position.x, new_position.z)
+##                 self.position = new_position.copy()
+##                 self.area.center = new_rect.center
+            return
 
         relative_pos = self.position - obj.position # x_diff & y_diff
         if relative_pos.x > 0:
             angle = degrees(atan(relative_pos.z/relative_pos.x))
             if relative_pos.z < 0:
-                angle *= -1
+                angle *= 1
             vel_x = -self.velocity.length * cos(radians(angle))
             vel_z = -self.velocity.length * sin(radians(angle))
         elif relative_pos.x < 0:
-            angle = 180 + degrees(atan(relative_pos.z/relative_pos.x))
+            angle = degrees(atan(relative_pos.z/relative_pos.x))
             if relative_pos.z < 0:
-                angle -= 360
+                angle += -180
+            else:
+                angle += 180
             vel_x = -self.velocity.length * cos(radians(angle))
             vel_z = -self.velocity.length * sin(radians(angle))
         elif relative_pos.x == 0:
@@ -187,17 +198,11 @@ class Character:
                 angle = 180
             vel_x = self.velocity.length * cos(radians(angle))
             vel_z = self.velocity.length * sin(radians(angle))
-        new_velocity = Vector3(vel_x, self.velocity.y, vel_z)
-        new_position = self.position + new_velocity * (1./FPS)
-        new_rect = Rect((new_position.x, new_position.z), self.size*2, self.size*2)
-        if new_rect.collide_rect(obj.area) or obj.area.collide_rect(new_rect):
-            self.velocity *= -1
-        else:
-            self.velocity.set(vel_x, self.velocity.y, vel_z)
+        self.velocity.set(vel_x, self.velocity.y, -vel_z)
         acc_length = self.acceleration.length / 2.
         self.acceleration = self.velocity.copy()
         self.acceleration.set_length(acc_length)
-                
+
     def jump(self):
         self.jumping = True
         self.velocity.y = self.jumping_initial_speed
@@ -243,7 +248,7 @@ class Character:
 	glEnd()				# Done Drawing The Quad
         glPopMatrix()
 
-        # Delineare el area para ver :S
+        # Character area
         glPushMatrix()
         glTranslatef(0.,0.,0.)
         glColor3f(0.0,1.0,0.0)

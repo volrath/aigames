@@ -152,7 +152,7 @@ def pursue_evade(basic_behavior):
         ## doesn't exists.
         
         # Target radius depends on target's size
-        kwargs['target_radius'] = sqrt(2 * (2*target.size) * (2*target.size))
+        kwargs['target_radius'] = target.radius
         if target.velocity.length != 0:
             return basic_behavior(character,
                                   target.position + (target.velocity * prediction),
