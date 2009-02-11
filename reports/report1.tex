@@ -1,0 +1,298 @@
+\documentclass[12pt, spanish]{report}
+\usepackage[spanish, activeacute]{babel}
+\usepackage[latin1]{inputenc}
+
+\begin{document}
+\title{\textbf{A ti te va a caer el Axl}\\Primera Entrega}
+\author{
+  \textbf{Daniel Barreto - \#04-36723} \\ \texttt{daniel@ac.labf.usb.ve}
+}
+\maketitle
+
+\newpage
+
+\tableofcontents
+\addcontentsline{toc}{chapter}{Introducci\'on}
+
+\newpage
+
+\chapter*{Introducción}
+\emph{``A ti te va a caer el Axl\footnote{Axl Rose, vocalista
+    principal de la banda de Heavy Metal Guns n'\
+    Roses}''}\footnote{Nombre provisional} es un juego desarrollado en
+2D+1/2 que emula juegos de pelea entre un personaje principal y varios
+controlados artificialmente, sobre un
+``stage'' o campo de tamaño limitado.\\
+
+El objetivo principal del juego es vencer a todos los contrincantes
+que sean encontrados, para esto es necesario atacarlos y herirlos de
+forma que sean más suceptibles a ser lanzados fuera de la plataforma
+sobre la que pelean.\\
+
+Para esta entrega se implementaron diferentes \emph{Steering
+  Behaviors} como persecución y evasión (\emph{Seek, Flee, Pursue} y
+\emph{Evade}), evasión de obstaculos (\emph{Obstacle Avoidance}),
+comportamientos grupales o de manada (\emph{Flocking}) que incluyen
+Separación, Cohesión y Alineación.\\
+
+El juego esta construido en 3D usando OpenGL como herramienta para
+realizar el ``rendering'' de todos los objetos que este incluye
+(personajes, obstaculos, plataforma, etc).
+
+\chapter{Metáfora del Juego}
+La metáfora del juego se trata de la difícil tarea que tiene
+\textbf{Slash} (personaje principal), el guitarrista principal de la
+banda de heavy metal \emph{Guns n'\ Roses}, de acabar con los máximos
+exponentes del \emph{Reggaeton}, a los cuales debe atacar con la
+música producida por su guitarra.\\
+
+La trama se desarrolla en una tarima de conciertos de \emph{Guns n'\
+  Roses}, en donde se encuentran obstaculos como amplificadores, una
+bateria y otros instrumentos. \textbf{Slash} tendrá que sacar a los
+reggaetoneros invasores lanzándolos fuera de la tarima, pero este
+objetivo no es tan fácil como parece, pués cada enemigo viene lleno de
+energía y su capacidad de quedarse dentro de la tarima está ligado a
+su nivel de energía actual, por esto, \textbf{Slash} tendrá que
+lastimarlos con su guitarra antes de intentar arrojarlos hacia afuera,
+de forma parecida al juego de Nintendo © \emph{Super Smash Bros.}
+
+\chapter{El juego y sus objetos}
+El juego consta de varios objetos que se describen a continuación
+
+\section{Personajes}
+Los personajes que participan en el juego pueden ser divididos en dos
+grupos: El personaje principal (\textbf{Slash}) y sus enemigos los
+reggaetoneros. Ambos cuentan con resticciones similares en cuanto a su
+máxima velocidad y aceleración, tanto lineal como angular, que puedan
+tener. Además cada personaje tiene una cierta cantidad de masa que lo
+hace más o menos suceptible a ser desplazado por golpes de otros
+jugadores.\\
+
+Todos los personajes cuentan con un nivel de vida o energía, el cual
+es multiplicado por su masa cada vez que se detecta una colision de
+algún vector de fuerza que se le este siendo aplicado. El máximo nivel
+de energía para todos los personajes es de 100 puntos, y los golpes o
+ataques que reciban de otros personajes irán disminuyendo poco a poco
+dicho nivel.\\
+
+La fórmula para calcular la masa de un personaje cuando reacciona
+frente a una colisión realizada por algún arma o bala es la siguiente:
+
+$$M_{c} = M_{p}  x  E/100$$
+
+Donde $M_{c}$ es la masa referente a una colisión con un arma o
+proyectil lanzado por otro personaje, $M_{p}$ es la verdadera masa del
+personaje y $E$ es su nivel de energía.\\
+
+Para otro tipo de colisiones como los que vendrían dados por el choque
+con algún otro personaje, se usa la verdadera masa del personaje
+$M_{p}$.
+
+\subsection{Slash}
+El personaje principal del juego sólo posee un arma: su guitarra,
+con la cual puede golpear a los reggaetoneros como si fuera una
+espada, pero tambien puede disparar ``balas'' a sus enemigos más
+lejanos. Actualmente no existen restricciones a cerca del número de
+balas con las que puede contar \textbf{Slash}.
+
+\subsection{Los Reggaetoneros}
+En el estado en el que se encuentra el juego para esta entrega, los
+reggaetoneros no cuentan con ningún arma para defenderse. Su única
+función es demostrar comportamientos inteligentes desarrollados
+artificialmente. Estos comportamientos serán detallados más adelante.
+
+\section{Escenario o tarima}
+El escenario del juego es un espacio rectangular de tamaño fijo, en el
+cual se encuentran objetos que funcionarán como obstaculos a evitar
+para los personajes llevados por la inteligencia artificial.
+
+\chapter{Comportamientos y movimientos desarrollados}
+
+\section{Los comportamientos no tan inteligentes de Slash}
+El comportamiento de \textbf{Slash} viene dado por la interacción del
+usuario con el juego, pero posee la posibilidad de realizar las
+acciónes ``Saltar'' y ``Disparar''.\\
+
+Al saltar, se le da un valor predeterminado a la componente $Y$ de su
+velocidad. En el momento del salto, la velocidad en el eje $Y$ se ve
+afectada por la acción de la gravedad que actúa siendo una aceleración
+constante y negativa a lo largo de dicho eje.\\
+
+La acción de disparar es dejada a manos del jugador. El usuario podrá
+elegir una fuerza y un ángulo para realizar los disparos mediante el
+uso del teclado. La trayectoria que siguen las balas variarán
+dependiendo de esas dos variables.
+
+\section{Los reggaetoneros}
+Las acciones que pueden desempeñar los reggaetoneros son las
+siguientes:
+
+\begin{itemize}
+\item \textbf{Vagar} (Wander): Los reggaetoneros pueden vagar por la
+  tarima cada vez que se encuentren sin ningún otro comportamiento con
+  más importancia que tengan que realizar. Para simular este
+  comportamiento se toma eventualmente una nueva dirección a seguir y
+  se devuelve una fuerza o ``steering'' que lo acelera hacia dicha
+  dirección.
+
+\item \textbf{Perseguir y Evadir} (Pursue and Evade): Con estos
+  comportamientos, los reggaetoneros persiguen (o evaden) un objetivo,
+  estimando la posición del objetivo 1 segundo mas adelante del tiempo
+  actual, asumiendo que el objetivo permanece con la misma velocidad
+  durante dicho tiempo.
+
+\item \textbf{Evasión de obstaculos} (Obstacle Avoidance): Los
+  reggaetoneros tratarán de evadir, siempre que se pueda, los
+  obstaculos que se les presenten en el camino. Entre los obstaculos a
+  evitar, se fijarán también en los bordes del escenario, tomandolos
+  como paredes imaginarias que tendrán que esquivar.
+
+  Actualmente los reggaetoneros utilizan solo un rayo de visión
+  dirigido hacia donde este dirigida su orientación, dicho rayo de
+  visión se modela como un segmento de linea de tamaño 15.
+
+\item \textbf{Comportamientos en manada} (Flocking and Swarming): Los
+  reggaetoneros se comportan como un enjambre o ``swarm''. Para poder
+  simular este movimiento en conjunto son necesarios los siguientes
+  comportamientos:
+
+  \begin{itemize}
+  \item \textbf{Alineación} (Alignment): Se busca mantener una
+    dirección de desplazamiento común para todos los integrantes del
+    enjambre.
+
+  \item \textbf{Cohesión} (Cohesion): Los miembros del enjambre tratan
+    de mantenerse juntos, tratando de acercarse a un centro de masa
+    del enjambre en general.
+
+  \item \textbf{Separación} (Separation): Los miembros del enjambre
+    tratan de mantener cierta separación entre ellos.
+  \end{itemize}
+
+\end{itemize}
+
+\section{Comportamiento general, unión de varios comportamientos}
+Para lograr un comportamiento más natural en los reggaetoneros se
+fusionaron los comportamientos anteriormente detallados, utilizando el
+sistema de ``Blending'' con arbitraje, en donde se agruparon los
+comportamientos y se establecieron prioridades entre dichos grupos.\\
+
+De esta forma, cada reggaetonero se encarga de aplicar la fuerza dada
+por el grupo de comportamientos con mayor prioridad y que haya
+devuelto alguna fuerza superior a un umbral previamente establecido,
+que tenga entre sus comportamientos asociados.\\
+
+Dentro de cada grupo de comportamientos se ejecutan los
+comportamientos pertenecientes a dicho grupo y se suman entre ellos,
+tomando en cuenta que distintos comportamientos en particular tienen
+un mayor peso en la suma resultante.\\
+
+La implementación del ``Blending'' realizado será detallada
+posteriormente.
+
+\chapter{Detalles de Implementación}
+
+\section{Herramientas Utilizadas y Requerimientos}
+El juego está siendo desarrollado con \emph{Python} como lenguaje de
+programación y \emph{OpenGL} como librería gráfica, se está usando
+\emph{Debian Linux} como ambiente de desarrollo y se corre en una
+computadora con 512Mb de Ram, tarjeta gráfica ATI Radeon Xpress 200M
+de 128Mb y procesador Intel Celeron de 1.46GHz.\\
+
+Se están usando varias librerías auxiliares de \emph{Python}, entre
+las cuales vale la pena mencionar:
+
+\begin{enumerate}
+\item \textbf{Pygame:} Conjunto de módulos de \emph{Python} diseñados
+  para escribir juegos.
+
+\item \textbf{Psyco:} Módulo de \emph{Python} para agilizar y acelerar
+  la ejecución de código escrito en este lenguaje.
+\end{enumerate}
+
+\section{Modelos Geométricos Implementados}
+Para facilitar el trabajo en el campo geométrico Euclideano, se
+realizaron varios tipos abstractos de datos que modelan estructuras
+importantes como:
+
+\begin{itemize}
+\item \textbf{Vector3:} Tipo abstracto de datos que modela un vector
+  en 3 dimensiones. Este TAD esta implementado para funcionar como un
+  tipo de datos nativo de \emph{Python}, en donde ha sido implementada
+  la suma y multiplicación por escalares y vectores. A parte de esto,
+  cuenta con otras operaciones importantes como producto cruz,
+  producto punto, longitud, orientacion, etc.
+
+  Este tipo abstracto se realizó basado en el trabajo de \emph{Will
+    McGugan} (\texttt{ http://www.willmcgugan.com}), pero se
+  incluyeron algunas modificaciones y correcciones necesarias.
+
+\item \textbf{Rect:} Tipo abstracto de datos que modela un Rectángulo
+  en 2 dimensiones. Es utilizado para mantener el área ocupada por los
+  personajes del juego, incluye operaciones como: unión, intersección,
+  detección de colisiones entre rectángulos y entre puntos con
+  rectángulos, clipping, entre otros.
+
+  Este tipo abstracto de datos esta basado en el Modelo Rect que viene
+  incluido en \emph{Pygame}, pero fue reescrito desde cero para que
+  pudiese trabajar con coordenadas flotantes pues el modelo de
+  \emph{Pygame} sólo trabaja con números enteros.
+\end{itemize}
+
+Para más información sobre estas estructuras, se puede revisar la
+documentación del código de cada uno de ellos, donde se explica como
+funcionan cada uno de los métodos.
+
+Ambos se encuentran en la carpeta \texttt{physics} del proyecto.
+
+\section{Blending de comportamientos}
+Cada comportamiento fue escrito como una función, y para dar una
+interfaz general a cada comportamiento se escribió la clase
+\texttt{Behavior} que funciona como un contenedor de argumentos
+necesarios para ejecutar un comportamiento como su peso y el
+``handler'' que hace referencia a la función que debe ser ejecutada
+para realizar el comportamiento.\\
+
+Para realizar el ``Arbitraje'' entre comportamientos se diseño la
+clase \texttt{BehaviorGroup} que funciona como un conjunto de
+comportamientos que tienen una misma prioridad. Dicha clase define un
+método \texttt{execute} que se encarga de ejecutar uno a uno todos los
+comportamientos que contiene y de ir haciendo ``Blending'' entre
+ellos.\\
+
+Por último, los personajes manejados por la inteligencia artificial
+definen un método \texttt{behave} que busca todos los
+\texttt{BehaviorGroup}'s asociados al mismo y los ejecutan, buscando
+el que tenga mayor prioridad y que devuelva una fuerza o ``steering''
+superior a cierto umbral predefinido.\\
+
+\chapter{Problemas encontrados}
+
+\section{Velocidades después de una colisión}
+Al chocar dos personajes el intercambio de velocidades no se realiza
+como debería, pués todavía no se toma en cuenta la masa del personaje
+y se asume que su masa ``no existe'' (o que es igual a 1).\\
+
+A parte de esto, el choque entre los reggaetoneros hace que su
+orientación varíe abruptamente, mostrando un comportamiento errático
+por un período de tiempo corto.
+
+\section{Problemas con la cohesión de los ``boids''}
+Cuando los reggaetoneros actúa en conjunto como una manada, la
+cohesion hacia el centro de masa calculado entre ellos genera una
+fuerza que a veces es mucho mayor a el resto de las fuerzas requeridas
+en el \emph{Flocking}. Esto genera un comportamiento inestable en el
+resultado final.\\
+
+La solución encontrada hasta ahora ha sido darle mucho más peso a la
+separación en relación con el peso dado a la cohesión.
+
+\section{Muchas balas = Juego lento}
+Cuando se disparan muchas balas, el juego empieza a ponerse lento
+mientras estas balas están en el aire. Una vez que tocan el suelo son
+eliminadas de memoria y el juego vuelve a recuperar su velocidad. Esto
+es debido a que las balas, como son esféricas, son pesadas para
+hacerles ``Render'', y probablemente también se debe al procesador de
+la computadora donde se está desarrollando el juego.
+
+\end{document}
