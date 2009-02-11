@@ -47,6 +47,7 @@ class Character(object):
         self.max_ang = 15.
 
         # Control options
+        self.energy = 100
         self.jumping = False
         self.jumping_initial_speed = 13.
 

@@ -12,6 +12,7 @@ class Bullet(object):
         self.position = position
         self.velocity = velocity
         self.radius   = float(radius)
+        self.damage   = 8
 
     def update(self, game):
         """
@@ -31,3 +32,9 @@ class Bullet(object):
         glColor3f(.6, .6, .6)
         glutSolidSphere(self.radius, 10, 10)
         glPopMatrix()
+
+    def explode(self):
+        """
+        Renders the ball's explotion
+        """
+        pass
