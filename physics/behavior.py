@@ -50,7 +50,7 @@ class BehaviorGroup(object):
             if not behavior.active:
                 continue
             b_steering = behavior.execute()
-            print behavior.name, b_steering
+#            print behavior.name, b_steering
             if b_steering is None:
                 continue
             if b_steering.has_key('linear'):
@@ -84,11 +84,11 @@ COLLISION_AVOIDANCE_GROUP = {
 }
 FLOCKING_GROUP = {
     'name': 'flocking',
-    'default_priority': 5,
+    'default_priority': 6,
 }
 PURSUE_EVADE_GROUP = {
     'name': 'pursue_evade',
-    'default_priority': 6,
+    'default_priority': 5,
 }
 WANDER_GROUP = {
     'name': 'wander',

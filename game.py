@@ -93,7 +93,7 @@ class Game:
         # Renders all game's objects
         self.stage.render()   # TODO: improve stage rendering, use display lists
 
-#        self.main_character.update(self).render()
+        self.main_character.update(self).render()
         for enemy in self.enemies:
             enemy.update(self).render()
 
