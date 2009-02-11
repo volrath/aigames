@@ -10,6 +10,7 @@ from physics.vector3 import Vector3
 from utils.camera import Camera
 from utils.functions import keymap_handler
 from utils.locals import SCREEN, FPS
+from utils.exceptions import GameOverException
 
 def main():
     global camera
@@ -26,8 +27,7 @@ def main():
     camera = Camera()
     game = Game()             # Game object. This will handle all the game world
                               # and its components
-    game.random_enemies([Vector3(4., 0., -5.), Vector3(-4., 0., -5.),
-                         Vector3(-1., 0., 10.)])    # Creates 'random' enemies
+    game.random_enemies([Vector3(4., 0., -5.)])    # Creates 'random' enemies
 
 ##     try:
 ##         import psyco
@@ -56,8 +56,15 @@ def main():
 #        print camera
 
         # Draw the game
-        game.render()         # Render all game's elements
-        game.behave()         # Follows behaviors in game.characters
+        try:
+            game.render()         # Render all game's elements
+            game.behave()         # Follows behaviors in game.characters
+        except GameOverException:
+            import sys, time
+            # wait a few seconds to show the result of the game.
+            time.sleep(4)
+            # Continue? maybe later
+            sys.exit()
 
         # Flip and display view.
         pygame.display.flip()

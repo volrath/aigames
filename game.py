@@ -11,6 +11,7 @@ from physics.behavior import *
 from utils.camera import Camera
 from utils.functions import keymap_handler
 from utils.locals import MAIN_VIEW, FPS, STAGE_SIZE
+from utils.exceptions import GameOverException
 
 class OGLManager:
     @classmethod
@@ -93,15 +94,33 @@ class Game:
         # Renders all game's objects
         self.stage.render()   # TODO: improve stage rendering, use display lists
 
-        self.main_character.update(self).render()
+        try:
+            self.main_character.update(self).render()
+        except AttributeError:
+            self.game_over(False)
+
+        if not self.enemies:
+            self.game_over(True)
         for enemy in self.enemies:
-            enemy.update(self).render()
+            try:
+                enemy.update(self).render()
+            except AttributeError:
+                pass
 
         # Renders projectiles
         for projectile in self.projectiles:
             projectile.update(self).render()
             if projectile.position.y < 0:
                 self.projectiles.remove(projectile)
+
+    def game_over(self, i_won):
+        if i_won:
+            # I won!
+            print "You Rock So Hard!! =)"
+        else:
+            # I failed =(
+            print "You suck..."
+        raise GameOverException
 
     def add_character(self, character):
         """
@@ -143,8 +162,8 @@ class Game:
                          **OBSTACLE_AVOIDANCE)
                 ]
             
-            enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
-                                                   **PURSUE_EVADE_GROUP))
+##             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
+##                                                    **PURSUE_EVADE_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
                                                    **COLLISION_AVOIDANCE_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=flocking,

@@ -9,7 +9,7 @@ from sympy.matrices import Matrix
 from game_objects.projectiles import Bullet
 from utils.functions import load_image, random_binomial
 from utils.locals import FPS, GRAVITY, FLOOR_FRICTION, STANDARD_INITIAL_FORCE
-from utils import BehaviorNotAssociated
+from utils.exceptions import BehaviorNotAssociated
 from physics.vector3 import Vector3
 from physics.rect import Rect
 from physics.behavior import *
@@ -48,6 +48,7 @@ class Character(object):
 
         # Control options
         self.energy = 100
+        self.dying = False
         self.jumping = False
         self.jumping_initial_speed = 13.
 
@@ -105,8 +106,7 @@ class Character(object):
         if old_velocity.x < 0: self.velocity.x = 0.
         if old_velocity.y < 0: self.velocity.y = 0.
         if old_velocity.z < 0: self.velocity.z = 0.
-        self.update_position(game)
-        return self
+        return self.update_position(game)
 
     def update_position(self, game):
         """
@@ -131,11 +131,24 @@ class Character(object):
                self.position.y < ch.position.y + ch.height and \
                ch.position.y < self.position.y + self.height:
                 self.reset_velocity(game=game, obj=ch)
+
+        # Check for bullets hitting me
+        self.check_for_bullets(game)
+        
         # Check for negative position.y and corrects it
-        if self.position.y < 0:
+        if self.position.y < 0 and not self.dying:
             self.position.y = 0.
             self.velocity.y = 0.
             self.acceleration.y = 0.
+
+        # Check if i'm dead
+        if self.dying and abs(self.position.y) > self.size * 2:
+            game.characters.remove(self)
+            try:
+                game.enemies.remove(self)
+            except ValueError:
+                pass
+            return None
         return self
 
     def reset_velocity(self, game, obj=None, wall=False):
@@ -195,6 +208,24 @@ class Character(object):
         self.acceleration = self.velocity.copy()
         self.acceleration.set_length(acc_length)
 
+    def check_for_bullets(self, game):
+        for projectile in game.projectiles:
+            distance = (self.position - projectile.position).length
+            if distance < self.radius + projectile.radius:
+                # Oh-oh, it hit me!
+                self.energy -= projectile.damage
+                projectile.explode(game)
+                if self.energy <= 0:
+                    self.die()
+
+    def die(self):
+        self.velocity.set(0., -5., 0.)
+        self.acceleration = Vector3()
+        if hasattr(self, 'behaviors'):
+            self.behaviors = set()
+        self.dying = True
+            
+
     def jump(self):
         self.jumping = True
         self.velocity.y = self.jumping_initial_speed
@@ -238,6 +269,7 @@ class Character(object):
 	glVertex3f( self.size,-self.size, self.size)		# Bottom Right Of The Quad (Right)
 
 	glEnd()				# Done Drawing The Quad
+        self.check_energy()
         glPopMatrix()
 
         # Character area
@@ -261,6 +293,27 @@ class Character(object):
         glVertex3f(self.area.bottom_right[0], 2.0, self.area.bottom_right[1])
         glEnd()
         glPopMatrix()
+
+    def check_energy(self):
+        """
+        Renders some graphics indicating that my energy is low
+        """
+        print self, self.energy
+        if self.energy <= 20:
+            std_height = self.position.y + self.size + 1.
+            glColor3f(1., 0., 0.)
+            glBegin(GL_LINES)
+            glVertex3f(0., std_height, 0.)
+            glVertex3f(0., std_height + 2., 0.)
+            glEnd()
+            glBegin(GL_LINES)
+            glVertex3f(0., std_height, 0.)
+            glVertex3f(1., std_height + 2., sin(30) * -2.)
+            glEnd()
+            glBegin(GL_LINES)
+            glVertex3f(0., std_height, 0.)
+            glVertex3f(-1., std_height + 2., sin(30) * 2.)
+            glEnd()
 
 
 class Slash(Character):
@@ -362,7 +415,6 @@ class Enemy(Character):
             try:
                 steering = group_outputs.pop()
                 if steering is not None:
-                    print steering['name']
                     steering = steering['steering']
                 else:
                     continue
