@@ -119,7 +119,7 @@ class Game:
             print "You Rock So Hard!! =)"
         else:
             # I failed =(
-            print "You sucks..."
+            print "You suck..."
         raise GameOverException
 
     def add_character(self, character):
