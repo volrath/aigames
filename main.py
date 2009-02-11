@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pygame
 from pygame.locals import *
 from OpenGL.GL import *
@@ -20,7 +21,7 @@ def main():
     OGLManager.resize(*(map(int, SCREEN.size)))
     OGLManager.init(*(map(int, SCREEN.size)))
 
-    pygame.display.set_caption("Reggaetonator")
+    pygame.display.set_caption("¡A ti te va a caer el Axl!")
 
     # Game's objects initialization
     camera = Camera()
@@ -28,11 +29,11 @@ def main():
                               # and its components
     game.random_enemies([Vector3(4., 0., -5.)])    # Creates 'random' enemies
 
-    try:
-        import psyco
-        psyco.full()
-    except ImportError:
-        pass
+##     try:
+##         import psyco
+##         psyco.full()
+##     except ImportError:
+##         pass
     
     while True:
         for event in pygame.event.get():
