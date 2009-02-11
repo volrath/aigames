@@ -142,7 +142,7 @@ class Character(object):
         Solve tridimensional calculation of velocities after a collision.
         """
         if wall:
-            # Has to guess with wich side are we hitting
+            # Has to guess with which side are we hitting
             if game.stage.floor.area.collide_point(*self.area.center):
                 # If my center is still on the stage
                 if game.stage.floor.size - abs(self.area.center[0]) <= \
