@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pygame
 from pygame.locals import *
 from OpenGL.GL import *
@@ -19,7 +20,7 @@ def main():
     OGLManager.resize(*(map(int, SCREEN.size)))
     OGLManager.init(*(map(int, SCREEN.size)))
 
-    pygame.display.set_caption("Reggaetonator")
+    pygame.display.set_caption("¡A ti te va a caer el Axl!")
 
     # Game's objects initialization
     camera = Camera()
