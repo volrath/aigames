@@ -28,11 +28,11 @@ def main():
     game.random_enemies([Vector3(4., 0., -5.), Vector3(-4., 0., -5.),
                          Vector3(-1., 0., 10.)])    # Creates 'random' enemies
 
-    try:
-        import psyco
-        psyco.full()
-    except ImportError:
-        pass
+##     try:
+##         import psyco
+##         psyco.full()
+##     except ImportError:
+##         pass
     
     while True:
         for event in pygame.event.get():
