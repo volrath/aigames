@@ -356,7 +356,7 @@ class Slash(Character):
     def render(self, *args, **kwargs):
         # Slash weapon
         glPushMatrix()
-        glTranslatef(self.position.x, self.size, self.position.z)
+        glTranslatef(self.position.x, self.position.y + self.size, self.position.z)
         glRotatef((self.orientation * 180. / pi), 0., 1., 0.)
         glRotatef(self.canon, -1., 0., 0.)
         glRotatef(-90, 0., 0., 1.)
