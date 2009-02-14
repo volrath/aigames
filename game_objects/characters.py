@@ -174,35 +174,18 @@ class Character(object):
                 self.acceleration *= -1
             return
 
-        relative_pos = self.position - obj.position # x_diff & y_diff
-        if relative_pos.x > 0:
-            angle = degrees(atan(relative_pos.z/relative_pos.x))
-            if relative_pos.z < 0:
-                angle *= 1
-            vel_x = -self.velocity.length * cos(radians(angle))
-            vel_z = -self.velocity.length * sin(radians(angle))
-        elif relative_pos.x < 0:
-            angle = degrees(atan(relative_pos.z/relative_pos.x))
-            if relative_pos.z < 0:
-                angle += -180
-            else:
-                angle += 180
-            vel_x = -self.velocity.length * cos(radians(angle))
-            vel_z = -self.velocity.length * sin(radians(angle))
-        elif relative_pos.x == 0:
-            if relative_pos.z > 0:
-                angle = -90
-            else:
-                angle = 90
-            vel_x = self.velocity.length * cos(radians(angle))
-            vel_z = self.velocity.length * sin(radians(angle))
-        elif relative_pos.z == 0:
-            if relative_pos.x < 0:
-                angle = 0
-            else:
-                angle = 180
-            vel_x = self.velocity.length * cos(radians(angle))
-            vel_z = self.velocity.length * sin(radians(angle))
+        collision_axis = self.position - obj.position # x_diff & y_diff
+        self_speed_x = self.velocity.dot(collision_axis)
+        obj_speed_x  = obj.velocity.dot(collision_axis)
+        linear_momemtum = self.mass*self.velocity + obj.mass*obj.velocity
+        # Find the elastic collision result
+        collision_matrix = Matrix(2,2, [self.mass, obj.mass, -1, 1])
+        collision_eqsys_sol = Matrix(2,1, [linear_momemtum,
+                                           self.velocity - obj.velocity])
+        
+
+
+
         self.velocity.set(vel_x, self.velocity.y, -vel_z)
         acc_length = self.acceleration.length / 2.
         self.acceleration = self.velocity.copy()
