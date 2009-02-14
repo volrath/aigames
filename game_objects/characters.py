@@ -174,19 +174,28 @@ class Character(object):
                 self.acceleration *= -1
             return
 
-        collision_axis = self.position - obj.position # x_diff & y_diff
+        collision_axis = (self.position - obj.position).normalize()
         self_speed_x = self.velocity.dot(collision_axis)
         obj_speed_x  = obj.velocity.dot(collision_axis)
-        linear_momemtum = self.mass*self.velocity + obj.mass*obj.velocity
+        linear_momemtum = self_speed_x*self.mass + obj_speed_x*obj.mass
         # Find the elastic collision result
         collision_matrix = Matrix(2,2, [self.mass, obj.mass, -1, 1])
         collision_eqsys_sol = Matrix(2,1, [linear_momemtum,
-                                           self.velocity - obj.velocity])
-        
-
-
-
-        self.velocity.set(vel_x, self.velocity.y, -vel_z)
+                                           self_speed_x - obj_speed_x])
+        # Find velocity components vectors according to the collision axis
+        self_collision_vx = self.velocity.projection(collision_axis)
+        self_collision_vy = self.velocity - self_collision_vx
+        obj_collision_vx  = obj.velocity.projection(collision_axis)
+        obj_collision_vy  = obj.velocity - obj_collision_vx
+        # Resolve equation system.
+        self_new_vx, obj_new_vx = collision_matrix.LUsolve(collision_eqsys_sol)
+        self_new_vx = collision_axis.copy().set_length(abs(self_new_vx)) * \
+                      (self_new_vx/abs(self_new_vx))
+        obj_new_vx = collision_axis.copy().set_length(abs(obj_new_vx)) * \
+                      (obj_new_vx/abs(obj_new_vx))
+        # Set new velocities
+        self.velocity = self_collision_vy + self_new_vx
+        obj.velocity  = obj_collision_vy + obj_new_vx
         acc_length = self.acceleration.length / 2.
         self.acceleration = self.velocity.copy()
         self.acceleration.set_length(acc_length)
@@ -281,7 +290,6 @@ class Character(object):
         """
         Renders some graphics indicating that my energy is low
         """
-        print self, self.energy
         if self.energy <= 20:
             std_height = self.position.y + self.size + 1.
             glColor3f(1., 0., 0.)

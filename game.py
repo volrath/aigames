@@ -96,7 +96,7 @@ class Game:
 
         try:
             self.main_character.update(self).render()
-        except AttributeError:
+        except AttributeError, e:
             self.game_over(False)
 
         if not self.enemies:
