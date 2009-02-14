@@ -298,7 +298,6 @@ class Character(object):
         """
         Renders some graphics indicating that my energy is low
         """
-        print self, self.energy
         if self.energy <= 20:
             std_height = self.position.y + self.size + 1.
             glColor3f(1., 0., 0.)
