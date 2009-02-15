@@ -6,8 +6,8 @@ GENERAL
   -- Basic steering behaviors
   * Jumping =)
   * Firing and shooting
-  * Collision avoidance
-  * Flocking
+  -- Collision avoidance
+  -- Flocking
   * Watching
 
 Steering Behaviors
@@ -25,28 +25,28 @@ Jumping
 Firing and shooting
 ===================
   * firing something from ai
-  * first person shooting with angles
+  -- first person shooting with angles
   * granade previsions
 
 Collision Avoidance
 ===================
   -- FRECT CLASS!
   -- Semi collision avoidance for the main character
-  * Restructurate Rect Class for positioning in the middle
-  * Collision avoidance for ia
+  -- Restructurate Rect Class for positioning in the middle
+  -- Collision avoidance for ia
 
 Flocking
 ========
-  * Do flocking
+  -- Do flocking
 
 First Version
 =============
   -- Wandering
-  - Separation and Flocking
+  -- Separation and Flocking
   -- Shooting with angle
 - * AI Jumping
-  - Collision Detection
+  -- Collision Detection
   -- Collision Avoidance
-  * Hitting
+  -- Hitting
   * Key handling for main character
   -- Blending with arbitration
