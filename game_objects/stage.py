@@ -60,6 +60,7 @@ class Obstacle:
         glutSolidCube(self.size)
         glPopMatrix()
         graphics.draw_circle(self.position, self.radius, (195./255, 1./255, 243./255))
+        self.velocity.set_length(0)
 
 class Amplificator(Obstacle):
     """
