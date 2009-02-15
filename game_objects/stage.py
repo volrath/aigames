@@ -44,8 +44,10 @@ class Obstacle:
                  rotation=0.):
         self.area = Rect((position.x, position.z), size, size)
         self.size = size
+        self.mass = size**4
         self.height = size*2
         self.position = position
+        self.velocity = Vector3()
         self.color = color
         self.rotation = rotation
         self.radius = size - (sqrt(2 * size**2)) / 4
@@ -58,6 +60,7 @@ class Obstacle:
         glutSolidCube(self.size)
         glPopMatrix()
         graphics.draw_circle(self.position, self.radius, (195./255, 1./255, 243./255))
+        self.velocity.set_length(0)
 
 class Amplificator(Obstacle):
     """

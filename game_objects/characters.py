@@ -19,7 +19,8 @@ class Character(object):
     Character properties, movement, size, etc..
     """
     def __init__(self, linear_max_speed, angular_max_speed, position,
-                 orientation, colors, size, max_acc, std_initial_force=None):
+                 orientation, colors, size, mass, max_acc,
+                 std_initial_force=None):
         self.max_speed = linear_max_speed
         self.max_rotation = angular_max_speed
         self.area = Rect((position.x, position.z), size*2, size*2)
@@ -28,8 +29,8 @@ class Character(object):
 
         # Optional, color and stuff
         self.colors = colors
-        self.size = self.mass = size # For now, all characters will be
-                                     # equally dense
+        self.size = size
+        self.mass = mass
         # Kinematic data
         self.position = position
         self.orientation = orientation
@@ -174,37 +175,30 @@ class Character(object):
                 self.acceleration *= -1
             return
 
-        relative_pos = self.position - obj.position # x_diff & y_diff
-        if relative_pos.x > 0:
-            angle = degrees(atan(relative_pos.z/relative_pos.x))
-            if relative_pos.z < 0:
-                angle *= 1
-            vel_x = -self.velocity.length * cos(radians(angle))
-            vel_z = -self.velocity.length * sin(radians(angle))
-        elif relative_pos.x < 0:
-            angle = degrees(atan(relative_pos.z/relative_pos.x))
-            if relative_pos.z < 0:
-                angle += -180
-            else:
-                angle += 180
-            vel_x = -self.velocity.length * cos(radians(angle))
-            vel_z = -self.velocity.length * sin(radians(angle))
-        elif relative_pos.x == 0:
-            if relative_pos.z > 0:
-                angle = -90
-            else:
-                angle = 90
-            vel_x = self.velocity.length * cos(radians(angle))
-            vel_z = self.velocity.length * sin(radians(angle))
-        elif relative_pos.z == 0:
-            if relative_pos.x < 0:
-                angle = 0
-            else:
-                angle = 180
-            vel_x = self.velocity.length * cos(radians(angle))
-            vel_z = self.velocity.length * sin(radians(angle))
-        self.velocity.set(vel_x, self.velocity.y, -vel_z)
-        acc_length = self.acceleration.length / 2.
+        collision_axis = (self.position - obj.position).normalize()
+        self_speed_x = self.velocity.dot(collision_axis)
+        obj_speed_x  = obj.velocity.dot(collision_axis)
+        linear_momentum = self_speed_x*self.mass + obj_speed_x*obj.mass
+        vel_reflection  = self_speed_x - obj_speed_x
+        # Find the elastic collision result
+        # Find velocity components vectors according to the collision axis
+        self_collision_vx = self.velocity.projection(collision_axis)
+        self_collision_vy = self.velocity - self_collision_vx
+        obj_collision_vx  = obj.velocity.projection(collision_axis)
+        obj_collision_vy  = obj.velocity - obj_collision_vx
+        # Resolve equation system.
+        self_new_vx = (linear_momentum - obj.mass*vel_reflection) / \
+                      (self.mass + obj.mass)
+        obj_new_vx  = self_speed_x - obj_speed_x + self_new_vx
+        # Gets the vectors
+        self_new_vx = collision_axis.copy().set_length(abs(self_new_vx)) * \
+                      (self_new_vx/abs(self_new_vx))
+        obj_new_vx = collision_axis.copy().set_length(abs(obj_new_vx)) * \
+                      (obj_new_vx/abs(obj_new_vx))
+        # Set new velocities
+        self.velocity = self_collision_vy + self_new_vx
+        obj.velocity  = obj_collision_vy + obj_new_vx
+        acc_length = self.acceleration.length
         self.acceleration = self.velocity.copy()
         self.acceleration.set_length(acc_length)
 
@@ -322,7 +316,7 @@ class Slash(Character):
     def __init__(self, max_speed, max_rotation, position=Vector3(), orientation=0.):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
-                           size=2., max_acc=20.)
+                           size=2., mass=2., max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
         self.behavior = Behavior(character=self, active=True,
                                  **LOOK_WHERE_YOU_ARE_GOING)
@@ -373,7 +367,7 @@ class Enemy(Character):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
-                           size=1.8, max_acc=80.)
+                           size=1.8, mass=1.8, max_acc=80.)
         # Behaviors
         self.behaviors = set(behavior_groups)
 
