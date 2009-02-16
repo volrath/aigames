@@ -37,7 +37,8 @@ El juego esta construido en 3D usando OpenGL como herramienta para
 realizar el ``rendering'' de todos los objetos que este incluye
 (personajes, obstaculos, plataforma, etc).
 
-\chapter{Metáfora del Juego}
+\chapter{Descripción del Juego}
+\section{Metáfora}
 La metáfora del juego se trata de la difícil tarea que tiene
 \textbf{Slash} (personaje principal), el guitarrista principal de la
 banda de heavy metal \emph{Guns n'\ Roses}, de acabar con los máximos
@@ -53,6 +54,47 @@ energía y su capacidad de quedarse dentro de la tarima está ligado a
 su nivel de energía actual, por esto, \textbf{Slash} tendrá que
 lastimarlos con su guitarra antes de intentar arrojarlos hacia afuera,
 de forma parecida al juego de Nintendo © \emph{Super Smash Bros.}
+
+\section{¿Cómo jugar?}
+Los controles y sus acciones se encuentran representadas en la
+siguientes tablas:
+
+\begin{table}[h]
+\label{table:movimiento}
+\caption{Movimiento de \textbf{Slash}}
+\begin{center}
+\begin{tabular}{c r}
+  \hline\hline
+  \bf Tecla & \bf Acción \\ [0.5ex] \hline
+  a & Acelerar hacia la izquierda \\
+  d & Acelerar hacia la derecha \\
+  w & Acelerar hacia el fondo del escenario \\
+  s & Acelerar hacia el frente del escenario \\ [1ex]
+  \hline
+\end{tabular}
+\\
+\emph{Nota:} Varios movimientos pueden ser ejecutados simultáneamente
+para accelerar hacia varias direcciones al mismo tiempo.
+\end{center}
+\end{table}
+
+\begin{table}[h]
+\label{table:acciones_slash}
+\caption{Acciones de \textbf{Slash}}
+\begin{center}
+\begin{tabular}{c r}
+  \hline\hline
+  \bf Tecla & \bf Acción \\ [0.5ex] \hline
+  Espacio & Salto \\
+  Enter & Disparar \\
+  $]$ & Aumentar ángulo de disparo \\
+  $[$ & Disminuir ángulo de disparo \\
+  ' & Aumentar fuerza de disparo \\
+  $\backslash$ & Disminuir fuerza de disparo \\ [1ex]
+  \hline
+\end{tabular}
+\end{center}
+\end{table}
 
 \chapter{El juego y sus objetos}
 El juego consta de varios objetos que se describen a continuación
