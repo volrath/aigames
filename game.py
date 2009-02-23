@@ -162,8 +162,8 @@ class Game:
                          **OBSTACLE_AVOIDANCE)
                 ]
             
-##             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
-##                                                    **PURSUE_EVADE_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
+                                                   **PURSUE_EVADE_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
                                                    **COLLISION_AVOIDANCE_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
