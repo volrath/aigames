@@ -48,5 +48,15 @@ First Version
   -- Collision Detection
   -- Collision Avoidance
   -- Hitting
-  * Key handling for main character
+  -- Key handling for main character
   -- Blending with arbitration
+
+Second Version
+==============
+  * Hitting, animation-effects, harming.
+  * Hitting mass coeficient
+  * Throwing out of the stage
+  * AI JUMPING!
+  * Improve jumping, jump over objects, object's normals
+  * Something about path finding, A*
+  * Something about decision making
