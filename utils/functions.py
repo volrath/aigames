@@ -73,9 +73,9 @@ def keymap_handler(game):
         game.main_character.accelerate(Vector3(0., 0., -game.main_character.std_acc_step))
         return
     elif not any([pressed[K_w], pressed[K_s], pressed[K_a], pressed[K_d]]):
-        game.main_character.accelerate(deacc=True)
+        game.main_character.behave_acceleration.length = 0
         return
-##
+
 # functions to load resources
 
 def load_image(name, colorkey=None):

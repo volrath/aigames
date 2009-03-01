@@ -59,7 +59,11 @@ class Character(object):
         self.rotation = 0.
         # Steering output
         self.acceleration = Vector3()
+        self.behave_acceleration = Vector3()
+        self.hitting_acceleration = Vector3()
+        self.bullet_acceleration = Vector3()
         self.angular = 0.
+        self.behave_angular = 0.
         if std_initial_force is None:
             self.std_acc_step = STANDARD_INITIAL_FORCE / self.mass
         else:
@@ -104,37 +108,57 @@ class Character(object):
             return True
     weapon = Weapon()
 
+    def calculate_external_forces(self):
+        """
+        Finds forces applied to the character and adds the accelerations.
+        This function really calculates accelerations, not forces. When the
+        function ends, returns the resulting acceleration.
+        In this function we look for the following forces:
+        1. steering
+        2. hit by another character (hitting or normal colliding)
+        3. hit by a bullet
+        4. floor friction
+        """
+        self.acceleration = self.behave_acceleration + \
+                            self.hitting_acceleration + \
+                            self.bullet_acceleration + \
+                            self.velocity.unit() * -(FLOOR_FRICTION / self.mass)
+
     def accelerate(self, acceleration=None, deacc=False):
         """
-        Acceleratios the character, given a acceleration VECTOR. This
+        Accelerates the character, given a acceleration VECTOR. This
         method ensures that the character isn't going at its maximum speed
         """
-        if deacc:
-            # Negative acceleration.
-            if self.velocity.length <= 0:
-                self.velocity = Vector3()
-                self.acceleration = Vector3()
-            else:
-                self.acceleration = self.velocity.unit() * -FLOOR_FRICTION
-            return
-        self.acceleration += acceleration
+##         if deacc:
+##             # Negative acceleration.
+##             if self.velocity.length <= 0:
+##                 self.velocity = Vector3()
+##                 self.acceleration = Vector3()
+##             else:
+##                 self.behave_acceleration = self.velocity.unit() * -FLOOR_FRICTION
+##             return
         if self.velocity.length > self.max_speed:
-            self.velocity.set_length(self.max_speed)
+            self.behave_acceleration.length = 0
+        else:
+            self.behave_acceleration += acceleration
+##         if self.velocity.length > self.max_speed:
+##             self.velocity.set_length(self.max_speed)
 
     def update(self, game):
         """
         Updates the character steering data. This method only covers the
         following:
-          1. updates the object's static data (position, and orientation) using
+          2. updates the object's static data (position, and orientation) using
              its linear and angular velocities.
-          2. updates the object's dinamic data (velocity) using its previous
+          3. updates the object's dinamic data (velocity) using its previous
              linear and angular acceleration.
-          3. ensures that the maximum speed is being respected
-          4. Tries to handle deceleration properly, this needs some
-             improvement though =S.
 
         Everything else will be removed.
         """
+        # Updates character acceleration, based on all the force found
+        # acting over itself
+        self.calculate_external_forces()
+
         time = (1./FPS)
 
         old_velocity = self.velocity.copy()
@@ -152,8 +176,8 @@ class Character(object):
 
         self.rotation += self.angular * time
 
-        if self.velocity.length > self.max_speed:
-            self.velocity.set_length(self.max_speed)
+#        if self.velocity.length > self.max_speed:
+#            self.velocity.set_length(self.max_speed)
         old_velocity *= self.velocity
         if old_velocity.x < 0: self.velocity.x = 0.
         if old_velocity.y < 0: self.velocity.y = 0.
@@ -162,9 +186,17 @@ class Character(object):
 
     def update_position(self, game):
         """
-        Updates the position/area of a character. ensures it doesn't
-        collide with some specific elements of the game.
+        Updates the position/area of a character. checks for:
+        0. resets all the forces applied to the character
+        1. collisions with some specific elements of the game.
+        2. hit with bullets
+        3. negative Y position
+        4. we're finally dead
         """
+        # Reset forces
+        self.hitting_acceleration.length = 0
+        self.bullet_acceleration.length  = 0
+        
         self.area.center = (self.position.x, self.position.z)
         if not game.stage.floor.area.contains(self.area):
             self.reset_velocity(game=game, wall=True)
@@ -205,7 +237,7 @@ class Character(object):
 
     def reset_velocity(self, game, obj=None, wall=False):
         """
-        Solve tridimensional calculation of velocities after a collision.
+        Solves tridimensional calculation of velocities after a collision.
         """
         if wall:
             # Has to guess with which side are we hitting
@@ -215,15 +247,15 @@ class Character(object):
                    game.stage.floor.size - abs(self.area.center[1]):
                     # We are closer to an horizontal edge
                     self.velocity.x *= -1
-                    self.acceleration.x *= -1
+                    self.hitting_acceleration.x *= -1
                 else:
                     # We are closer to an vertical edge
                     self.velocity.z *= -1
-                    self.acceleration.z *= -1
+                    self.hitting_acceleration.z *= -1
             else:
                 # My center is out of the stage
                 self.velocity *= -1
-                self.acceleration *= -1
+                self.hitting_acceleration *= -1
             return
 
         collision_axis = (self.position - obj.position).normalize()
@@ -232,26 +264,6 @@ class Character(object):
         linear_momentum = self_speed_x*self.mass + obj_speed_x*obj.mass
         vel_reflection  = self_speed_x - obj_speed_x
 
-        # Check for hitting
-        if self.hitting and hit_detection(self, obj):
-            # If i'm really hitting the 'obj' character, we'll change its mass
-            # to a fuzzy mass depending on its damage
-            obj_mass = obj.mass * (obj.energy / 100.)
-            obj.energy -= self.hit_damage
-            obj_hitted = True
-            print '%s hitted!! now he has %s of energy' % (obj, obj.energy)
-        else:
-            obj_mass = obj.mass
-            obj_hitted = False
-        if obj.hitting and hit_detection(obj, self):
-            # Same as the upper if.
-            self_mass = self.mass * (self.energy / 100.)
-            self.energy -= obj.hit_damage
-            self_hitted = True
-            print '%s hitted!! now he has % of energy' % (self, self.energy)
-        else:
-            self_mass = self.mass
-            self_hitted = False
         # Find the elastic collision result
         # Find velocity components vectors according to the collision axis
         self_collision_vx = self.velocity.projection(collision_axis)
@@ -259,24 +271,50 @@ class Character(object):
         obj_collision_vx  = obj.velocity.projection(collision_axis)
         obj_collision_vy  = obj.velocity - obj_collision_vx
         # Resolve equation system.
-        self_new_vx = (linear_momentum - obj_mass*vel_reflection) / \
-                      (self_mass + obj_mass)
+        self_new_vx = (linear_momentum - obj.mass*vel_reflection) / \
+                      (self.mass + obj.mass)
         obj_new_vx  = self_speed_x - obj_speed_x + self_new_vx
         # Gets the vectors
-        self_new_vx = collision_axis.copy().set_length(abs(self_new_vx)) * \
-                      (self_new_vx/abs(self_new_vx))
-        obj_new_vx = collision_axis.copy().set_length(abs(obj_new_vx)) * \
-                      (obj_new_vx/abs(obj_new_vx))
+        try:
+            self_new_vx = collision_axis.copy().set_length(abs(self_new_vx)) * \
+                          (self_new_vx/abs(self_new_vx))
+        except ZeroDivisionError:
+            self_new_vx = Vector3()
+        try:
+            obj_new_vx = collision_axis.copy().set_length(abs(obj_new_vx)) * \
+                         (obj_new_vx/abs(obj_new_vx)) 
+        except ZeroDivisionError:
+            obj_new_vx = Vector3()
         # Set new velocities
         self.velocity = self_collision_vy + self_new_vx
-        if self_hitted:
-            self.velocity.set_length(self.velocity.length + obj.hit_force)
         obj.velocity  = obj_collision_vy + obj_new_vx
-        if obj_hitted:
-            obj.velocity.set_length(obj.velocity.length + self.hit_force)
-        acc_length = self.acceleration.length
-        self.acceleration = self.velocity.copy()
-        self.acceleration.set_length(acc_length)
+
+        # Check for hitting
+        if self.hitting and hit_detection(self, obj):
+            # If i'm really hitting the 'obj' character, we'll change its mass
+            # to a fuzzy mass depending on its damage
+            obj.energy -= self.hit_damage
+            obj_hit_acc_length = obj.hitting_acceleration.length
+            obj.hitting_acceleration = obj.velocity.copy()
+            obj.hitting_acceleration.set_length(obj_hit_acc_length + \
+                        self.hit_force / (obj.mass * (obj.energy / 100.)))
+            print '%s hitted!! now he has %s of energy' % (obj, obj.energy)
+
+        if hasattr(obj, 'hitting') and obj.hitting and hit_detection(obj, self):
+            # Same as the upper if.
+            self.energy -= obj.hit_damage
+            hit_acc_result = obj.hit_force / (self.mass * (self.energy / 100.))
+            self_hitted = True
+            print '%s hitted!! now i have %h of energy' % (self, self.energy)
+        else:
+            self_hitted = False
+
+        hit_acc_length = self.hitting_acceleration.length
+        self.hitting_acceleration += self.velocity
+        if self_hitted:
+            self.hitting_acceleration.set_length(hit_acc_length + hit_acc_result)
+        else:
+            self.hitting_acceleration.set_length(hit_acc_length)
 
     def check_for_bullets(self, game):
         for projectile in game.projectiles:
@@ -284,6 +322,8 @@ class Character(object):
             if distance < self.radius + projectile.radius:
                 # Oh-oh, it hit me!
                 self.energy -= projectile.damage
+##                 self.bullet_acceleration = projectile.hit_force / \
+##                                            (self.mass * (self.energy / 100.))
                 projectile.explode(game)
                 if self.energy <= 0:
                     self.die()
@@ -492,28 +532,24 @@ class Enemy(Character):
             else: # <
                 return -1
         group_outputs = [group.execute() for group in self.behaviors]
-        if group_outputs:
-            # Sort by priorities
-            group_outputs.sort(group_priority_cmp)
-            while not group_outputs == []:
-                try:
-                    steering = group_outputs.pop()
-                    if steering is not None:
-                        steering = steering['steering']
-                    else:
-                        continue
-                except IndexError:
+        # Sort by priorities
+        group_outputs.sort(group_priority_cmp)
+        while not group_outputs == []:
+            try:
+                steering = group_outputs.pop()
+                if steering is not None:
+                    steering = steering['steering']
+                else:
                     continue
-                # Apply to the character.
-                linear  = steering.get('linear', None)
-                angular = steering.get('angular', None)
-                if linear is not None:
-                    if linear.length > self.max_acc:
-                        linear.set_length(self.max_acc)
-                    self.acceleration += linear
-                if angular is not None:
-                    self.angular += angular
-                break
-        else:
-            # Deccelerate in presence of friction.
-            self.accelerate(deacc=True)
+            except IndexError:
+                continue
+            # Apply to the character.
+            linear  = steering.get('linear', None)
+            angular = steering.get('angular', None)
+            if linear is not None:
+                self.behave_acceleration += linear
+                if self.behave_acceleration.length > self.max_acc:
+                    self.behave_acceleration.set_length(self.max_acc)
+            if angular is not None:
+                self.behave_angular += angular
+            break
