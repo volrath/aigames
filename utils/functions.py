@@ -17,21 +17,29 @@ def keymap_handler(game):
     # Main Character
     # ==============
 
+    # Canon and hitting
+    if pressed[K_h]:
+        if game.main_character.hitting:
+            return
+        game.main_character.hitting = True
+
     # Canon and shooting
-    if pressed[K_LEFTBRACKET]:
-        if game.main_character.canon < 90:
-            game.main_character.canon += 1
-    if pressed[K_RIGHTBRACKET]:
-        if game.main_character.canon > 0:
-            game.main_character.canon -= 1
-    if pressed[K_BACKSLASH]:
-        if game.main_character.shooting_force > 0:
-            game.main_character.shooting_force -= 1
-    if pressed[K_QUOTE]:
-        if game.main_character.shooting_force < 40:
-            game.main_character.shooting_force += 1
-    if pressed[K_RETURN]:
-        game.main_character.shoot = True
+    if pressed[K_y]:
+        if game.main_character.weapon.orientation < 90:
+            game.main_character.weapon.orientation += 3
+    if pressed[K_u]:
+        if game.main_character.weapon.orientation > 0:
+            game.main_character.weapon.orientation -= 3
+    if pressed[K_n]:
+        if game.main_character.weapon.shooting_force > 0:
+            game.main_character.weapon.shooting_force += 2
+    if pressed[K_m]:
+        if game.main_character.weapon.shooting_force < 40:
+            game.main_character.weapon.shooting_force -= 2
+    if pressed[K_j]:
+        if game.main_character.hitting: # If I'm hitting, i can't shoot
+            return
+        game.main_character.shooting = True
 
     # Movement
     # First handle two keys pressed at the same time.

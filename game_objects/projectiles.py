@@ -12,7 +12,7 @@ class Bullet(object):
         self.position = position
         self.velocity = velocity
         self.radius   = float(radius)
-        self.damage   = 10
+        self.damage   = 4
 
     def update(self, game):
         """

@@ -8,19 +8,38 @@ from sympy.matrices import Matrix
 
 from game_objects.projectiles import Bullet
 from utils.functions import load_image, random_binomial
-from utils.locals import FPS, GRAVITY, FLOOR_FRICTION, STANDARD_INITIAL_FORCE
 from utils.exceptions import BehaviorNotAssociated
 from physics.vector3 import Vector3
 from physics.rect import Rect
 from physics.behavior import *
+from utils.locals import FPS, GRAVITY, FLOOR_FRICTION, STANDARD_INITIAL_FORCE, \
+     IMPACT_ORIENTATION_UMBRAL
+
+def hit_detection(hitter, hitted):
+    """
+    Returns if the hitter character hits the hitted or not.
+    To find out if the hitter hits the hitted, we use the collision axis
+    and the hitter velocity (where he was aiming) and calculates the
+    angle between them to see if the hitter was aiming the hitted at the
+    time of collision.
+    """
+    collision_axis = hitted.position - hitter.position
+    if collision_axis.length > 0:
+        collision_orientation = atan2(collision_axis.x, collision_axis.z)
+    else:
+        collision_orientation = hitter.orientation
+    print collision_orientation, hitter.orientation, abs(collision_orientation - hitter.orientation)
+    if abs(collision_orientation - hitter.orientation) < IMPACT_ORIENTATION_UMBRAL: # We hit!
+        return True
+    return False
 
 class Character(object):
     """
     Character properties, movement, size, etc..
     """
     def __init__(self, linear_max_speed, angular_max_speed, position,
-                 orientation, colors, size, mass, max_acc,
-                 std_initial_force=None):
+                 orientation, colors, size, mass, hit_force, hit_damage,
+                 max_acc, std_initial_force=None):
         self.max_speed = linear_max_speed
         self.max_rotation = angular_max_speed
         self.area = Rect((position.x, position.z), size*2, size*2)
@@ -31,6 +50,8 @@ class Character(object):
         self.colors = colors
         self.size = size
         self.mass = mass
+        self.hit_force = hit_force
+        self.hit_damage = hit_damage
         # Kinematic data
         self.position = position
         self.orientation = orientation
@@ -50,8 +71,38 @@ class Character(object):
         # Control options
         self.energy = 100
         self.dying = False
+        self.hitting = False
+        self.shooting = False
         self.jumping = False
         self.jumping_initial_speed = 13.
+
+    # Weapon
+    class Weapon(object):
+        def __init__(self):
+            self.orientation = 45
+            self.original_size = 4.
+            self.hit_size = 4.
+            self.hit_state = 1
+            self.shooting_force = 20
+            
+        def _dynamic_size(self):
+            return self.hit_size
+        size = property(_dynamic_size)
+        
+        def hit(self, increase_size):
+            if self.original_size <= self.hit_size <= self.original_size * increase_size:
+                self.hit_size += self.hit_state * .4
+            else:
+                if self.hit_size > self.original_size * increase_size:
+                    self.hit_size = self.original_size * increase_size
+                    self.hit_state = -1
+                    return True
+                if self.original_size > self.hit_size:
+                    self.hit_size = self.original_size
+                    self.hit_state = 1
+                    return False
+            return True
+    weapon = Weapon()
 
     def accelerate(self, acceleration=None, deacc=False):
         """
@@ -180,6 +231,27 @@ class Character(object):
         obj_speed_x  = obj.velocity.dot(collision_axis)
         linear_momentum = self_speed_x*self.mass + obj_speed_x*obj.mass
         vel_reflection  = self_speed_x - obj_speed_x
+
+        # Check for hitting
+        if self.hitting and hit_detection(self, obj):
+            # If i'm really hitting the 'obj' character, we'll change its mass
+            # to a fuzzy mass depending on its damage
+            obj_mass = obj.mass * (obj.energy / 100.)
+            obj.energy -= self.hit_damage
+            obj_hitted = True
+            print '%s hitted!! now he has %s of energy' % (obj, obj.energy)
+        else:
+            obj_mass = obj.mass
+            obj_hitted = False
+        if obj.hitting and hit_detection(obj, self):
+            # Same as the upper if.
+            self_mass = self.mass * (self.energy / 100.)
+            self.energy -= obj.hit_damage
+            self_hitted = True
+            print '%s hitted!! now he has % of energy' % (self, self.energy)
+        else:
+            self_mass = self.mass
+            self_hitted = False
         # Find the elastic collision result
         # Find velocity components vectors according to the collision axis
         self_collision_vx = self.velocity.projection(collision_axis)
@@ -187,8 +259,8 @@ class Character(object):
         obj_collision_vx  = obj.velocity.projection(collision_axis)
         obj_collision_vy  = obj.velocity - obj_collision_vx
         # Resolve equation system.
-        self_new_vx = (linear_momentum - obj.mass*vel_reflection) / \
-                      (self.mass + obj.mass)
+        self_new_vx = (linear_momentum - obj_mass*vel_reflection) / \
+                      (self_mass + obj_mass)
         obj_new_vx  = self_speed_x - obj_speed_x + self_new_vx
         # Gets the vectors
         self_new_vx = collision_axis.copy().set_length(abs(self_new_vx)) * \
@@ -197,7 +269,11 @@ class Character(object):
                       (obj_new_vx/abs(obj_new_vx))
         # Set new velocities
         self.velocity = self_collision_vy + self_new_vx
+        if self_hitted:
+            self.velocity.set_length(self.velocity.length + obj.hit_force)
         obj.velocity  = obj_collision_vy + obj_new_vx
+        if obj_hitted:
+            obj.velocity.set_length(obj.velocity.length + self.hit_force)
         acc_length = self.acceleration.length
         self.acceleration = self.velocity.copy()
         self.acceleration.set_length(acc_length)
@@ -218,7 +294,29 @@ class Character(object):
         if hasattr(self, 'behaviors'):
             self.behaviors = set()
         self.dying = True
-            
+
+    def shoot(self, bullet_class):
+        """
+        Defines shooting.
+        """
+        bullet_position = \
+            Vector3(4. * sin(self.orientation) * cos(radians(self.weapon.orientation)),
+                    4. * sin(radians(self.weapon.orientation)) + self.size,
+                    4. * cos(self.orientation) * cos(radians(self.weapon.orientation)))
+        bullet_velocity = bullet_position.copy()
+        bullet_velocity.y -= self.size
+        bullet_position += self.position
+        bullet_velocity.set_length(self.weapon.shooting_force)
+        bullet = bullet_class(position=bullet_position, velocity=bullet_velocity,
+                        radius=1.)
+        self.shooting = False
+        return bullet
+
+    def hit(self):
+        """
+        Defines hitting.
+        """
+        self.hitting = self.weapon.hit(increase_size=1.3)
 
     def jump(self):
         self.jumping = True
@@ -316,13 +414,11 @@ class Slash(Character):
     def __init__(self, max_speed, max_rotation, position=Vector3(), orientation=0.):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
-                           size=2., mass=2., max_acc=20.)
+                           size=2., mass=2., hit_force=1050., hit_damage=8.,
+                           max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
         self.behavior = Behavior(character=self, active=True,
                                  **LOOK_WHERE_YOU_ARE_GOING)
-        self.canon = 45
-        self.shooting_force = 20.
-        self.shoot = False
 
     def __str__(self):
         return 'Slash'
@@ -330,19 +426,13 @@ class Slash(Character):
     __repr__ = __str__
 
     def behave(self, game):
+        # Handle hitting
+        if self.hitting:
+            self.hit()
+            self.shooting = False
         # Handle shooting
-        if self.shoot:
-            bullet_position = Vector3(4. * sin(self.orientation) * cos(radians(self.canon)),
-                                      4. * sin(radians(self.canon)) + self.size,
-                                      4. * cos(self.orientation) * cos(radians(self.canon)))
-            bullet_velocity = bullet_position.copy()
-            bullet_velocity.y -= self.size
-            bullet_position += self.position
-            bullet_velocity.set_length(self.shooting_force)
-            bullet = Bullet(position=bullet_position, velocity=bullet_velocity,
-                            radius=1.)
-            game.projectiles.append(bullet)
-            self.shoot = False
+        elif self.shooting:
+            game.projectiles.append(self.shoot(bullet_class=Bullet))
         # Behave
         self.behavior.execute()
 
@@ -351,10 +441,10 @@ class Slash(Character):
         glPushMatrix()
         glTranslatef(self.position.x, self.position.y + self.size, self.position.z)
         glRotatef((self.orientation * 180. / pi), 0., 1., 0.)
-        glRotatef(self.canon, -1., 0., 0.)
+        glRotatef(self.weapon.orientation, -1., 0., 0.)
         glRotatef(-90, 0., 0., 1.)
         glColor3f(1., 234/255., 0.)
-        glutSolidCylinder(1., 4., 360, 50)
+        glutSolidCylinder(1., self.weapon.size, 360, 50)
         glPopMatrix()
         super(Slash, self).render(**kwargs)
 
@@ -367,10 +457,10 @@ class Enemy(Character):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
-                           size=1.8, mass=1.8, max_acc=80.)
+                           size=1.8, mass=1.8, hit_force=35., hit_damage=5,
+                           max_acc=80.)
         # Behaviors
         self.behaviors = set(behavior_groups)
-
         #self.image, self.rect = load_image('main_character.png')
 
     def __str__(self):
@@ -402,25 +492,28 @@ class Enemy(Character):
             else: # <
                 return -1
         group_outputs = [group.execute() for group in self.behaviors]
-        # Sort by priorities
-        group_outputs.sort(group_priority_cmp)
-        while not group_outputs == []:
-            try:
-                steering = group_outputs.pop()
-                if steering is not None:
-                    steering = steering['steering']
-                else:
+        if group_outputs:
+            # Sort by priorities
+            group_outputs.sort(group_priority_cmp)
+            while not group_outputs == []:
+                try:
+                    steering = group_outputs.pop()
+                    if steering is not None:
+                        steering = steering['steering']
+                    else:
+                        continue
+                except IndexError:
                     continue
-            except IndexError:
-                continue
-            # Apply to the character.
-            linear  = steering.get('linear', None)
-            angular = steering.get('angular', None)
-            if linear is not None:
-                if linear.length > self.max_acc:
-                    linear.set_length(self.max_acc)
-                self.acceleration += linear
-            if angular is not None:
-                self.angular += angular
-            break
-
+                # Apply to the character.
+                linear  = steering.get('linear', None)
+                angular = steering.get('angular', None)
+                if linear is not None:
+                    if linear.length > self.max_acc:
+                        linear.set_length(self.max_acc)
+                    self.acceleration += linear
+                if angular is not None:
+                    self.angular += angular
+                break
+        else:
+            # Deccelerate in presence of friction.
+            self.accelerate(deacc=True)

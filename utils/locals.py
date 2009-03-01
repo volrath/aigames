@@ -15,6 +15,7 @@ FLOOR_FRICTION = 35.
 
 # Steering constants
 LOW_STEERING_UMBRAL = .2
+IMPACT_ORIENTATION_UMBRAL = .4
 
 # Presets camera positions
 MAIN_VIEW = { 

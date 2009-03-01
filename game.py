@@ -104,7 +104,7 @@ class Game:
         for enemy in self.enemies:
             try:
                 enemy.update(self).render()
-            except AttributeError:
+            except AttributeError, e:
                 pass
 
         # Renders projectiles
@@ -162,12 +162,12 @@ class Game:
                          **OBSTACLE_AVOIDANCE)
                 ]
             
-            enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
-                                                   **PURSUE_EVADE_GROUP))
-            enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
-                                                   **COLLISION_AVOIDANCE_GROUP))
-            enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
-                                                   **FLOCKING_GROUP))
-            enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,
-                                                   **WANDER_GROUP))
+##             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
+##                                                    **PURSUE_EVADE_GROUP))
+##             enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
+##                                                    **COLLISION_AVOIDANCE_GROUP))
+##             enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
+##                                                    **FLOCKING_GROUP))
+##             enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,
+##                                                    **WANDER_GROUP))
             self.add_character(enemy)
