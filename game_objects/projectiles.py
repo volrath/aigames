@@ -9,10 +9,11 @@ from utils.locals import GRAVITY, FPS
 
 class Bullet(object):
     def __init__(self, position, velocity, radius):
-        self.position = position
-        self.velocity = velocity
-        self.radius   = float(radius)
-        self.damage   = 4
+        self.position  = position
+        self.velocity  = velocity
+        self.radius    = float(radius)
+        self.hit_force = 130.
+        self.damage    = 4
 
     def update(self, game):
         """

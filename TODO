@@ -53,9 +53,10 @@ First Version
 
 Second Version
 ==============
-  * Hitting, animation-effects, harming.
-  * Hitting mass coeficient
+ -- Hitting, animation-effects, harming.
+ -- Hitting mass coeficient
   * Throwing out of the stage
+  * Enemies hit me and shoot me
   * AI JUMPING!
   * Improve jumping, jump over objects, object's normals
   * Something about path finding, A*

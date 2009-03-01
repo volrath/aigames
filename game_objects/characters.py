@@ -28,10 +28,10 @@ def hit_detection(hitter, hitted):
         collision_orientation = atan2(collision_axis.x, collision_axis.z)
     else:
         collision_orientation = hitter.orientation
-    print collision_orientation, hitter.orientation, abs(collision_orientation - hitter.orientation)
     if abs(collision_orientation - hitter.orientation) < IMPACT_ORIENTATION_UMBRAL: # We hit!
         return True
     return False
+
 
 class Character(object):
     """
@@ -129,37 +129,50 @@ class Character(object):
         Accelerates the character, given a acceleration VECTOR. This
         method ensures that the character isn't going at its maximum speed
         """
-##         if deacc:
-##             # Negative acceleration.
-##             if self.velocity.length <= 0:
-##                 self.velocity = Vector3()
-##                 self.acceleration = Vector3()
-##             else:
-##                 self.behave_acceleration = self.velocity.unit() * -FLOOR_FRICTION
-##             return
         if self.velocity.length > self.max_speed:
             self.behave_acceleration.length = 0
         else:
             self.behave_acceleration += acceleration
-##         if self.velocity.length > self.max_speed:
-##             self.velocity.set_length(self.max_speed)
 
     def update(self, game):
         """
         Updates the character steering data. This method only covers the
         following:
-          2. updates the object's static data (position, and orientation) using
+          1. checks if the character is dying and returns the character
+             without updating its position.
+          2. checks the actual energy of the character.
+          3. calculates external forces acting on the charcter to find out the
+             acceleration to be used.
+          4. updates the object's static data (position, and orientation) using
              its linear and angular velocities.
-          3. updates the object's dinamic data (velocity) using its previous
+          5. updates the object's dinamic data (velocity) using its previous
              linear and angular acceleration.
 
         Everything else will be removed.
         """
+        time = (1./FPS)
+
+        if self.dying:
+            self.position += self.velocity * time
+            if abs(self.position.y) > self.size * 2:
+                game.characters.remove(self)
+                try:
+                    game.enemies.remove(self)
+                except ValueError:
+                    pass
+                return None
+            else:
+                return self
+
+        # Check my energy
+        if self.energy <= 0:
+            self.die() # =(
+            return self
+
         # Updates character acceleration, based on all the force found
         # acting over itself
+        print self, self.energy
         self.calculate_external_forces()
-
-        time = (1./FPS)
 
         old_velocity = self.velocity.copy()
         if self.jumping:
@@ -176,8 +189,6 @@ class Character(object):
 
         self.rotation += self.angular * time
 
-#        if self.velocity.length > self.max_speed:
-#            self.velocity.set_length(self.max_speed)
         old_velocity *= self.velocity
         if old_velocity.x < 0: self.velocity.x = 0.
         if old_velocity.y < 0: self.velocity.y = 0.
@@ -224,15 +235,6 @@ class Character(object):
             self.position.y = 0.
             self.velocity.y = 0.
             self.acceleration.y = 0.
-
-        # Check if i'm dead
-        if self.dying and abs(self.position.y) > self.size * 2:
-            game.characters.remove(self)
-            try:
-                game.enemies.remove(self)
-            except ValueError:
-                pass
-            return None
         return self
 
     def reset_velocity(self, game, obj=None, wall=False):
@@ -296,16 +298,21 @@ class Character(object):
             obj.energy -= self.hit_damage
             obj_hit_acc_length = obj.hitting_acceleration.length
             obj.hitting_acceleration = obj.velocity.copy()
-            obj.hitting_acceleration.set_length(obj_hit_acc_length + \
+            try:
+                obj.hitting_acceleration.set_length(obj_hit_acc_length + \
                         self.hit_force / (obj.mass * (obj.energy / 100.)))
-            print '%s hitted!! now he has %s of energy' % (obj, obj.energy)
+            except ZeroDivisionError:
+                obj.hitting_acceleration.set_length(obj_hit_acc_length + \
+                        self.hit_force / (obj.mass * 0.0001))
 
         if hasattr(obj, 'hitting') and obj.hitting and hit_detection(obj, self):
             # Same as the upper if.
             self.energy -= obj.hit_damage
-            hit_acc_result = obj.hit_force / (self.mass * (self.energy / 100.))
+            try:
+                hit_acc_result = obj.hit_force / (self.mass * (self.energy / 100.))
+            except ZeroDivisionError:
+                hit_acc_result = obj.hit_force / (self.mass * 0.0001)
             self_hitted = True
-            print '%s hitted!! now i have %h of energy' % (self, self.energy)
         else:
             self_hitted = False
 
@@ -322,13 +329,19 @@ class Character(object):
             if distance < self.radius + projectile.radius:
                 # Oh-oh, it hit me!
                 self.energy -= projectile.damage
-##                 self.bullet_acceleration = projectile.hit_force / \
-##                                            (self.mass * (self.energy / 100.))
+                self.bullet_acceleration = Vector3(projectile.velocity.x, 0.,
+                                                   projectile.velocity.z)
+                try:
+                    self.bullet_acceleration.set_length(projectile.hit_force / \
+                                             (self.mass * (self.energy / 100.)))
+                except ZeroDivisionError:
+                    self.bullet_acceleration.set_length(projectile.hit_force / \
+                                                        0.000001)
                 projectile.explode(game)
-                if self.energy <= 0:
-                    self.die()
 
     def die(self):
+        if self.dying:
+            return # leave me alone, dying
         self.velocity.set(0., -5., 0.)
         self.acceleration = Vector3()
         if hasattr(self, 'behaviors'):
@@ -454,7 +467,7 @@ class Slash(Character):
     def __init__(self, max_speed, max_rotation, position=Vector3(), orientation=0.):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
-                           size=2., mass=2., hit_force=1050., hit_damage=8.,
+                           size=2., mass=2., hit_force=950., hit_damage=20.,
                            max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
         self.behavior = Behavior(character=self, active=True,
@@ -488,6 +501,7 @@ class Slash(Character):
         glPopMatrix()
         super(Slash, self).render(**kwargs)
 
+
 class Enemy(Character):
     """
     An enemy
@@ -498,7 +512,7 @@ class Enemy(Character):
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
                            size=1.8, mass=1.8, hit_force=35., hit_damage=5,
-                           max_acc=80.)
+                           max_acc=24.)
         # Behaviors
         self.behaviors = set(behavior_groups)
         #self.image, self.rect = load_image('main_character.png')
@@ -531,6 +545,7 @@ class Enemy(Character):
                 return 0
             else: # <
                 return -1
+        self.behave_angular = 0.
         group_outputs = [group.execute() for group in self.behaviors]
         # Sort by priorities
         group_outputs.sort(group_priority_cmp)
@@ -553,3 +568,5 @@ class Enemy(Character):
             if angular is not None:
                 self.behave_angular += angular
             break
+        if self.behave_acceleration.length > self.max_acc:
+            self.behave_acceleration.set_length(self.max_acc)
