@@ -48,8 +48,8 @@ def flee(character, target, target_radius=None):
     """
     steering = {}
     new_acc = character.position - target
-    if target_radius is not None and new_acc.length > target_radius:
-        return None
+#    if target_radius is not None and new_acc.length > target_radius:
+#        return None
     steering['linear'] = new_acc.set_length(character.std_acc_step)
     steering['angular'] = 0.
     return steering
@@ -154,9 +154,12 @@ def pursue_evade(basic_behavior):
     
     """
     @wraps(basic_behavior)
-    def decorator(character, target, max_prediction=1., *args, **kwargs):
+    def decorator(character, target, characters_sight=None, max_prediction=1.,
+                  *args, **kwargs):
         # First calculate the target to delegate the seek
         distance = (target.position - character.position).length
+        if characters_sight is not None and distance > characters_sight:
+            return None
         if character.velocity.length <= distance / max_prediction:
             prediction = max_prediction
         else:
@@ -169,6 +172,8 @@ def pursue_evade(basic_behavior):
         
         # Target radius depends on target's size
         kwargs['target_radius'] = target.radius
+        if not character.hitting:
+            kwargs['target_radius'] += 2.6
         if target.velocity.length != 0:
             return basic_behavior(character,
                                   target.position + (target.velocity * prediction),

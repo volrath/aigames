@@ -8,12 +8,9 @@ from physics.vector3 import Vector3
 from utils.locals import GRAVITY, FPS
 
 class Bullet(object):
-    def __init__(self, position, velocity, radius):
+    def __init__(self, position, velocity):
         self.position  = position
         self.velocity  = velocity
-        self.radius    = float(radius)
-        self.hit_force = 130.
-        self.damage    = 4
 
     def update(self, game):
         """
@@ -30,7 +27,7 @@ class Bullet(object):
         """
         glPushMatrix()
         glTranslatef(*self.position)
-        glColor3f(.6, .6, .6)
+        glColor3f(*self.color)
         glutSolidSphere(self.radius, 10, 10)
         glPopMatrix()
 
@@ -39,3 +36,16 @@ class Bullet(object):
         Renders the ball's explotion
         """
         game.projectiles.remove(self)
+
+
+class SlashNormalBullet(Bullet):
+    radius = 1.
+    color = 6., 6., 6.
+    hit_force = 130.
+    damage = 4.
+
+class EnemyBullet(Bullet):
+    radius = .7
+    color = 9., 9., 9.
+    hit_force = 150.
+    damage = 5

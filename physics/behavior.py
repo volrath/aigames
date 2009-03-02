@@ -16,14 +16,15 @@ class Behavior(object):
         self.args = args
         self.method = method
         if method is not None:
-            self.handler = handler(character=character, target=target, **args)
+            self.handler = handler(character=character, target=target,
+                                   **self.args)
             self.handler = getattr(self.handler, method)
         else:
             self.handler = handler
 
     def execute(self):
         if self.method is not None:
-            return self.handler()
+            return self.handler(**self.args)
         if self.target is not None:
             return self.handler(character=self.character,
                                 target=self.target, **self.args)
@@ -37,7 +38,7 @@ class Behavior(object):
 class BehaviorGroup(object):
     def __init__(self, name, b_set, default_priority):
         self.name = name
-        self.behavior_set = set(b_set)
+        self.behavior_set = dict([(b.name, b) for b in b_set])
         self.priority = default_priority
 
     def execute(self):
@@ -46,7 +47,7 @@ class BehaviorGroup(object):
         and, maybe, a dinamic priority
         """
         total_steering = { 'linear': Vector3(), 'angular': 0, }
-        for behavior in self.behavior_set:
+        for b_name, behavior in self.behavior_set.iteritems():
             if not behavior.active:
                 continue
             b_steering = behavior.execute()
@@ -80,7 +81,7 @@ OBSTACLE_AVOIDANCE = {'name': 'Obstacle Avoidance', 'weight': 6, 'handler': Obst
 # DEFAULT GROUPS
 COLLISION_AVOIDANCE_GROUP = {
     'name': 'collision_avoidance',
-    'default_priority': 4,
+    'default_priority': 5,
 }
 FLOCKING_GROUP = {
     'name': 'flocking',
@@ -88,7 +89,7 @@ FLOCKING_GROUP = {
 }
 PURSUE_EVADE_GROUP = {
     'name': 'pursue_evade',
-    'default_priority': 5,
+    'default_priority': 4,
 }
 WANDER_GROUP = {
     'name': 'wander',

@@ -7,6 +7,7 @@ from math import atan2, pi, atan, degrees, cos, sin, radians
 from sympy.matrices import Matrix
 
 from game_objects.projectiles import Bullet
+from game_objects.weapons import SlashWeapon, EnemyNormalWeapon
 from utils.functions import load_image, random_binomial
 from utils.exceptions import BehaviorNotAssociated
 from physics.vector3 import Vector3
@@ -38,7 +39,7 @@ class Character(object):
     Character properties, movement, size, etc..
     """
     def __init__(self, linear_max_speed, angular_max_speed, position,
-                 orientation, colors, size, mass, hit_force, hit_damage,
+                 orientation, colors, size, mass, weapon, hit_force, hit_damage,
                  max_acc, std_initial_force=None):
         self.max_speed = linear_max_speed
         self.max_rotation = angular_max_speed
@@ -79,34 +80,7 @@ class Character(object):
         self.shooting = False
         self.jumping = False
         self.jumping_initial_speed = 13.
-
-    # Weapon
-    class Weapon(object):
-        def __init__(self):
-            self.orientation = 45
-            self.original_size = 4.
-            self.hit_size = 4.
-            self.hit_state = 1
-            self.shooting_force = 20
-            
-        def _dynamic_size(self):
-            return self.hit_size
-        size = property(_dynamic_size)
-        
-        def hit(self, increase_size):
-            if self.original_size <= self.hit_size <= self.original_size * increase_size:
-                self.hit_size += self.hit_state * .4
-            else:
-                if self.hit_size > self.original_size * increase_size:
-                    self.hit_size = self.original_size * increase_size
-                    self.hit_state = -1
-                    return True
-                if self.original_size > self.hit_size:
-                    self.hit_size = self.original_size
-                    self.hit_state = 1
-                    return False
-            return True
-    weapon = Weapon()
+        self.weapon = weapon
 
     def calculate_external_forces(self):
         """
@@ -124,8 +98,6 @@ class Character(object):
                              self.hitting_acceleration + \
                              self.bullet_acceleration + \
                              friction)
-        if isinstance(self, Slash):
-            print self.acceleration, self.velocity, friction, self.behave_acceleration
 
     def accelerate(self, acceleration=None, deacc=False):
         """
@@ -136,7 +108,6 @@ class Character(object):
             self.behave_acceleration.length = 0
         else:
             self.behave_acceleration += acceleration
-        print 'from: accelerate: ', self.behave_acceleration
 
     def update(self, game):
         """
@@ -155,6 +126,7 @@ class Character(object):
         Everything else will be removed.
         """
         time = (1./FPS)
+#        print self, self.energy
 
         if self.dying:
             self.position += self.velocity * time
@@ -246,8 +218,6 @@ class Character(object):
         Solves tridimensional calculation of velocities after a collision.
         """
         if wall:
-            if isinstance(self, Enemy):
-                print 'application force ', (self.acceleration * self.mass).length, self, self.acceleration, self.acceleration.length
             if (self.acceleration * self.mass).length > 3500.:
                 self.die()
                 self.acceleration += GRAVITY * 2
@@ -354,10 +324,10 @@ class Character(object):
         if on_stage:
             self.velocity += Vector3(0., -5., 0.)
         if hasattr(self, 'behaviors'):
-            self.behaviors = set()
+            self.behaviors = {}
         self.dying = True
 
-    def shoot(self, bullet_class):
+    def shoot(self):
         """
         Defines shooting.
         """
@@ -369,8 +339,8 @@ class Character(object):
         bullet_velocity.y -= self.size
         bullet_position += self.position
         bullet_velocity.set_length(self.weapon.shooting_force)
-        bullet = bullet_class(position=bullet_position, velocity=bullet_velocity,
-                        radius=1.)
+        bullet = self.weapon.bullet_class(position=bullet_position,
+                                          velocity=bullet_velocity)
         self.shooting = False
         return bullet
 
@@ -426,7 +396,7 @@ class Character(object):
         self.check_energy()
         glPopMatrix()
 
-        # Character area
+        # Character's area
         glPushMatrix()
         glTranslatef(0.,0.,0.)
         glColor3f(0.0,1.0,0.0)
@@ -447,6 +417,17 @@ class Character(object):
         glVertex3f(self.area.bottom_right[0], 2.0, self.area.bottom_right[1])
         glEnd()
         glPopMatrix()
+
+        # Character's weapon, if any
+        if hasattr(self, 'weapon'):
+            glPushMatrix()
+            glTranslatef(self.position.x, self.position.y + self.size, self.position.z)
+            glRotatef((self.orientation * 180. / pi), 0., 1., 0.)
+            glRotatef(self.weapon.orientation, -1., 0., 0.)
+            glRotatef(-90, 0., 0., 1.)
+            glColor3f(*self.weapon.color)
+            glutSolidCylinder(1., self.weapon.size, 360, 50)
+            glPopMatrix()
 
     def check_energy(self):
         """
@@ -476,8 +457,8 @@ class Slash(Character):
     def __init__(self, max_speed, max_rotation, position=Vector3(), orientation=0.):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
-                           size=2., mass=2., hit_force=100., hit_damage=20.,
-                           max_acc=20.)
+                           size=2., mass=2., weapon=SlashWeapon(), hit_force=100.,
+                           hit_damage=20., max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
         self.behavior = Behavior(character=self, active=True,
                                  **LOOK_WHERE_YOU_ARE_GOING)
@@ -494,21 +475,9 @@ class Slash(Character):
             self.shooting = False
         # Handle shooting
         elif self.shooting:
-            game.projectiles.append(self.shoot(bullet_class=Bullet))
+            game.projectiles.append(self.shoot())
         # Behave
         self.behavior.execute()
-
-    def render(self, *args, **kwargs):
-        # Slash weapon
-        glPushMatrix()
-        glTranslatef(self.position.x, self.position.y + self.size, self.position.z)
-        glRotatef((self.orientation * 180. / pi), 0., 1., 0.)
-        glRotatef(self.weapon.orientation, -1., 0., 0.)
-        glRotatef(-90, 0., 0., 1.)
-        glColor3f(1., 234/255., 0.)
-        glutSolidCylinder(1., self.weapon.size, 360, 50)
-        glPopMatrix()
-        super(Slash, self).render(**kwargs)
 
 
 class Enemy(Character):
@@ -520,10 +489,10 @@ class Enemy(Character):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
-                           size=1.8, mass=1.8, hit_force=35., hit_damage=5,
-                           max_acc=24.)
+                           size=1.8, mass=1.8, weapon=EnemyNormalWeapon(),
+                           hit_force=35., hit_damage=5., max_acc=24.)
         # Behaviors
-        self.behaviors = set(behavior_groups)
+        self.behaviors = dict([(bg.name, bg) for bg in behavior_groups])
         #self.image, self.rect = load_image('main_character.png')
 
     def __str__(self):
@@ -533,35 +502,26 @@ class Enemy(Character):
     # Behaviors
     #
     def add_behavior_group(self, bg):
-        self.behaviors.add(bg)
+        self.behaviors[bg.name] = bg
 
     def add_behavior_in_group(self, b, bg):
-        group = None
-        for g in self.behaviors:
-            if g.name == bg:
-                group = g
-                break
-        if group is not None:
-            group.behavior_set.add(b)
+        self.behaviors[bg].behavior_set[b.name] = b
 
     def behave(self):
         def group_priority_cmp(g1, g2):
             if g1 is None: return -1
             if g2 is None: return 1
-            if g1['priority'] > g2['priority']:
-                return 1
-            elif g1['priority'] == g2['priority']:
-                return 0
-            else: # <
-                return -1
+            return cmp(g1['priority'], g2['priority'])
+
         self.behave_angular = 0.
-        group_outputs = [group.execute() for group in self.behaviors]
+        group_outputs = [group.execute() for g_name, group in self.behaviors.iteritems()]
         # Sort by priorities
         group_outputs.sort(group_priority_cmp)
-        while not group_outputs == []:
+        while group_outputs:
             try:
                 steering = group_outputs.pop()
                 if steering is not None:
+#                    print steering['name']
                     steering = steering['steering']
                 else:
                     continue
@@ -579,3 +539,38 @@ class Enemy(Character):
             break
         if self.behave_acceleration.length > self.max_acc:
             self.behave_acceleration.set_length(self.max_acc)
+
+    def attack(self, game):
+        """
+        Checks if i can attack a given character, giving priority to
+        person-to-person attack (hitting) over long distance attack (shooting)
+        """
+        character = game.main_character
+        distance = (character.position - self.position).length
+        # Check for hitting
+        if distance < character.radius + 5 and hit_detection(self, character): # FIX THIS WIRED CODE =S!
+            # We hit!!!
+            self.hit()
+        # Check for shooting (a.k.a. predicting physics)
+        # Step 0. Simulate a bullet
+        bullet = self.shoot()
+        # Step 1. Get landing time of the bullet
+        try:
+            lt = (-bullet.velocity.y + \
+                  sqrt(bullet.velocity.y - 2 * GRAVITY.y * bullet.position.y)) / \
+                  GRAVITY.y
+            # Step 2. Get position of impact
+            pi = Vector3(bullet.position.x + bullet.velocity.x * lt,
+                         0.,
+                         bullet.position.z + bullet.velocity.z * lt)
+            # Step 3. Intersects position of impact with target's radius
+            bullet_trajectory = pi - self.position
+            target_direction  = (character.position + self.velocity * lt) - self.position
+            min_distance = target_direction - target_direction.projection(bullet_trajectory)
+            if min_distance.length < character.radius and \
+               target_direction.length < bullet_trajectory.length*9.3 and \
+               atan2(target_direction.x, target_direction.z) < pi/4:
+                # We shoot!!
+                game.projectiles.append(bullet)
+        except ValueError:
+            pass

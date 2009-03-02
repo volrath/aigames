@@ -31,10 +31,10 @@ def keymap_handler(game):
         if game.main_character.weapon.orientation > 0:
             game.main_character.weapon.orientation -= 3
     if pressed[K_n]:
-        if game.main_character.weapon.shooting_force > 0:
+        if game.main_character.weapon.shooting_force < 50:
             game.main_character.weapon.shooting_force += 2
     if pressed[K_m]:
-        if game.main_character.weapon.shooting_force < 40:
+        if game.main_character.weapon.shooting_force > 0:
             game.main_character.weapon.shooting_force -= 2
     if pressed[K_j]:
         if game.main_character.hitting: # If I'm hitting, i can't shoot
@@ -67,7 +67,6 @@ def keymap_handler(game):
         game.main_character.accelerate(Vector3(-game.main_character.std_acc_step, 0., 0.))
         return
     if pressed[K_s]:
-        print 'pressed s'
         game.main_character.accelerate(Vector3(0., 0., game.main_character.std_acc_step))
         return
     if pressed[K_w]:
