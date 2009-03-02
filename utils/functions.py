@@ -67,6 +67,7 @@ def keymap_handler(game):
         game.main_character.accelerate(Vector3(-game.main_character.std_acc_step, 0., 0.))
         return
     if pressed[K_s]:
+        print 'pressed s'
         game.main_character.accelerate(Vector3(0., 0., game.main_character.std_acc_step))
         return
     if pressed[K_w]:

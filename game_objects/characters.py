@@ -12,8 +12,8 @@ from utils.exceptions import BehaviorNotAssociated
 from physics.vector3 import Vector3
 from physics.rect import Rect
 from physics.behavior import *
-from utils.locals import FPS, GRAVITY, FLOOR_FRICTION, STANDARD_INITIAL_FORCE, \
-     IMPACT_ORIENTATION_UMBRAL
+from utils.locals import FPS, GRAVITY, KINETIC_FRICTION_COEFICIENT, \
+     STANDARD_INITIAL_FORCE, IMPACT_ORIENTATION_UMBRAL
 
 def hit_detection(hitter, hitted):
     """
@@ -119,10 +119,13 @@ class Character(object):
         3. hit by a bullet
         4. floor friction
         """
-        self.acceleration = self.behave_acceleration + \
-                            self.hitting_acceleration + \
-                            self.bullet_acceleration + \
-                            self.velocity.unit() * -(FLOOR_FRICTION / self.mass)
+        friction = self.velocity.unit() * -(((GRAVITY * self.mass) * KINETIC_FRICTION_COEFICIENT).length) / self.mass
+        self.acceleration = (self.behave_acceleration + \
+                             self.hitting_acceleration + \
+                             self.bullet_acceleration + \
+                             friction)
+        if isinstance(self, Slash):
+            print self.acceleration, self.velocity, friction, self.behave_acceleration
 
     def accelerate(self, acceleration=None, deacc=False):
         """
@@ -133,6 +136,7 @@ class Character(object):
             self.behave_acceleration.length = 0
         else:
             self.behave_acceleration += acceleration
+        print 'from: accelerate: ', self.behave_acceleration
 
     def update(self, game):
         """
@@ -166,12 +170,11 @@ class Character(object):
 
         # Check my energy
         if self.energy <= 0:
-            self.die() # =(
+            self.die(on_stage=True) # =(
             return self
 
         # Updates character acceleration, based on all the force found
         # acting over itself
-        print self, self.energy
         self.calculate_external_forces()
 
         old_velocity = self.velocity.copy()
@@ -190,9 +193,10 @@ class Character(object):
         self.rotation += self.angular * time
 
         old_velocity *= self.velocity
-        if old_velocity.x < 0: self.velocity.x = 0.
-        if old_velocity.y < 0: self.velocity.y = 0.
-        if old_velocity.z < 0: self.velocity.z = 0.
+        for c in range(0,3):
+            if old_velocity[c] < 0:
+                self.acceleration[c] = 0.
+                self.velocity[c] = 0.
         return self.update_position(game)
 
     def update_position(self, game):
@@ -242,6 +246,11 @@ class Character(object):
         Solves tridimensional calculation of velocities after a collision.
         """
         if wall:
+            if isinstance(self, Enemy):
+                print 'application force ', (self.acceleration * self.mass).length, self, self.acceleration, self.acceleration.length
+            if (self.acceleration * self.mass).length > 3500.:
+                self.die()
+                self.acceleration += GRAVITY * 2
             # Has to guess with which side are we hitting
             if game.stage.floor.area.collide_point(*self.area.center):
                 # If my center is still on the stage
@@ -339,11 +348,11 @@ class Character(object):
                                                         0.000001)
                 projectile.explode(game)
 
-    def die(self):
+    def die(self, on_stage=False):
         if self.dying:
             return # leave me alone, dying
-        self.velocity.set(0., -5., 0.)
-        self.acceleration = Vector3()
+        if on_stage:
+            self.velocity += Vector3(0., -5., 0.)
         if hasattr(self, 'behaviors'):
             self.behaviors = set()
         self.dying = True
@@ -467,7 +476,7 @@ class Slash(Character):
     def __init__(self, max_speed, max_rotation, position=Vector3(), orientation=0.):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
-                           size=2., mass=2., hit_force=950., hit_damage=20.,
+                           size=2., mass=2., hit_force=100., hit_damage=20.,
                            max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
         self.behavior = Behavior(character=self, active=True,
