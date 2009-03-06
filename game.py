@@ -6,6 +6,7 @@ from OpenGL.GLU import *
 
 from game_objects.stage import Stage
 from game_objects.characters import Slash, Enemy
+from game_objects.state_machine import StateMachine
 from physics.vector3 import Vector3
 from physics.behavior import *
 from utils.camera import Camera
@@ -88,6 +89,7 @@ class Game:
 
         # AI characters behavior
         for enemy in self.enemies:
+            StateMachine.fuzzy_life(enemy, self)
             enemy.behave()
             enemy.attack(self)
 
