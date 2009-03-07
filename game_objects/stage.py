@@ -62,22 +62,32 @@ class Obstacle:
         graphics.draw_circle(self.position, self.radius, (195./255, 1./255, 243./255))
         self.velocity.set_length(0)
 
-class Amplificator(Obstacle):
-    """
-    An amplificator.
-    """
-    pass
 
-class Drum(Obstacle):
+class SideAmplificator(Obstacle):
     """
-    Some drums =)
+    An amplificator on the side of the stage.
     """
-    pass
+    def __init__(self, position, *args, **kwargs):
+        super(Obstacle, self).__init__(position=position, size=2.5,
+                                       color=(34/255., 38/255., 41/255.),
+                                       *args, **kwargs)
+
+
+class MainAmplificator(Obstacle):
+    """
+    Amplificator in front of the stage.
+    """
+    def __init__(self, position, rotation, *args, **kwargs):
+        super(Obstacle, self).__init__(position=position, size=3,
+                                       color=(22/255., 26/255., 30/255.),
+                                       *args, **kwargs)
+        
 
 class Stage:
     def __init__(self, floor_size):
         self.floor = Floor(floor_size)
         self.obstacles = []
+        self.display_list = None
 
     def default_obstacles(self):
         """
@@ -90,6 +100,17 @@ class Stage:
         return self
 
     def render(self):
-        self.floor.render()
-        for obstacle in self.obstacles:
-            obstacle.render()
+        if self.display_list is None:
+            # Create a display list
+            self.display_list = glGenLists(1)
+            glNewList(self.display_list, GL_COMPILE)
+
+            # Draw the stage
+            self.floor.render()
+            
+            for obstacle in self.obstacles:
+                obstacle.render()
+
+            glEndList()
+        else:
+            glCallList(self.display_list)
