@@ -19,7 +19,7 @@ IMPACT_ORIENTATION_UMBRAL = .4
 
 # Presets camera positions
 MAIN_VIEW = { 
-    'position': { 'x': 0., 'y': 25., 'z': 66. },
+    'position': { 'x': 0., 'y': 20., 'z': 67. },
     'view': { 'x': 0., 'y': 12.6, 'z': 2.5 }
     }
 SIDE_VIEW = { 
@@ -27,6 +27,6 @@ SIDE_VIEW = {
     'view': { 'x': 0., 'y': 12.6, 'z': 2.5 }
     }
 TOP_VIEW = {
-    'position': { 'x': 0., 'y': 67.5, 'z': 0.7 },
-    'view': { 'x': 0., 'y': 12.5, 'z': 0.1 }
+    'position': { 'x': 0., 'y': 74.5, 'z': 0.7 },
+    'view': { 'x': 0., 'y': 1.5, 'z': 0.1 }
     }

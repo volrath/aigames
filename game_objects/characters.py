@@ -8,6 +8,7 @@ from sympy.matrices import Matrix
 
 from game_objects.projectiles import Bullet
 from game_objects.weapons import SlashWeapon, EnemyNormalWeapon
+from graphics.utils import draw_circle
 from utils.functions import load_image, random_binomial
 from utils.exceptions import BehaviorNotAssociated
 from physics.vector3 import Vector3
@@ -332,9 +333,9 @@ class Character(object):
         Defines shooting.
         """
         bullet_position = \
-            Vector3(4. * sin(self.orientation) * cos(radians(self.weapon.orientation)),
-                    4. * sin(radians(self.weapon.orientation)) + self.size,
-                    4. * cos(self.orientation) * cos(radians(self.weapon.orientation)))
+            Vector3(self.weapon.size * sin(self.orientation) * cos(radians(self.weapon.orientation)),
+                    self.weapon.size * sin(radians(self.weapon.orientation)) + self.size,
+                    self.weapon.size * cos(self.orientation) * cos(radians(self.weapon.orientation)))
         bullet_velocity = bullet_position.copy()
         bullet_velocity.y -= self.size
         bullet_position += self.position
@@ -396,27 +397,8 @@ class Character(object):
         self.check_energy()
         glPopMatrix()
 
-        # Character's area
-        glPushMatrix()
-        glTranslatef(0.,0.,0.)
-        glColor3f(0.0,1.0,0.0)
-        glBegin(GL_LINES)
-        glVertex3f(self.area.top_left[0], 2.0, self.area.top_left[1])
-        glVertex3f(self.area.top_right[0], 2.0, self.area.top_right[1])
-        glEnd()
-        glBegin(GL_LINES)
-        glVertex3f(self.area.top_left[0], 2.0, self.area.top_left[1])
-        glVertex3f(self.area.bottom_left[0], 2.0, self.area.bottom_left[1])
-        glEnd()
-        glBegin(GL_LINES)
-        glVertex3f(self.area.top_right[0], 2.0, self.area.top_right[1])
-        glVertex3f(self.area.bottom_right[0], 2.0, self.area.bottom_right[1])
-        glEnd()
-        glBegin(GL_LINES)
-        glVertex3f(self.area.bottom_left[0], 2.0, self.area.bottom_left[1])
-        glVertex3f(self.area.bottom_right[0], 2.0, self.area.bottom_right[1])
-        glEnd()
-        glPopMatrix()
+        # Character's Radius
+        draw_circle(self.position + Vector3(0., self.size, 0.), self.radius, (1., 0., 228/255.))
 
         # Character's weapon, if any
         if hasattr(self, 'weapon'):
@@ -426,7 +408,7 @@ class Character(object):
             glRotatef(self.weapon.orientation, -1., 0., 0.)
             glRotatef(-90, 0., 0., 1.)
             glColor3f(*self.weapon.color)
-            glutSolidCylinder(1., self.weapon.size, 360, 50)
+            glutSolidCylinder(.7, self.weapon.size, 360, 50)
             glPopMatrix()
 
     def check_energy(self):
@@ -457,7 +439,7 @@ class Slash(Character):
     def __init__(self, max_speed, max_rotation, position=Vector3(), orientation=0.):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
-                           size=2., mass=2., weapon=SlashWeapon(), hit_force=100.,
+                           size=1.2, mass=1.2, weapon=SlashWeapon(), hit_force=100.,
                            hit_damage=20., max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
         self.behavior = Behavior(character=self, active=True,
@@ -489,7 +471,7 @@ class Enemy(Character):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
-                           size=1.8, mass=1.8, weapon=EnemyNormalWeapon(),
+                           size=1., mass=1., weapon=EnemyNormalWeapon(),
                            hit_force=35., hit_damage=5., max_acc=24.)
         # Behaviors
         self.behaviors = dict([(bg.name, bg) for bg in behavior_groups])

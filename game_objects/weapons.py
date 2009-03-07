@@ -30,8 +30,8 @@ class SlashWeapon(Weapon):
     max_shooting_force = 50
     bullet_class = SlashNormalBullet
     color = 1., 234/255., 0.
-    original_size = 4.
-    hit_size = 4.
+    original_size = 3.2
+    hit_size = 3.2
 
 class EnemyNormalWeapon(Weapon):
     shooting_force = 40
@@ -39,5 +39,5 @@ class EnemyNormalWeapon(Weapon):
     max_shooting_force = 40
     bullet_class = EnemyBullet
     color = 84/255., 212/255., 244/255.
-    original_size = 4.
-    hit_size = 4.
+    original_size = 3.2
+    hit_size = 3.2

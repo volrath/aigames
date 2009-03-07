@@ -39,13 +39,13 @@ class Bullet(object):
 
 
 class SlashNormalBullet(Bullet):
-    radius = 1.
+    radius = .9
     color = 6., 6., 6.
     hit_force = 130.
     damage = 4.
 
 class EnemyBullet(Bullet):
-    radius = .7
+    radius = .6
     color = 9., 9., 9.
     hit_force = 150.
     damage = 5
