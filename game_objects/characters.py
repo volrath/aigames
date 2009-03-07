@@ -6,6 +6,7 @@ from OpenGL.GLU import *
 from math import atan2, pi, atan, degrees, cos, sin, radians
 from sympy.matrices import Matrix
 
+from ai.behavior import *
 from game_objects.projectiles import Bullet
 from game_objects.weapons import SlashWeapon, EnemyNormalWeapon
 from graphics.utils import draw_circle
@@ -13,7 +14,6 @@ from utils.functions import load_image, random_binomial
 from utils.exceptions import BehaviorNotAssociated
 from physics.vector3 import Vector3
 from physics.rect import Rect
-from physics.behavior import *
 from utils.locals import FPS, GRAVITY, KINETIC_FRICTION_COEFICIENT, \
      STANDARD_INITIAL_FORCE, IMPACT_ORIENTATION_UMBRAL
 

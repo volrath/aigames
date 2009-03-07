@@ -4,11 +4,11 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
+from ai.behavior import *
+from ai.state_machine import StateMachine
 from game_objects.stage import Stage
 from game_objects.characters import Slash, Enemy
-from game_objects.state_machine import StateMachine
 from physics.vector3 import Vector3
-from physics.behavior import *
 from utils.camera import Camera
 from utils.functions import keymap_handler
 from utils.locals import MAIN_VIEW, FPS, STAGE_SIZE
