@@ -27,9 +27,11 @@ SIDE_VIEW = {
     'view': { 'x': 0., 'y': 12.6, 'z': 2.5 }
     }
 TOP_VIEW = {
-    'position': { 'x': 0., 'y': 74.5, 'z': 0.7 },
+    'position': { 'x': 0., 'y': 79.5, 'z': 0.7 },
     'view': { 'x': 0., 'y': 1.5, 'z': 0.1 }
     }
 
 # Graph representation constants
 from map_graph_representation import *
+# Game levels
+from levels import LEVELS

@@ -8,7 +8,7 @@ from physics.rect import Rect
 from physics.vector3 import Vector3
 import graphics
 
-class Floor:
+class Floor(object):
     def __init__(self, floor):
         self.area = Rect((0, 0), floor*2, floor*2)
         #surface = pygame.image.load("stage_surface.png")
@@ -39,7 +39,7 @@ class Floor:
 	glEnd()				# Done Drawing The Quad
         glPopMatrix()
 
-class Obstacle:
+class Obstacle(object):
     def __init__(self, size=1, position=Vector3(), color=(1.,1.,1.),
                  rotation=0.):
         self.area = Rect((position.x, position.z), size, size)
@@ -68,9 +68,9 @@ class SideAmplificator(Obstacle):
     An amplificator on the side of the stage.
     """
     def __init__(self, position, *args, **kwargs):
-        super(Obstacle, self).__init__(position=position, size=2.5,
-                                       color=(34/255., 38/255., 41/255.),
-                                       *args, **kwargs)
+        super(SideAmplificator, self).__init__(position=position, size=5,
+                                               color=(34/255., 38/255., 41/255.),
+                                               *args, **kwargs)
 
 
 class MainAmplificator(Obstacle):
@@ -78,26 +78,23 @@ class MainAmplificator(Obstacle):
     Amplificator in front of the stage.
     """
     def __init__(self, position, rotation, *args, **kwargs):
-        super(Obstacle, self).__init__(position=position, size=3,
-                                       color=(22/255., 26/255., 30/255.),
-                                       *args, **kwargs)
+        super(MainAmplificator, self).__init__(position=position, size=6,
+                                               rotation=rotation,
+                                               color=(22/255., 26/255., 30/255.),
+                                               *args, **kwargs)
         
 
-class Stage:
+class Stage(object):
     def __init__(self, floor_size):
         self.floor = Floor(floor_size)
         self.obstacles = []
         self.display_list = None
 
-    def default_obstacles(self):
+    def set_level(self, obstacles):
         """
-        Set 2 amplificator in the default position
+        Set the game level's obstacles
         """
-        self.obstacles = [
-            Amplificator(size=6.5, position=Vector3(17.5, 0., 18.), color=(1.,0.,0.), rotation=-35),
-            Amplificator(size=6.5, position=Vector3(-17.5, 0., 18.), color=(1.,0.,0.), rotation=35),
-            ]
-        return self
+        self.obstacles = obstacles
 
     def render(self):
         if self.display_list is None:
