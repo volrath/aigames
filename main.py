@@ -27,10 +27,23 @@ def main():
     camera = Camera()
     game = Game()             # Game object. This will handle all the game world
                               # and its components
-    game.random_enemies([Vector3(0., 0., 17.)])
-#     game.random_enemies([Vector3(4., 0., -5.), Vector3(-4., 0., -5.),
-#                          Vector3(-1., 0., 10.)])    # Creates 'random' enemies
 
+    # Game's menu
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                return
+            if event.type == KEYUP and event.key == K_ESCAPE:
+                return
+            if event.key == K_RETURN:
+                # - Set loading state
+                # - Check level selected
+                # - Load level
+                game.set_level(0)
+                # - Unset loading
+                break
+
+    # Game!
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:

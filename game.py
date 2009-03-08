@@ -11,7 +11,7 @@ from game_objects.characters import Slash, Enemy
 from physics.vector3 import Vector3
 from utils.camera import Camera
 from utils.functions import keymap_handler
-from utils.locals import MAIN_VIEW, FPS, STAGE_SIZE, LEVELS
+from utils.locals import MAIN_VIEW, FPS, STAGE_SIZE
 from utils.exceptions import GameOverException
 
 class OGLManager:
@@ -53,7 +53,25 @@ class Game:
         self.characters = [self.main_character]
         self.projectiles = [] # projectiles pool
         self.stage = Stage(STAGE_SIZE)
-        self.stage.set_level(LEVELS[level or 0])
+
+    def set_level(self, level):
+        """
+        Set the game's level, following this operations:
+        1. Get level structure
+        2. Set level's obstacles
+        3. Load the level's graph
+        4. Set level's characters (enemies)
+        """
+        # 1. Little bit of wired code =p
+        from utils.levels import LEVEL
+        # 2.
+        self.stage.set_level(LEVEL['obstacles'])
+        # 3.
+        self.graph = Graph(LEVEL['number_of_nodes'], LEVEL['nodes'], LEVEL['neighbors'])
+        self.graph.load()
+        self.a_star = AStar(self.graph)
+        # 4.
+        self.random_enemies(LEVEL['enemies'])
 
     def draw_axes(self):
         # Space axes

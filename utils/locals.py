@@ -30,8 +30,3 @@ TOP_VIEW = {
     'position': { 'x': 0., 'y': 79.5, 'z': 0.7 },
     'view': { 'x': 0., 'y': 1.5, 'z': 0.1 }
     }
-
-# Graph representation constants
-from map_graph_representation import *
-# Game levels
-from levels import LEVELS
