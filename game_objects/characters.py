@@ -546,16 +546,16 @@ class Enemy(Character):
                   sqrt(bullet.velocity.y - 2 * GRAVITY.y * bullet.position.y)) / \
                   GRAVITY.y
             # Step 2. Get position of impact
-            pi = Vector3(bullet.position.x + bullet.velocity.x * lt,
+            pix = Vector3(bullet.position.x + bullet.velocity.x * lt,
                          0.,
                          bullet.position.z + bullet.velocity.z * lt)
             # Step 3. Intersects position of impact with target's radius
-            bullet_trajectory = pi - self.position
+            bullet_trajectory = pix - self.position
             target_direction  = (character.position + self.velocity * lt) - self.position
             min_distance = target_direction - target_direction.projection(bullet_trajectory)
             if min_distance.length < character.radius and \
                target_direction.length < bullet_trajectory.length*9.3 and \
-               atan2(target_direction.x, target_direction.z) < pi/4:
+               0. <= atan2(target_direction.x, target_direction.z) <= pi/4:
                 # We shoot!!
                 game.projectiles.append(bullet)
         except ValueError:
