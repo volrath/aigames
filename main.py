@@ -29,19 +29,22 @@ def main():
                               # and its components
 
     # Game's menu
-    while True:
+    loading = True
+    while loading:
         for event in pygame.event.get():
             if event.type == QUIT:
                 return
             if event.type == KEYUP and event.key == K_ESCAPE:
                 return
-            if event.key == K_RETURN:
+            if event.type == KEYUP and event.key == K_RETURN:
                 # - Set loading state
+                print 'LOADING!'
                 # - Check level selected
                 # - Load level
                 game.set_level(0)
                 # - Unset loading
-                break
+                print 'ALL SET...'
+                loading = False
 
     # Game!
     while True:

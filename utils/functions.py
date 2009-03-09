@@ -3,6 +3,7 @@ from pygame.locals import *
 from math import sin, cos, pi
 
 from physics.vector3 import Vector3
+from utils.levels import LEVEL
 from utils.locals import MAIN_VIEW, SIDE_VIEW, TOP_VIEW
 
 # Check for dependencies.
@@ -13,6 +14,11 @@ if not pygame.mixer: print 'Warning, sound disabled'
 
 def keymap_handler(game):
     pressed = pygame.key.get_pressed()
+
+    # Game keyhandling
+    # ================
+    if pressed[K_0]:
+        game.print_debug = not game.print_debug
 
     # Main Character
     # ==============
@@ -117,3 +123,7 @@ def vector3_from_orientation(orientation, length):
     Calculates velocity from a character's orientation in a 2D(1/2) space
     """
     return Vector3(length * cos(orientation), 0., length * sin(orientation))
+
+def graph_quantization(position):
+    return min(LEVEL['nodes'],
+               key=(lambda node: (node.location - position).length))

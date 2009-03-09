@@ -14,6 +14,7 @@ from utils.functions import load_image, random_binomial
 from utils.exceptions import BehaviorNotAssociated
 from physics.vector3 import Vector3
 from physics.rect import Rect
+from utils.functions import graph_quantization
 from utils.locals import FPS, GRAVITY, KINETIC_FRICTION_COEFICIENT, \
      STANDARD_INITIAL_FORCE, IMPACT_ORIENTATION_UMBRAL
 
@@ -56,6 +57,7 @@ class Character(object):
         self.hit_damage = hit_damage
         # Kinematic data
         self.position = position
+        self.sector_position = None
         self.orientation = orientation
         self.velocity = Vector3()
         self.rotation = 0.
@@ -206,12 +208,14 @@ class Character(object):
 
         # Check for bullets hitting me
         self.check_for_bullets(game)
-        
+
         # Check for negative position.y and corrects it
         if self.position.y < 0 and not self.dying:
             self.position.y = 0.
             self.velocity.y = 0.
             self.acceleration.y = 0.
+        # Updates node_position using quantization
+        self.node_position = graph_quantization(self.position)
         return self
 
     def reset_velocity(self, game, obj=None, wall=False):

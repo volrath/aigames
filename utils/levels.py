@@ -22,7 +22,7 @@ SECTORS = [
     ((-19, -13.3), (-9, -8.3), (-9, -17.5)),
     ((-9, -17.5), (-9, -8.3), (0, -12.4)),
     ((-9,  9.7), (-14.8, 17.7), (0, 30)),
-    ((-14.8, 17.7), (0, 30), (-14,8, 23.7)),
+    ((-14.8, 17.7), (0, 30), (-14.8, 23.7)),
     ((-14.8, 23.7), (0, 30), (-18.3, 30)),        # 19
     ((-14.8, 23.7), (-18.3, 30), (-25.7, 26.8)),
     ((-25.7, 26.8), (-18.3, 30), (-30, 30)),
@@ -48,15 +48,15 @@ SECTORS.extend([
     ((-9., 9.7), (9., 9.7), (0, 30.)),
     ])
 
-## NODES = []
-## NUMBER_OF_NODES = 0
-## for sector in SECTORS:
-##     s1, s2, s3 = sector
-##     NODES.append(Node(location=Vector3(((s1[0] + s2[0] + s3[0])/3),
-##                                        0.,
-##                                        ((s1[1] + s2[1] + s3[1])/3)),
-##                       node_id=NUMBER_OF_NODES))
-##     NUMBER_OF_NODES +=1
+NODES = []
+NUMBER_OF_NODES = 0
+for sector in SECTORS:
+    s1, s2, s3 = sector
+    NODES.append(Node(location=Vector3(((s1[0] + s2[0] + s3[0])/3),
+                                       0.,
+                                       ((s1[1] + s2[1] + s3[1])/3)),
+                      node_id=NUMBER_OF_NODES))
+    NUMBER_OF_NODES +=1
 
 NEIGHBORS = [
     (1,),           # 0
@@ -133,12 +133,12 @@ OBSTACLES = [
     # Drums
     Obstacle(size=7, position=Vector3(-2.7, 0., -18.4), color=(164/255., 95/255., 21/255.), rotation=-30.),
     Obstacle(size=7, position=Vector3(2.7, 0., -18.4), color=(164/255., 95/255., 21/255.), rotation=30.),
-    ],
+    ]
 
 LEVEL = {
     'sectors': SECTORS,
     'nodes': NODES,
-    'number_of_nodes': NUMBER_OF_NODES
+    'number_of_nodes': NUMBER_OF_NODES,
     'neighbors': NEIGHBORS,
     'obstacles':  OBSTACLES,
     'enemies': [Vector3(0., 0., 17.)],

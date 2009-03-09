@@ -4,7 +4,9 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
+from ai.a_star import AStar
 from ai.behavior import *
+from ai.graph import Graph
 from ai.state_machine import StateMachine
 from game_objects.stage import Stage
 from game_objects.characters import Slash, Enemy
@@ -53,6 +55,8 @@ class Game:
         self.characters = [self.main_character]
         self.projectiles = [] # projectiles pool
         self.stage = Stage(STAGE_SIZE)
+        # Control
+        self.print_debug = True
 
     def set_level(self, level):
         """
@@ -64,6 +68,8 @@ class Game:
         """
         # 1. Little bit of wired code =p
         from utils.levels import LEVEL
+        global LEVEL
+        self.level = LEVEL
         # 2.
         self.stage.set_level(LEVEL['obstacles'])
         # 3.
@@ -112,6 +118,9 @@ class Game:
             enemy.attack(self)
 
     def render(self):
+        # Renders sectors and nodes
+        if self.print_debug:
+            self.render_debug()
         # Renders all game's objects
         self.stage.render()
 
@@ -133,6 +142,36 @@ class Game:
             projectile.update(self).render()
             if projectile.position.y < 0:
                 self.projectiles.remove(projectile)
+
+    def render_debug(self):
+        """
+        """
+        glPushMatrix()
+        # Sectors
+        glTranslatef(0., 1., 0.)
+        glColor3f(0., 1., 0.)
+        for sector in self.level['sectors']:
+            s1, s2, s3 = sector
+            glBegin(GL_LINES)
+            glVertex3f(s1[0], 0., s1[1])
+            glVertex3f(s2[0], 0., s2[1])
+            glEnd()
+            glBegin(GL_LINES)
+            glVertex3f(s1[0], 0., s1[1])
+            glVertex3f(s3[0], 0., s3[1])
+            glEnd()
+            glBegin(GL_LINES)
+            glVertex3f(s3[0], 0., s3[1])
+            glVertex3f(s2[0], 0., s2[1])
+            glEnd()
+
+        # Nodes
+##         glColor3f(1., 1., 1.)
+##         for node in self.level['nodes']:
+##             glTranslatef(node.location.x, 1., node.location.z)
+##             print node.id, node.location.x, node.location.z
+##             glutSolidSphere(.5, 5, 5)
+        glPopMatrix()
 
     def game_over(self, i_won):
         if i_won:
@@ -185,12 +224,12 @@ class Game:
                          **OBSTACLE_AVOIDANCE)
                 ]
             
-##             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
-##                                                    **PURSUE_EVADE_GROUP))
-##             enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
-##                                                    **COLLISION_AVOIDANCE_GROUP))
-##             enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
-##                                                    **FLOCKING_GROUP))
-##             enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,
-##                                                    **WANDER_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
+                                                   **PURSUE_EVADE_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
+                                                   **COLLISION_AVOIDANCE_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
+                                                   **FLOCKING_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,
+                                                   **WANDER_GROUP))
             self.add_character(enemy)

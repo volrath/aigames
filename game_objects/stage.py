@@ -104,7 +104,7 @@ class Stage(object):
 
             # Draw the stage
             self.floor.render()
-            
+
             for obstacle in self.obstacles:
                 obstacle.render()
 
