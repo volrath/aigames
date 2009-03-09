@@ -1,6 +1,31 @@
 from heapq import heappop, heappush
 from ai.graph import *
 
+class NodeHolder(object):
+    """
+    """
+    def __init__(self, node, parent, cost, heuristic):
+        self.node      = node
+        self.parent    = parent
+        self.cost      = cost
+        self.heuristic = heuristic
+
+    def __lt__(self, other):
+        return (self.cost + self.heuristic) < (other.cost + other.heuristic)
+
+    def __le__(self, other):
+        return (self.cost + self.heuristic) <= (other.cost + other.heuristic)
+
+    def __gt__(self, other):
+        return (self.cost + self.heuristic) > (other.cost + other.heuristic)
+
+    def __lt__(self, other):
+        return (self.cost + self.heuristic) >= (other.cost + other.heuristic)
+
+    def __iter__(self):
+        return iter((self.node, self.parent, self.cost, self.heuristic))
+
+
 class AStar(object):
     """
     Class that implement A* algorithm
@@ -14,9 +39,9 @@ class AStar(object):
         (node_id, parent_id, cost)
         """
         open_nodes = []
-        heappush(open_nodes, (0, (start, start)))
+        heappush(open_nodes, NodeHolder(start, start, 0, self.graph.cost[start, end]))
         while open_nodes:
-            aux_cost, (aux_node, aux_parent) = heappop(open_nodes)
+            aux_node, aux_parent, aux_cost, _ = heappop(open_nodes)
             if aux_node == end:
                 break
             if self.visited[aux_node] != -1:
@@ -25,8 +50,9 @@ class AStar(object):
             for neighbor in self.graph.paths[aux_node]:
                 if neighbor != aux_parent:
                     heappush(open_nodes,
-                             (aux_cost + self.graph.cost[aux_node, neighbor], \
-                              (neighbor, aux_node)))
+                             NodeHolder(neighbor, aux_node,
+                                        aux_cost + self.graph.cost[aux_node, neighbor],
+                                        self.graph.cost[neighbor, end]))
         self.visited[aux_node] = aux_parent
         return {
             'path': self.retrieve_from_parents(start, [aux_node]),

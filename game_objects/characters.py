@@ -476,7 +476,7 @@ class Enemy(Character):
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
                            size=1., mass=1., weapon=EnemyNormalWeapon(),
-                           hit_force=35., hit_damage=5., max_acc=24.)
+                           hit_force=35., hit_damage=5., max_acc=60.)
         # Behaviors
         self.behaviors = dict([(bg.name, bg) for bg in behavior_groups])
         #self.image, self.rect = load_image('main_character.png')

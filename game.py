@@ -76,6 +76,7 @@ class Game:
         self.graph = Graph(LEVEL['number_of_nodes'], LEVEL['nodes'], LEVEL['neighbors'])
         self.graph.load()
         self.a_star = AStar(self.graph)
+        LEVEL['a_star'] = self.a_star
         # 4.
         self.random_enemies(LEVEL['enemies'])
 
@@ -201,7 +202,7 @@ class Game:
             pursue_evade_behaviors = [
                 Behavior(character=enemy,
                          target=self.main_character,
-                         args={'characters_sight': 20.},
+                         args={'characters_sight': 30.},
                          **PURSUE),
                 Behavior(character=enemy,
                          target=self.main_character,
@@ -220,16 +221,16 @@ class Game:
 
             collision_behaviors = [
                 Behavior(character=enemy,
-                         args={'game': self, 'look_ahead': 15.},
+                         args={'game': self, 'look_ahead': 5.},
                          **OBSTACLE_AVOIDANCE)
                 ]
             
-            enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
-                                                   **PURSUE_EVADE_GROUP))
-            enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
-                                                   **COLLISION_AVOIDANCE_GROUP))
-            enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
-                                                   **FLOCKING_GROUP))
-            enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,
-                                                   **WANDER_GROUP))
+##             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
+##                                                    **PURSUE_EVADE_GROUP))
+##             enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
+##                                                    **COLLISION_AVOIDANCE_GROUP))
+##             enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
+##                                                    **FLOCKING_GROUP))
+##             enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,
+##                                                    **WANDER_GROUP))
             self.add_character(enemy)

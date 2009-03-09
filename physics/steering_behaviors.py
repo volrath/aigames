@@ -10,10 +10,11 @@ from OpenGL.GLU import *
 from functools import wraps
 from math import pi, atan2, sqrt
 
-from utils.locals import FPS
-from utils.functions import random_binomial
 from physics.vector3 import Vector3
 from physics.geometric import *
+from utils.levels import LEVEL
+from utils.locals import FPS
+from utils.functions import random_binomial, graph_quantization
 
 # Basic.
 
@@ -156,6 +157,7 @@ def pursue_evade(basic_behavior):
     @wraps(basic_behavior)
     def decorator(character, target, characters_sight=None, max_prediction=1.,
                   *args, **kwargs):
+        global LEVEL
         # First calculate the target to delegate the seek
         distance = (target.position - character.position).length
         if characters_sight is not None and distance > characters_sight:
@@ -164,22 +166,29 @@ def pursue_evade(basic_behavior):
             prediction = max_prediction
         else:
             prediction = distance / character.velocity.length
+
+        # Target radius depends on target's size
+##         kwargs['target_radius'] = target.radius
+##         if not character.hitting:
+##             kwargs['target_radius'] += 2.6
+
         # Now we tell seek to look after a target that have a
         # position = real_target.velocity * prediction
         ## ALERT: small modification, if the target.velocity == 0 we are
         ## pursuing/evading the target itself, not some delegate target which
         ## doesn't exists.
-        
-        # Target radius depends on target's size
-        kwargs['target_radius'] = target.radius
-        if not character.hitting:
-            kwargs['target_radius'] += 2.6
         if target.velocity.length != 0:
-            return basic_behavior(character,
-                                  target.position + (target.velocity * prediction),
-                                  **kwargs)
+            target_node = graph_quantization(target.position + \
+                                             (target.velocity * prediction))
         else:
-            return basic_behavior(character, target, **kwargs)
+            target_node = graph_quantization(target.position)
+        a_result = LEVEL['a_star'].get_route(character.node_position.id, target_node.id)
+        print 'pursuing', a_result['path'], target_node.id
+        try:
+            node = LEVEL['nodes'][a_result['path'][1]]
+        except IndexError:
+            return None
+        return basic_behavior(character, node.location, **kwargs)
     return decorator
 
 pursue          = pursue_evade(seek)

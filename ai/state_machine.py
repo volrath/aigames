@@ -20,5 +20,5 @@ class StateMachine(object):
             setattr(pursue, 'args', {})
         if not hasattr(evade, 'args'):
             setattr(evade, 'args', {})
-        pursue.args['characters_sight'] = 25. * (character.energy / 100.)
-        evade.args['characters_sight']  = 25. - pursue.args['characters_sight']
+        pursue.args['characters_sight'] = 40. * (character.energy / 100.)
+        evade.args['characters_sight']  = 40. - pursue.args['characters_sight']
