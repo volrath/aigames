@@ -555,7 +555,7 @@ class Enemy(Character):
             min_distance = target_direction - target_direction.projection(bullet_trajectory)
             if min_distance.length < character.radius and \
                target_direction.length < bullet_trajectory.length*9.3 and \
-               0. <= atan2(target_direction.x, target_direction.z) <= pi/4:
+               abs(abs(atan2(target_direction.x, target_direction.z)) - self.orientation) < pi/3:
                 # We shoot!!
                 game.projectiles.append(bullet)
         except ValueError:

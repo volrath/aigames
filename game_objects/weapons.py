@@ -3,7 +3,7 @@ from projectiles import *
 class Weapon(object):
     def __init__(self):
         self.hit_state = 1
-        self.shooting_force = 20
+        self.shooting_force = 25
 
     def _dynamic_size(self):
         return self.hit_size

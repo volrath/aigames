@@ -1,3 +1,5 @@
+from math import pi
+
 import pygame
 from pygame.locals import *
 from OpenGL.GL import *
@@ -197,7 +199,7 @@ class Game:
         Improve this when different type of enemies are complete.
         """
         for position in positions:
-            enemy = Enemy(3.5,3., position=position, orientation=0.)
+            enemy = Enemy(3.5,3., position=position, orientation=pi)
 
             pursue_evade_behaviors = [
                 Behavior(character=enemy,
@@ -221,16 +223,16 @@ class Game:
 
             collision_behaviors = [
                 Behavior(character=enemy,
-                         args={'game': self, 'look_ahead': 5.},
+                         args={'game': self, 'look_ahead': 7.},
                          **OBSTACLE_AVOIDANCE)
                 ]
             
-##             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
-##                                                    **PURSUE_EVADE_GROUP))
-##             enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
-##                                                    **COLLISION_AVOIDANCE_GROUP))
-##             enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
-##                                                    **FLOCKING_GROUP))
-##             enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,
-##                                                    **WANDER_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
+                                                   **PURSUE_EVADE_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
+                                                   **COLLISION_AVOIDANCE_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
+                                                   **FLOCKING_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,
+                                                   **WANDER_GROUP))
             self.add_character(enemy)
