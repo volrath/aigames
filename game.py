@@ -51,7 +51,7 @@ class Game:
     def __init__(self, level=None):
         # Set the games objects
         self.clock = pygame.time.Clock()
-        self.main_character = Slash(20.,20.,position=Vector3(0.,0.,-1.), orientation=1.5)
+        self.main_character = Slash(20.,20.,position=Vector3(0.,0.,-1.), orientation=0.)
 
         self.enemies = []
         self.characters = [self.main_character]
@@ -116,7 +116,9 @@ class Game:
 
         # AI characters behavior
         for enemy in self.enemies:
-            StateMachine.fuzzy_life(enemy, self)
+            if not hasattr(enemy, 'state'):
+                setattr(enemy, 'state', StateMachine(enemy))
+            enemy.state.fuzzy_life(self)
             enemy.behave()
             enemy.attack(self)
 

@@ -10,7 +10,7 @@ FPS = 60
 GRAVITY = Vector3(0., -19.62, 0.)
 
 # Character's constants
-STANDARD_INITIAL_FORCE = 6.
+STANDARD_INITIAL_FORCE = 8.
 KINETIC_FRICTION_COEFICIENT = 1.2
 
 # Steering constants
