@@ -57,7 +57,7 @@ Second Version
   -- Hitting mass coeficient
 - * Throwing out of the stage
   -- Enemies hit me and shoot me
-  * A* and path finding  #Something about path finding, A*
-  * State Machine        #Something about decision making
+  -- A* and path finding  #Something about path finding, A*
+  -- State Machine        #Something about decision making
   * AI JUMPING!
   * Improve jumping, jump over objects, object's normals
