@@ -10,30 +10,13 @@ from ai.behavior import *
 from game_objects.projectiles import Bullet
 from game_objects.weapons import SlashWeapon, EnemyNormalWeapon
 from graphics.utils import draw_circle
-from utils.functions import load_image, random_binomial
+from utils.functions import load_image, random_binomial, hit_detection
 from utils.exceptions import BehaviorNotAssociated
 from physics.vector3 import Vector3
 from physics.rect import Rect
 from utils.functions import graph_quantization
 from utils.locals import FPS, GRAVITY, KINETIC_FRICTION_COEFICIENT, \
-     STANDARD_INITIAL_FORCE, IMPACT_ORIENTATION_UMBRAL
-
-def hit_detection(hitter, hitted):
-    """
-    Returns if the hitter character hits the hitted or not.
-    To find out if the hitter hits the hitted, we use the collision axis
-    and the hitter velocity (where he was aiming) and calculates the
-    angle between them to see if the hitter was aiming the hitted at the
-    time of collision.
-    """
-    collision_axis = hitted.position - hitter.position
-    if collision_axis.length > 0:
-        collision_orientation = atan2(collision_axis.x, collision_axis.z)
-    else:
-        collision_orientation = hitter.orientation
-    if abs(collision_orientation - hitter.orientation) < IMPACT_ORIENTATION_UMBRAL: # We hit!
-        return True
-    return False
+     STANDARD_INITIAL_FORCE
 
 
 class Character(object):
@@ -478,8 +461,11 @@ class Enemy(Character):
                            size=1., mass=1., weapon=EnemyNormalWeapon(),
                            hit_force=35., hit_damage=5., max_acc=48.)
         # Behaviors
+        self.last_behavior = None
         self.behaviors = dict([(bg.name, bg) for bg in behavior_groups])
         #self.image, self.rect = load_image('main_character.png')
+        # Control
+        self.obstacle_evading = False
 
     def __str__(self):
         return 'Enemy'
@@ -508,6 +494,7 @@ class Enemy(Character):
                 steering = group_outputs.pop()
                 if steering is not None:
 #                    print steering['name']
+                    self.last_behavior = steering['name']
                     steering = steering['steering']
                 else:
                     continue

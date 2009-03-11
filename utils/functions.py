@@ -1,10 +1,11 @@
 import os, pygame
 from pygame.locals import *
-from math import sin, cos, pi
+from math import sin, cos, pi, atan2
 
 from physics.vector3 import Vector3
 from utils.levels import LEVEL
-from utils.locals import MAIN_VIEW, SIDE_VIEW, TOP_VIEW
+from utils.locals import MAIN_VIEW, SIDE_VIEW, TOP_VIEW, \
+     IMPACT_ORIENTATION_UMBRAL
 
 # Check for dependencies.
 if not pygame.font: print 'Warning, fonts disabled'
@@ -123,6 +124,23 @@ def vector3_from_orientation(orientation, length):
     Calculates velocity from a character's orientation in a 2D(1/2) space
     """
     return Vector3(length * cos(orientation), 0., length * sin(orientation))
+
+def hit_detection(hitter, hitted):
+    """
+    Returns if the hitter character hits the hitted or not.
+    To find out if the hitter hits the hitted, we use the collision axis
+    and the hitter velocity (where he was aiming) and calculates the
+    angle between them to see if the hitter was aiming the hitted at the
+    time of collision.
+    """
+    collision_axis = hitted.position - hitter.position
+    if collision_axis.length > 0:
+        collision_orientation = atan2(collision_axis.x, collision_axis.z)
+    else:
+        collision_orientation = hitter.orientation
+    if abs(collision_orientation - hitter.orientation) < IMPACT_ORIENTATION_UMBRAL: # We hit!
+        return True
+    return False
 
 def graph_quantization(position):
     return min(LEVEL['nodes'],

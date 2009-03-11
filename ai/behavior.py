@@ -87,8 +87,12 @@ FLOCKING_GROUP = {
     'name': 'flocking',
     'default_priority': 6,
 }
-PURSUE_EVADE_GROUP = {
-    'name': 'pursue_evade',
+PURSUE_GROUP = {
+    'name': 'pursue',
+    'default_priority': 3,
+}
+EVADE_GROUP = {
+    'name': 'evade',
     'default_priority': 4,
 }
 WANDER_GROUP = {

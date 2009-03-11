@@ -38,11 +38,14 @@ class AStar(object):
         """
         (node_id, parent_id, cost)
         """
+        self.visited = [-1 for x in range(0, self.graph.size)]
         open_nodes = []
+        im_here = False
         heappush(open_nodes, NodeHolder(start, start, 0, self.graph.cost[start, end]))
         while open_nodes:
             aux_node, aux_parent, aux_cost, _ = heappop(open_nodes)
             if aux_node == end:
+                im_here = True
                 break
             if self.visited[aux_node] != -1:
                 continue
@@ -56,6 +59,7 @@ class AStar(object):
         self.visited[aux_node] = aux_parent
         return {
             'path': self.retrieve_from_parents(start, [aux_node]),
+            'im_here': im_here,
             'cost': aux_cost
             }
 

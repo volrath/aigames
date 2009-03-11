@@ -118,7 +118,7 @@ class Game:
         for enemy in self.enemies:
             if not hasattr(enemy, 'state'):
                 setattr(enemy, 'state', StateMachine(enemy))
-            enemy.state.fuzzy_life(self)
+            enemy.state.update(self).execute()
             enemy.behave()
             enemy.attack(self)
 
@@ -178,6 +178,23 @@ class Game:
 ##             glutSolidSphere(.5, 5, 5)
         glPopMatrix()
 
+        glPushMatrix()
+        glTranslatef(0., 1., 0.)
+        for node in self.level['nodes']:
+            glColor3f(1., 1., 1.)
+            glBegin(GL_LINES)
+            glVertex3f(node.location.x, 0., node.location.z)
+            glVertex3f(node.location.x, 5., node.location.z)
+            glEnd()
+            for neighbor in self.level['neighbors'][node.id]:
+                neighbor = self.level['nodes'][neighbor]
+                glColor3f(1., 0., 0.)
+                glBegin(GL_LINES)
+                glVertex3f(node.location.x, 1., node.location.z)
+                glVertex3f(neighbor.location.x, 1., neighbor.location.z)
+                glEnd()
+        glPopMatrix()
+
     def game_over(self, i_won):
         if i_won:
             # I won!
@@ -203,11 +220,13 @@ class Game:
         for position in positions:
             enemy = Enemy(3.5,3., position=position, orientation=pi)
 
-            pursue_evade_behaviors = [
+            pursue_behaviors = [
                 Behavior(character=enemy,
                          target=self.main_character,
                          args={'characters_sight': 30.},
                          **PURSUE),
+                ]
+            evade_behaviors = [
                 Behavior(character=enemy,
                          target=self.main_character,
                          args={'characters_sight': 5.},
@@ -225,16 +244,18 @@ class Game:
 
             collision_behaviors = [
                 Behavior(character=enemy,
-                         args={'game': self, 'look_ahead': 7.},
+                         args={'game': self, 'look_ahead': 10.},
                          **OBSTACLE_AVOIDANCE)
                 ]
             
-            enemy.add_behavior_group(BehaviorGroup(b_set=pursue_evade_behaviors,
-                                                   **PURSUE_EVADE_GROUP))
+##             enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
+##                                                    **FLOCKING_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=pursue_behaviors,
+                                                   **PURSUE_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=evade_behaviors,
+                                                   **EVADE_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=collision_behaviors,
                                                    **COLLISION_AVOIDANCE_GROUP))
-            enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
-                                                   **FLOCKING_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=wander_behaviors,
                                                    **WANDER_GROUP))
             self.add_character(enemy)
