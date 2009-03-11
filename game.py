@@ -120,7 +120,6 @@ class Game:
                 setattr(enemy, 'state', StateMachine(enemy))
             enemy.state.update(self).execute()
             enemy.behave()
-            enemy.attack(self)
 
     def render(self):
         # Renders sectors and nodes
@@ -248,8 +247,8 @@ class Game:
                          **OBSTACLE_AVOIDANCE)
                 ]
             
-##             enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
-##                                                    **FLOCKING_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
+                                                   **FLOCKING_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_behaviors,
                                                    **PURSUE_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=evade_behaviors,

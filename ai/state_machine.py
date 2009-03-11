@@ -23,11 +23,12 @@ class StateMachine(object):
             self.collision_group = self.character.behaviors['collision_avoidance']
             self.avoidance_manager = \
                     self.collision_group.behavior_set['Obstacle Avoidance']
+            if not hasattr(self.avoidance_manager, 'args'): # This shouldn't happen!
+                setattr(self.avoidance_manager, 'args', {})
+
         except KeyError:
             self.collision_group   = None
             self.avoidance_manager = None
-        if not hasattr(self.avoidance_manager, 'args'): # This shouldn't happen!
-            setattr(self.avoidance_manager, 'args', {})
 
     def fuzzy_life(self, game):
         """
@@ -85,11 +86,11 @@ class StateMachine(object):
                                  self.character.position
             min_distance = target_direction - target_direction.projection(bullet_trajectory)
             if min_distance.length < self.character.radius and \
-               target_direction.length < bullet_trajectory.length*9.4 and \
-               abs(abs(atan2(target_direction.x, target_direction.z)) - \
+               target_direction.length < bullet_trajectory.length*13. and \
+               abs(atan2(target_direction.x, target_direction.z) - \
                self.character.orientation) < pi/3:
                 # We shoot!!
-                self.fighting_state == F_STATE.shooting
+                self.fighting_state = F_STATE.shooting
                 game.projectiles.append(bullet)
         except ValueError:
             pass
@@ -121,6 +122,8 @@ class StateMachine(object):
         # When moving
         if self.moving_state == self.last_moving_state:
             return # optimizing what's below
+        if self.avoidance_manager is None:
+            return
 
         if self.moving_state == M_STATE.wandering:
             self.avoidance_manager.args['look_ahead'] = 10.
