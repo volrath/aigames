@@ -493,7 +493,6 @@ class Enemy(Character):
             try:
                 steering = group_outputs.pop()
                 if steering is not None:
-#                    print steering['name']
                     self.last_behavior = steering['name']
                     steering = steering['steering']
                 else:

@@ -56,7 +56,7 @@ def flee(character, target, target_radius=None):
     return steering
 
 @target_transform
-def arrive(character, target, target_radius=.3, slow_radius=3.5,
+def arrive(character, target, target_radius=.3, slow_radius=2.5,
            time_to_target=.1):
     steering = {}
     direction = target - character.position
@@ -166,11 +166,6 @@ def pursue_evade(basic_behavior):
             prediction = max_prediction
         else:
             prediction = distance / character.velocity.length
-
-        # Target radius depends on target's size
-##         kwargs['target_radius'] = target.radius
-##         if not character.hitting:
-##             kwargs['target_radius'] += 2.6
 
         # Now we tell seek to look after a target that have a
         # position = real_target.velocity * prediction
