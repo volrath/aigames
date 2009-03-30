@@ -4,10 +4,9 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from math import atan2, pi, atan, degrees, cos, sin, radians
-from sympy.matrices import Matrix
 
 from ai.behavior import *
-from game_objects.projectiles import Bullet
+from game_objects.projectiles import Bullet, SoundWave
 from game_objects.weapons import SlashWeapon, EnemyNormalWeapon
 from graphics.utils import draw_circle
 from utils.functions import load_image, random_binomial, hit_detection
@@ -84,6 +83,7 @@ class Character(object):
                              self.hitting_acceleration + \
                              self.bullet_acceleration + \
                              friction)
+        self.angular = self.behave_angular
 
     def accelerate(self, acceleration=None, deacc=False):
         """
@@ -148,7 +148,10 @@ class Character(object):
             self.orientation += self.rotation * time
             self.velocity += self.acceleration * time
 
-        self.rotation += self.angular * time
+        if self.angular == 0:
+            self.rotation = 0
+        else:
+            self.rotation += self.angular * time
 
         old_velocity *= self.velocity
         for c in range(0,3):
@@ -431,11 +434,16 @@ class Slash(Character):
         #self.image, self.rect = load_image('main_character.png')
         self.behavior = Behavior(character=self, active=True,
                                  **LOOK_WHERE_YOU_ARE_GOING)
+        self.playing = False
 
     def __str__(self):
         return 'Slash'
 
     __repr__ = __str__
+
+    def play_guitar(self):
+        # Maybe make some real noise?
+        return SoundWave(self.position + Vector3(0., self.size, 0.), self.radius)
 
     def behave(self, game):
         # Handle hitting
@@ -445,6 +453,12 @@ class Slash(Character):
         # Handle shooting
         elif self.shooting:
             game.projectiles.append(self.shoot())
+        # Handle sound
+        elif self.playing:
+            if game.sound_wave is None:
+                game.sound_wave = self.play_guitar()
+            else:
+                self.playing = False
         # Behave
         self.behavior.execute()
 
@@ -466,9 +480,14 @@ class Enemy(Character):
         #self.image, self.rect = load_image('main_character.png')
         # Control
         self.obstacle_evading = False
+        self.dizzy = None # will save a tuple of the form: (dizzy_begin_time, dizzy_duration)
 
     def __str__(self):
         return 'Enemy'
+
+    @property
+    def is_dizzy(self):
+        return self.dizzy is not None
 
     #
     # Behaviors
@@ -480,12 +499,18 @@ class Enemy(Character):
         self.behaviors[bg].behavior_set[b.name] = b
 
     def behave(self):
+        if self.is_dizzy:
+            self.behave_acceleration.set_length(0)
+            self.behave_angular = 70.
+            return
+
         def group_priority_cmp(g1, g2):
             if g1 is None: return -1
             if g2 is None: return 1
             return cmp(g1['priority'], g2['priority'])
 
         self.behave_angular = 0.
+        self.angular = 0.
         group_outputs = [group.execute() for g_name, group in self.behaviors.iteritems()]
         # Sort by priorities
         group_outputs.sort(group_priority_cmp)
@@ -520,7 +545,7 @@ class Enemy(Character):
         character = game.main_character
         distance = (character.position - self.position).length
         # Check for hitting
-        if distance < character.radius + 5 and hit_detection(self, character): # FIX THIS WIRED CODE =S!
+        if distance < character.radius + 5 and hit_detection(self, character):
             # We hit!!!
             self.hit()
         # Check for shooting (a.k.a. predicting physics)

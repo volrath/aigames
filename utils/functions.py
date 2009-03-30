@@ -48,6 +48,10 @@ def keymap_handler(game):
             return
         game.main_character.shooting = True
 
+    # Playing guitar
+    if pressed[K_k]:
+        game.main_character.playing = True
+
     # Movement
     # First handle two keys pressed at the same time.
     if game.main_character.jumping:

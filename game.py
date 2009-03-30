@@ -55,7 +55,8 @@ class Game:
 
         self.enemies = []
         self.characters = [self.main_character]
-        self.projectiles = [] # projectiles pool
+        self.projectiles = []  # projectiles pool
+        self.sound_wave = None # sound wave 'pool'
         self.stage = Stage(STAGE_SIZE)
         # Control
         self.print_debug = True
@@ -146,6 +147,14 @@ class Game:
             projectile.update(self).render()
             if projectile.position.y < 0:
                 self.projectiles.remove(projectile)
+
+        # Renders sound wave, if any
+        if self.sound_wave is not None:
+            if self.sound_wave.intensity <= 0:
+                self.sound_wave = None
+                self.main_character.playing = False
+            else:
+                self.sound_wave.update(self).render()
 
     def render_debug(self):
         """
@@ -247,8 +256,8 @@ class Game:
                          **OBSTACLE_AVOIDANCE)
                 ]
             
-            enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
-                                                   **FLOCKING_GROUP))
+##             enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
+##                                                    **FLOCKING_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_behaviors,
                                                    **PURSUE_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=evade_behaviors,

@@ -1,5 +1,8 @@
 from math import sqrt, atan2, pi
 
+import pygame
+from pygame.locals import *
+
 from physics.vector3 import Vector3
 from utils.enum import Enum
 from utils.locals import GRAVITY
@@ -18,6 +21,7 @@ class StateMachine(object):
         self.moving_state = M_STATE.wandering
         self.last_moving_state = M_STATE.wandering
         self.fighting_state = F_STATE.hold
+        self.dizzy = False
         # Collision behavior
         try:
             self.collision_group = self.character.behaviors['collision_avoidance']
@@ -30,7 +34,7 @@ class StateMachine(object):
             self.collision_group   = None
             self.avoidance_manager = None
 
-    def fuzzy_life(self, game):
+    def _fuzzy_life(self, game):
         """
         Calculates the sight of pursuing or evading that the character
         has to have depending on his current energy. The more alive he
@@ -50,14 +54,27 @@ class StateMachine(object):
         pursue.args['characters_sight'] = 40. * (self.character.energy / 100.)
         evade.args['characters_sight']  = 40. - pursue.args['characters_sight']
 
-    def update(self, game):
+    def _still_dizzy(self):
         """
-        Updates the character's state and behavior.
+        Check if the character is still dizzy, calculating the dizzy begin time
+        and dizzy duration, and comparing with the current time
         """
-        # 1. Updates character's behavior
-        self.fuzzy_life(game)
+        current_time = pygame.time.get_ticks()
+        begin_time, duration = self.character.dizzy
+        return current_time - begin_time < duration
 
-        # 2. Updates character's fighting action state
+    def _check_sound_wave_collision(self, game):
+        """
+        Checks if the character has been hitted by a sound wave =S
+        """
+        if game.sound_wave is None:
+            return False
+        distance = ((game.sound_wave.position - Vector3(0., 5., 0.)) - \
+                    self.character.position).length
+        return self.character.radius + game.sound_wave.radius > distance
+
+    def _fighting_tree(self, game):
+                # 2. Updates character's fighting action state
         distance = (self.character.position - game.main_character.position).length
         
         # Check for hitting
@@ -98,7 +115,10 @@ class StateMachine(object):
                self.fighting_state == F_STATE.shooting:
             self.fighting_state = F_STATE.hold
 
-        # Updates character's moving state
+    def _moving_support(self):
+        """
+        Updates character's moving state
+        """
         self.last_moving_state = self.moving_state
         if self.character.last_behavior == 'pursue':
             self.moving_state = M_STATE.pursuing
@@ -106,6 +126,39 @@ class StateMachine(object):
             self.moving_state = M_STATE.evading
         if self.character.last_behavior == 'wander':
             self.moving_state = M_STATE.wandering
+        
+
+    def update(self, game):
+        """
+        Updates the character's state and behavior.
+        """
+        # Check if the character is dizzy
+        if self.character.is_dizzy:
+            if self._still_dizzy():
+                self.dizzy = True
+                return self
+            else:
+                self.dizzy = False
+                self.character.dizzy = None
+
+        # Check if the character is hitted by some sound wave
+        if self._check_sound_wave_collision(game):
+            # Set dizzynes
+            # First we need to calculate the level of dizzynes
+            dizzyness_level = 16000 * game.sound_wave.intensity / 100
+            self.character.dizzy = (pygame.time.get_ticks(), dizzyness_level)
+            return self
+
+        # 1. Updates character's behavior
+        self._fuzzy_life(game)
+
+        # NORMAL BEHAVIOR
+        # 2. Fighting check
+        self._fighting_tree(game)
+
+        # 3. Moving support
+        self._moving_support()
+
         return self
 
     def execute(self):
@@ -113,6 +166,10 @@ class StateMachine(object):
         Tells the character to execute the corresponding action according to its
         state.
         """
+        # Dizzyness
+        if self.dizzy:
+            return
+
         # When fighting
         if self.fighting_state == F_STATE.hitting:
             self.character.hit()

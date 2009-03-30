@@ -141,5 +141,5 @@ LEVEL = {
     'number_of_nodes': NUMBER_OF_NODES,
     'neighbors': NEIGHBORS,
     'obstacles':  OBSTACLES,
-    'enemies': [Vector3(0., 0., 17.)],
+    'enemies': [Vector3(-9., 0., 15.), Vector3(9., 0., 15.)],
     }
