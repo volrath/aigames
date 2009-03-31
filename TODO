@@ -61,3 +61,11 @@ Second Version
   -- State Machine        #Something about decision making
   * AI JUMPING!
   * Improve jumping, jump over objects, object's normals
+
+Third Version
+=============
+  -- Sound and hearing implementation
+  * Smelling?
+  * Viewport refactor / extending the map
+  * Waypoints
+  * Finishing up: Video, Game-over design, a Menu?, bullet explotions
