@@ -146,8 +146,15 @@ class Game:
         # Renders projectiles
         for projectile in self.projectiles:
             projectile.update(self).render()
+            # Checks if the projectile reach the floor
             if projectile.position.y < 0:
                 self.projectiles.remove(projectile)
+            # Checks if the projectile hit an obstacle
+            for obstacle in self.stage.obstacles:
+                distance = (obstacle.position - projectile.position).length
+                if distance < obstacle.radius + projectile.radius:
+                    # They hit!
+                    projectile.explode(self)
 
         # Renders sound wave, if any
         if self.sound_wave is not None:

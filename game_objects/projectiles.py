@@ -37,7 +37,10 @@ class Bullet(object):
         """
         Renders the ball's explotion
         """
-        game.projectiles.remove(self)
+        try:
+            game.projectiles.remove(self)
+        except ValueError:
+            pass
 
 
 class SlashNormalBullet(Bullet):
