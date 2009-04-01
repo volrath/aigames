@@ -8,7 +8,7 @@ from OpenGL.GLU import *
 from math import atan2, pi, atan, degrees, cos, sin, radians
 
 from ai.behavior import *
-from game_objects.projectiles import Bullet, NormalSoundWave, SuperSoundWave
+from game_objects.projectiles import NormalSoundWave, SuperSoundWave, StepSoundWave
 from game_objects.weapons import SlashWeapon, SlashSuperWeapon, EnemyNormalWeapon
 from graphics.utils import draw_circle
 from utils.functions import load_image, random_binomial, hit_detection
@@ -17,7 +17,7 @@ from physics.vector3 import Vector3
 from physics.rect import Rect
 from utils.functions import graph_quantization
 from utils.locals import FPS, GRAVITY, KINETIC_FRICTION_COEFICIENT, \
-     STANDARD_INITIAL_FORCE, SUPER_POWERFULL_TIME
+     STANDARD_INITIAL_FORCE, SUPER_POWERFULL_TIME, STEP_FRAME
 
 
 class Character(object):
@@ -445,6 +445,12 @@ class Slash(Character):
         self.playing = False
         self.rock_bar = 0.
         self.super_powerfull = None
+        self.steps = []
+
+    def __str__(self):
+        return 'Slash'
+
+    __repr__ = __str__
 
     @property
     def is_kicking_asses(self):
@@ -460,8 +466,11 @@ class Slash(Character):
                 self.weapon = SlashWeapon()
                 self.size = 1.2
                 return
+            else:
+                # I'm loudy
+                self.stepping()
         else:
-            if self.rock_bar > 15.:
+            if self.rock_bar > 30.:
                 self.super_powerfull = pygame.time.get_ticks()
                 # Setting the super strength
                 self.weapon = SlashSuperWeapon()
@@ -469,10 +478,19 @@ class Slash(Character):
             elif self.rock_bar > 0:
                 self.rock_bar -= .5
 
-    def __str__(self):
-        return 'Slash'
-
-    __repr__ = __str__
+    def stepping(self):
+        current_time = pygame.time.get_ticks()
+        if self.steps:
+            step = self.steps[0]
+        else:
+            step = {'last_time': 0, 'wave': None}
+        if current_time - step['last_time'] > STEP_FRAME:
+            # create another step
+            self.steps.append({
+                'last_time': current_time,
+                'wave': StepSoundWave(self.position + Vector3(0., .5, 0.),
+                                      self.radius)
+                })
 
     def play_guitar(self):
         # Maybe make some real noise?
@@ -496,8 +514,17 @@ class Slash(Character):
             else:
                 self.playing = False
         self.set_super_powerfull()
+        self.stepping()
         # Behave
         self.behavior.execute()
+
+    def render(self, *args, **kwargs):
+        print self.steps
+        for step in self.steps:
+            step['wave'].update().render()
+            if step['wave'].intensity < 0:
+                self.steps.remove(step)
+        super(Slash, self).render(**kwargs)
 
 
 class Enemy(Character):

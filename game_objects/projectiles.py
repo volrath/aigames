@@ -67,7 +67,7 @@ class SoundWave(object):
         self.intensity = 100
         self.radius    = radius
 
-    def update(self, game):
+    def update(self, game=None):
         """
         Updates sound wave's radius and intensity
         """
@@ -92,3 +92,8 @@ class SuperSoundWave(SoundWave):
     intensity_decrease = 5
     radius_expansion   = 1.15
     color              = (1., 240/255., 0.)
+
+class StepSoundWave(SoundWave):
+    intensity_decrease = 5
+    radius_expansion   = 1.07
+    color              = (46/255., 1., 76/255.)
