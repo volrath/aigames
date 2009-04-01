@@ -1,5 +1,7 @@
 import sys
 
+import pygame
+from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
@@ -15,7 +17,7 @@ from physics.vector3 import Vector3
 from physics.rect import Rect
 from utils.functions import graph_quantization
 from utils.locals import FPS, GRAVITY, KINETIC_FRICTION_COEFICIENT, \
-     STANDARD_INITIAL_FORCE
+     STANDARD_INITIAL_FORCE, SUPER_POWERFULL_TIME
 
 
 class Character(object):
@@ -299,6 +301,10 @@ class Character(object):
             if distance < self.radius + projectile.radius:
                 # Oh-oh, it hit me!
                 self.energy -= projectile.damage
+                # Lets give it up to slash, if he shoot
+                if isinstance(projectile.owner, Slash) and \
+                   not projectile.owner.is_kicking_asses:
+                    projectile.owner.rock_bar += projectile.damage / 2
                 self.bullet_acceleration = Vector3(projectile.velocity.x, 0.,
                                                    projectile.velocity.z)
                 try:
@@ -331,7 +337,8 @@ class Character(object):
         bullet_position += self.position
         bullet_velocity.set_length(self.weapon.shooting_force)
         bullet = self.weapon.bullet_class(position=bullet_position,
-                                          velocity=bullet_velocity)
+                                          velocity=bullet_velocity,
+                                          owner=self)
         self.shooting = False
         return bullet
 
@@ -429,12 +436,38 @@ class Slash(Character):
     def __init__(self, max_speed, max_rotation, position=Vector3(), orientation=0.):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(1., 155./255, 0.), (1., 85./255, 0.)],
-                           size=1.2, mass=1.2, weapon=SlashWeapon(), hit_force=100.,
-                           hit_damage=20., max_acc=20.)
+                           size=1.2, mass=1.2, weapon=SlashWeapon(),
+                           hit_force=100., hit_damage=20., max_acc=20.)
         #self.image, self.rect = load_image('main_character.png')
         self.behavior = Behavior(character=self, active=True,
                                  **LOOK_WHERE_YOU_ARE_GOING)
+        # Control
         self.playing = False
+        self.rock_bar = 0.
+        self.super_powerfull = None
+
+    @property
+    def is_kicking_asses(self):
+        return self.super_powerfull is not None
+
+    def set_super_powerfull(self):
+        if self.super_powerfull is not None:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.super_powerfull > SUPER_POWERFULL_TIME:
+                self.rock_bar = 0.
+                self.super_powerfull = None
+                # Unsetting the super strength
+                self.weapon = SlashWeapon()
+                self.size = 1.2
+                return
+        else:
+            if self.rock_bar > 15.:
+                self.super_powerfull = pygame.time.get_ticks()
+                # Setting the super strength
+                self.weapon = SlashSuperWeapon()
+                self.size = 1.5
+            elif self.rock_bar > 0:
+                self.rock_bar -= .5
 
     def __str__(self):
         return 'Slash'
@@ -462,6 +495,8 @@ class Slash(Character):
                 game.sound_wave = self.play_guitar()
             else:
                 self.playing = False
+        print self.rock_bar
+        self.set_super_powerfull()
         # Behave
         self.behavior.execute()
 

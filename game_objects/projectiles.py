@@ -9,9 +9,10 @@ from utils.locals import GRAVITY, FPS
 from graphics.utils import draw_circle
 
 class Bullet(object):
-    def __init__(self, position, velocity):
+    def __init__(self, position, velocity, owner):
         self.position  = position
         self.velocity  = velocity
+        self.owner     = owner
 
     def update(self, game):
         """
