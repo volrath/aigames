@@ -45,6 +45,12 @@ class SlashNormalBullet(Bullet):
     hit_force = 130.
     damage = 4.
 
+class SlashSuperBullet(Bullet):
+    radius = 1.4
+    color = 172/255., 234/255., 243/255.
+    hit_force = 250.
+    damage = 8.
+
 class EnemyBullet(Bullet):
     radius = .6
     color = 9., 9., 9.
