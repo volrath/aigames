@@ -145,9 +145,10 @@ class StateMachine(object):
         if self._check_sound_wave_collision(game):
             # Set dizzynes
             # First we need to calculate the level of dizzynes
-            dizzyness_level = 16000 * game.sound_wave.intensity / 100
-            self.character.dizzy = (pygame.time.get_ticks(), dizzyness_level)
-            return self
+            if game.sound_wave.intensity > self.character.hearing_umbral:
+                dizzyness_level = 16000 * game.sound_wave.intensity / 100
+                self.character.dizzy = (pygame.time.get_ticks(), dizzyness_level)
+                return self
 
         # 1. Updates character's behavior
         self._fuzzy_life(game)

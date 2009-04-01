@@ -495,7 +495,6 @@ class Slash(Character):
                 game.sound_wave = self.play_guitar()
             else:
                 self.playing = False
-        print self.rock_bar
         self.set_super_powerfull()
         # Behave
         self.behavior.execute()
@@ -506,7 +505,7 @@ class Enemy(Character):
     An enemy
     """
     def __init__(self, max_speed, max_rotation, position=Vector3(),
-                 orientation=0., behavior_groups=[]):
+                 orientation=0., hearing_umbral=5., behavior_groups=[]):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
@@ -517,6 +516,7 @@ class Enemy(Character):
         self.behaviors = dict([(bg.name, bg) for bg in behavior_groups])
         #self.image, self.rect = load_image('main_character.png')
         # Control
+        self.hearing_umbral = hearing_umbral
         self.obstacle_evading = False
         self.dizzy = None # will save a tuple of the form: (dizzy_begin_time, dizzy_duration)
 
