@@ -126,6 +126,7 @@ class Game:
         # Renders sectors and nodes
         if self.print_debug:
             self.render_debug()
+
         # Renders all game's objects
         self.stage.render()
 

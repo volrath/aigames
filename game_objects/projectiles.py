@@ -46,9 +46,9 @@ class SlashNormalBullet(Bullet):
     damage = 4.
 
 class SlashSuperBullet(Bullet):
-    radius = 1.4
-    color = 172/255., 234/255., 243/255.
-    hit_force = 250.
+    radius = 1.3
+    color = 238/255., 254/255., 1.
+    hit_force = 220.
     damage = 8.
 
 class EnemyBullet(Bullet):
@@ -58,19 +58,18 @@ class EnemyBullet(Bullet):
     damage = 5
 
 class SoundWave(object):
-    def __init__(self, position, radius, color=(1., 0., 0.)):
+    def __init__(self, position, radius):
         self.position  = position
         self.intensity = 100
         self.radius    = radius
-        self.color     = color
 
     def update(self, game):
         """
         Updates sound wave's radius and intensity
         """
-        self.intensity -= 3
+        self.intensity -= self.intensity_decrease
         if self.intensity >= 0:
-            self.radius *= 1.07
+            self.radius *= self.radius_expansion
             self.color = tuple([x - .02 for x in self.color])
         return self
 
@@ -79,3 +78,13 @@ class SoundWave(object):
         Renders the wave...
         """
         draw_circle(self.position, self.radius, self.color)
+
+class NormalSoundWave(SoundWave):
+    intensity_decrease = 3
+    radius_expansion   = 1.07
+    color              = (1., 0., 0.)
+
+class SuperSoundWave(SoundWave):
+    intensity_decrease = 5
+    radius_expansion   = 1.15
+    color              = (1., 240/255., 0.)

@@ -34,9 +34,9 @@ class SlashWeapon(Weapon):
     hit_size = 3.2
 
 class SlashSuperWeapon(Weapon):
-    shooting_force = 80
+    shooting_force = 440
     orientation = 2
-    max_shooting_force = 80
+    max_shooting_force = 440
     bullet_class = SlashSuperBullet
     color = 1., 234/255., 0.
     original_size = 3.8

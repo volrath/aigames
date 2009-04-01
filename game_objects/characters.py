@@ -6,8 +6,8 @@ from OpenGL.GLU import *
 from math import atan2, pi, atan, degrees, cos, sin, radians
 
 from ai.behavior import *
-from game_objects.projectiles import Bullet, SoundWave
-from game_objects.weapons import SlashWeapon, EnemyNormalWeapon
+from game_objects.projectiles import Bullet, NormalSoundWave, SuperSoundWave
+from game_objects.weapons import SlashWeapon, SlashSuperWeapon, EnemyNormalWeapon
 from graphics.utils import draw_circle
 from utils.functions import load_image, random_binomial, hit_detection
 from utils.exceptions import BehaviorNotAssociated
@@ -443,7 +443,10 @@ class Slash(Character):
 
     def play_guitar(self):
         # Maybe make some real noise?
-        return SoundWave(self.position + Vector3(0., self.size, 0.), self.radius)
+        if isinstance(self.weapon, SlashSuperWeapon):
+            return SuperSoundWave(self.position + Vector3(0., self.size, 0.), self.radius)
+        elif isinstance(self.weapon, SlashWeapon):
+            return NormalSoundWave(self.position + Vector3(0., self.size, 0.), self.radius)
 
     def behave(self, game):
         # Handle hitting
