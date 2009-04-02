@@ -49,3 +49,27 @@ class Graph(object):
         Loads the manhattan cost between all the nodes
         """
         self.cost = CostMatrix(self.nodes)
+
+class WayPoint(object):
+    """
+    A special tactical node
+    """
+    def __init__(self, main_node, uncover_from=[]):
+        self.main_node    = main_node
+        self.uncover_from = uncover_from
+        self.taken = None
+
+    @property
+    def is_taken(self):
+        return self.taken is not None
+
+    @classmethod
+    def find_closest_for(cls, character, game):
+        closest = None
+        for waypoint in game.level['waypoints']:
+            if waypoint.is_taken:
+                continue
+            distance = (waypoint.main_node.location - character.position).length
+            if closest is None or distance < closest[1]:
+                closest = (waypoint, distance)
+        return closest[0]

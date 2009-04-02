@@ -6,10 +6,11 @@ from pygame.locals import *
 from physics.vector3 import Vector3
 from utils.enum import Enum
 from utils.locals import GRAVITY
-from utils.functions import hit_detection
+from utils.functions import hit_detection, graph_quantization
 
 M_STATE = Enum('wandering', 'pursuing', 'evading')
 F_STATE = Enum('shooting', 'hitting', 'hold')
+S_STATE = Enum('none', 'uncovered', 'shaking', 'attacking')
 
 class StateMachine(object):
     """
@@ -21,6 +22,7 @@ class StateMachine(object):
         self.moving_state = M_STATE.wandering
         self.last_moving_state = M_STATE.wandering
         self.fighting_state = F_STATE.hold
+        self.scared_state = S_STATE.none
         self.dizzy = False
         # Collision behavior
         try:
@@ -63,15 +65,15 @@ class StateMachine(object):
         begin_time, duration = self.character.dizzy
         return current_time - begin_time < duration
 
-    def _check_sound_wave_collision(self, game):
+    def _check_sound_wave_collision(self, sound_wave):
         """
         Checks if the character has been hitted by a sound wave =S
         """
-        if game.sound_wave is None:
+        if sound_wave is None:
             return False
-        distance = ((game.sound_wave.position - Vector3(0., 5., 0.)) - \
+        distance = ((sound_wave.position - Vector3(0., 5., 0.)) - \
                     self.character.position).length
-        return self.character.radius + game.sound_wave.radius > distance
+        return self.character.radius + sound_wave.radius > distance
 
     def _fighting_tree(self, game):
                 # 2. Updates character's fighting action state
@@ -142,7 +144,7 @@ class StateMachine(object):
                 self.character.dizzy = None
 
         # Check if the character is hitted by some sound wave
-        if self._check_sound_wave_collision(game):
+        if self._check_sound_wave_collision(game.sound_wave):
             # Set dizzynes
             # First we need to calculate the level of dizzynes
             if game.sound_wave.intensity > self.character.hearing_umbral:
@@ -153,6 +155,44 @@ class StateMachine(object):
         # 1. Updates character's behavior
         self._fuzzy_life(game)
 
+        # Check if the enemy is super powerfull
+        if game.main_character.is_kicking_asses:
+            # Was I attacking before?
+            if self.scared_state == S_STATE.attacking:
+                self._fighting_tree(game)
+                if self.fighting_state != F_STATE.hold:
+                    return self
+                
+            # Am I covered?
+            my_waypoint = None
+            for waypoint in game.level['waypoints']:
+                localization_node = graph_quantization(self.character.position)
+                if waypoint.main_node.id == localization_node.id and \
+                   waypoint.taken == self.character:
+                    # Yes i'm covered
+                    self.scared_state = S_STATE.shaking
+                    my_waypoint = waypoint
+                else:
+                    # No, i'm not!
+                    # Is m enemy near to me?
+                    if (self.character.position - game.main_character.position).length < 4:
+                        self.scared_state = S_STATE.attacking
+                    else:
+                        self.scared_state = S_STATE.uncovered
+                    return self
+
+            if my_waypoint is not None:
+                # Do I hear steps that came from an uncover location?
+                for step in game.main_character.steps:
+                    if self._check_sound_wave_collision(step) and \
+                       step.intensity > self.character.hearing_umbral:
+                        
+                        node = graph_quantization(step.location)
+                        if node.id in my_waypoint.uncover_form:
+                            # Yes I hear them
+                            self.scared_state = S_STATE.attacking
+                    return self
+
         # NORMAL BEHAVIOR
         # 2. Fighting check
         self._fighting_tree(game)
@@ -162,13 +202,21 @@ class StateMachine(object):
 
         return self
 
-    def execute(self):
+    def execute(self, game):
         """
         Tells the character to execute the corresponding action according to its
         state.
         """
         # Dizzyness
         if self.dizzy:
+            return
+
+        # When scared
+        if self.scared_state == S_STATE.uncover:
+            self.cover()
+            return
+        if self.scared_state == S_STATE.shaking:
+            self.shake()
             return
 
         # When fighting
@@ -178,10 +226,9 @@ class StateMachine(object):
             self.character.shoot()
 
         # When moving
-        if self.moving_state == self.last_moving_state:
+        if self.moving_state == self.last_moving_state or \
+           self.avoidance_manager is None:
             return # optimizing what's below
-        if self.avoidance_manager is None:
-            return
 
         if self.moving_state == M_STATE.wandering:
             self.avoidance_manager.args['look_ahead'] = 10.

@@ -1,6 +1,6 @@
+from ai.graph import Node, WayPoint
 from game_objects.stage import Obstacle, SideAmplificator, MainAmplificator
 from physics.vector3 import Vector3
-from ai.graph import Node
 from physics.vector3 import Vector3
 
 SECTORS = [
@@ -115,6 +115,11 @@ NEIGHBORS = [
     (17, 41, 52),
     ]
 
+WAYPOINTS = [WayPoint(NODES[20], uncover_from=(18, 19)),
+             WayPoint(NODES[44], uncover_from=(42, 43)),
+             WayPoint(NODES[48], uncover_from=(3, 4, 5)),
+             WayPoint(NODES[49], uncover_from=(27, 28, 29))]
+
 OBSTACLES = [
     # Side Amps
     SideAmplificator(position=Vector3(-21.5, 0., -10.8)),
@@ -140,6 +145,7 @@ LEVEL = {
     'nodes': NODES,
     'number_of_nodes': NUMBER_OF_NODES,
     'neighbors': NEIGHBORS,
+    'waypoints': WAYPOINTS,
     'obstacles':  OBSTACLES,
     'enemies': [Vector3(-9., 0., 15.), Vector3(9., 0., 15.)],
     }

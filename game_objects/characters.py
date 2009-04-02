@@ -514,12 +514,10 @@ class Slash(Character):
             else:
                 self.playing = False
         self.set_super_powerfull()
-        self.stepping()
         # Behave
         self.behavior.execute()
 
     def render(self, *args, **kwargs):
-        print self.steps
         for step in self.steps:
             step['wave'].update().render()
             if step['wave'].intensity < 0:
@@ -636,3 +634,16 @@ class Enemy(Character):
                 game.projectiles.append(bullet)
         except ValueError:
             pass
+
+    def cover(self, game):
+        """
+        Find the closest waypoint to cover, but it dismiss all the waypoints
+        that are closer to other AI allies.
+        """
+        pass
+
+    def shake(self):
+        """
+        Makes the character shake of fear
+        """
+        pass
