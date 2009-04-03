@@ -17,7 +17,7 @@ from graphics.utils import life_bar, rock_bar
 from physics.vector3 import Vector3
 from utils.camera import Camera
 from utils.functions import keymap_handler
-from utils.locals import MAIN_VIEW, FPS, STAGE_SIZE
+from utils.locals import MAIN_VIEW, FPS, STAGE_SIZE, NEW_ENEMY_TIME
 from utils.exceptions import GameOverException
 
 class OGLManager:
@@ -183,7 +183,7 @@ class Game:
         current_time = pygame.time.get_ticks()
         # Add a new enemy every 90s
         if len(self.characters) < 4 and \
-           current_time - self.last_enemy_addition > 90000:
+           current_time - self.last_enemy_addition > NEW_ENEMY_TIME:
             random_node = random.choice(self.level['nodes'])
             while random_node.id in \
                   [node.id for node in \

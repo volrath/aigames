@@ -8,6 +8,7 @@ STAGE_SIZE = 30
 MEDIA_PATH = 'media'
 FPS = 60
 GRAVITY = Vector3(0., -19.62, 0.)
+NEW_ENEMY_TIME = 90000
 
 # Character's constants
 STANDARD_INITIAL_FORCE = 8.

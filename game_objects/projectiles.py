@@ -13,20 +13,33 @@ class Bullet(object):
         self.position  = position
         self.velocity  = velocity
         self.owner     = owner
+        self.explotion = None
 
     def update(self, game):
         """
         Updates balls position
         """
-        time = (1./FPS)
-        self.position += self.velocity * time + (GRAVITY * time**2) / 2
-        self.velocity += GRAVITY * time
+        if self.explotion is not None:
+            self.radius -= .1
+            self.explotion.update()
+        else:
+            time = (1./FPS)
+            self.position += self.velocity * time + (GRAVITY * time**2) / 2
+            self.velocity += GRAVITY * time
+
         return self
 
     def render(self):
         """
         Renders the spherical bullet
         """
+        if self.explotion is not None:
+            if self.radius < 0:
+                try:
+                    self.game.projectiles.remove(self)
+                except ValueError:
+                    pass
+            self.explotion.render()
         glPushMatrix()
         glTranslatef(*self.position)
         glColor3f(*self.color)
@@ -37,10 +50,9 @@ class Bullet(object):
         """
         Renders the ball's explotion
         """
-        try:
-            game.projectiles.remove(self)
-        except ValueError:
-            pass
+        # Define a new render method
+        self.game = game
+        self.explotion = BallExplotionWave(self.position, self.radius)
 
 
 class SlashNormalBullet(Bullet):
@@ -97,3 +109,8 @@ class StepSoundWave(SoundWave):
     intensity_decrease = 4
     radius_expansion   = 1.09
     color              = (46/255., 1., 76/255.)
+
+class BallExplotionWave(SoundWave):
+    intensity_decrease = 6
+    radius_expansion   = 1.09
+    color              = (1., 1., 1.)
