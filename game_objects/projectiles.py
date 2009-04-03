@@ -94,6 +94,6 @@ class SuperSoundWave(SoundWave):
     color              = (1., 240/255., 0.)
 
 class StepSoundWave(SoundWave):
-    intensity_decrease = 5
-    radius_expansion   = 1.07
+    intensity_decrease = 4
+    radius_expansion   = 1.09
     color              = (46/255., 1., 76/255.)

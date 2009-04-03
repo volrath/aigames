@@ -8,6 +8,7 @@ from OpenGL.GLU import *
 from math import atan2, pi, atan, degrees, cos, sin, radians
 
 from ai.behavior import *
+from ai.graph import WayPoint
 from game_objects.projectiles import NormalSoundWave, SuperSoundWave, StepSoundWave
 from game_objects.weapons import SlashWeapon, SlashSuperWeapon, EnemyNormalWeapon
 from graphics.utils import draw_circle
@@ -15,6 +16,7 @@ from utils.functions import load_image, random_binomial, hit_detection
 from utils.exceptions import BehaviorNotAssociated
 from physics.vector3 import Vector3
 from physics.rect import Rect
+from physics.steering_behaviors import pursue, pursue_and_stop, look_where_you_are_going
 from utils.functions import graph_quantization
 from utils.locals import FPS, GRAVITY, KINETIC_FRICTION_COEFICIENT, \
      STANDARD_INITIAL_FORCE, SUPER_POWERFULL_TIME, STEP_FRAME
@@ -470,7 +472,7 @@ class Slash(Character):
                 # I'm loudy
                 self.stepping()
         else:
-            if self.rock_bar > 30.:
+            if self.rock_bar > 20.:
                 self.super_powerfull = pygame.time.get_ticks()
                 # Setting the super strength
                 self.weapon = SlashSuperWeapon()
@@ -529,8 +531,8 @@ class Enemy(Character):
     """
     An enemy
     """
-    def __init__(self, max_speed, max_rotation, position=Vector3(),
-                 orientation=0., hearing_umbral=5., behavior_groups=[]):
+    def __init__(self, max_speed, max_rotation, name='', position=Vector3(),
+                 orientation=0., hearing_umbral=1., behavior_groups=[]):
         Character.__init__(self, max_speed, max_rotation, position, orientation,
                            colors=[(126./255, 190./255, 228./255),
                                    (39./255, 107./255, 148./255)],
@@ -541,12 +543,17 @@ class Enemy(Character):
         self.behaviors = dict([(bg.name, bg) for bg in behavior_groups])
         #self.image, self.rect = load_image('main_character.png')
         # Control
+        self.name = name
         self.hearing_umbral = hearing_umbral
         self.obstacle_evading = False
         self.dizzy = None # will save a tuple of the form: (dizzy_begin_time, dizzy_duration)
+        self.waypoint_taken = None
+        self.not_so_smart = False
 
     def __str__(self):
-        return 'Enemy'
+        return 'Enemy %s' % self.name
+
+    __repr__ = __str__
 
     @property
     def is_dizzy(self):
@@ -562,6 +569,8 @@ class Enemy(Character):
         self.behaviors[bg].behavior_set[b.name] = b
 
     def behave(self):
+        if self.not_so_smart:
+            return
         if self.is_dizzy:
             self.behave_acceleration.set_length(0)
             self.behave_angular = 70.
@@ -602,48 +611,46 @@ class Enemy(Character):
 
     def attack(self, game):
         """
-        Checks if i can attack a given character, giving priority to
-        person-to-person attack (hitting) over long distance attack (shooting)
+        Go towards the enemy while shooting or hitting
         """
-        character = game.main_character
-        distance = (character.position - self.position).length
-        # Check for hitting
-        if distance < character.radius + 5 and hit_detection(self, character):
-            # We hit!!!
-            self.hit()
-        # Check for shooting (a.k.a. predicting physics)
-        # Step 0. Simulate a bullet
-        bullet = self.shoot()
-        # Step 1. Get landing time of the bullet
-        try:
-            lt = (-bullet.velocity.y + \
-                  sqrt(bullet.velocity.y - 2 * GRAVITY.y * bullet.position.y)) / \
-                  GRAVITY.y
-            # Step 2. Get position of impact
-            pix = Vector3(bullet.position.x + bullet.velocity.x * lt,
-                         0.,
-                         bullet.position.z + bullet.velocity.z * lt)
-            # Step 3. Intersects position of impact with target's radius
-            bullet_trajectory = pix - self.position
-            target_direction  = (character.position + self.velocity * lt) - self.position
-            min_distance = target_direction - target_direction.projection(bullet_trajectory)
-            if min_distance.length < character.radius and \
-               target_direction.length < bullet_trajectory.length*9.3 and \
-               abs(abs(atan2(target_direction.x, target_direction.z)) - self.orientation) < pi/3:
-                # We shoot!!
-                game.projectiles.append(bullet)
-        except ValueError:
-            pass
+        self.go_to(game.main_character.position)
+        # Maybe shoot wildly?
+        #self.shoot()
 
     def cover(self, game):
         """
-        Find the closest waypoint to cover, but it dismiss all the waypoints
-        that are closer to other AI allies.
+        Makes the character cover from the enemy in some waypoint. The waypoint
+        election is based on the WayPoint.find_closest_for class method.
         """
-        pass
+        if self.waypoint_taken is not None:
+            waypoint = self.waypoint_taken
+        else:
+            waypoint = WayPoint.find_closest_for(self, game)
+            try:
+                waypoint.taken = self
+                self.waypoint_taken = waypoint
+            except AttributeError:
+                print self
+                exit()
+        self.go_to(waypoint.main_node.location)
+        return waypoint
 
     def shake(self):
         """
         Makes the character shake of fear
         """
-        pass
+        self.velocity.set_length(0)
+        self.behave_acceleration = Vector3()
+
+    def go_to(self, location):
+        """
+        Makes the character go to an especific location
+        """
+        steering  = pursue_and_stop(self, location)
+        look_where_you_are_going(self)
+        try:
+            linear = steering.get('linear')
+            self.behave_acceleration += linear
+            self.behave_acceleration.set_length(self.max_acc)
+        except AttributeError:
+            pass

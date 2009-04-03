@@ -12,6 +12,7 @@ from ai.graph import Graph
 from ai.state_machine import StateMachine
 from game_objects.stage import Stage
 from game_objects.characters import Slash, Enemy
+from graphics.utils import life_bar, rock_bar
 from physics.vector3 import Vector3
 from utils.camera import Camera
 from utils.functions import keymap_handler
@@ -117,15 +118,24 @@ class Game:
 
         # AI characters behavior
         for enemy in self.enemies:
+            enemy.behave()
             if not hasattr(enemy, 'state'):
                 setattr(enemy, 'state', StateMachine(enemy))
-            enemy.state.update(self).execute()
-            enemy.behave()
+            enemy.state.update(self).execute(self)
 
     def render(self):
         # Renders sectors and nodes
         if self.print_debug:
             self.render_debug()
+
+        # Renders all the eye candy:
+        life_bar(self.main_character, -10.)
+        rock_bar(self.main_character, -9.)
+        enemy_z_pos = 10.
+        for enemy in self.enemies:
+            life_bar(enemy, enemy_z_pos)
+            enemy_z_pos -= 1
+            
 
         # Renders all game's objects
         self.stage.render()
@@ -228,13 +238,14 @@ class Game:
         self.enemies.append(character)
         self.characters.append(character)
 
-    def random_enemies(self, positions):
+    def random_enemies(self, initials):
         """
         Add <number> random enemies...
         Improve this when different type of enemies are complete.
         """
-        for position in positions:
-            enemy = Enemy(3.5,3., position=position, orientation=pi)
+        for initial in initials:
+            position, name = initial
+            enemy = Enemy(5.5,3., name=name, position=position, orientation=pi)
 
             pursue_behaviors = [
                 Behavior(character=enemy,
@@ -257,6 +268,9 @@ class Game:
                 Behavior(character=enemy, target=self.enemies,
                          **VELOCITY_MATCHING),
                 ]
+            separation = [
+                Behavior(character=enemy, target=self.enemies, **SEPARATION),
+                ]
 
             collision_behaviors = [
                 Behavior(character=enemy,
@@ -264,8 +278,8 @@ class Game:
                          **OBSTACLE_AVOIDANCE)
                 ]
             
-##             enemy.add_behavior_group(BehaviorGroup(b_set=flocking,
-##                                                    **FLOCKING_GROUP))
+            enemy.add_behavior_group(BehaviorGroup(b_set=separation,
+                                                   **FLOCKING_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=pursue_behaviors,
                                                    **PURSUE_GROUP))
             enemy.add_behavior_group(BehaviorGroup(b_set=evade_behaviors,

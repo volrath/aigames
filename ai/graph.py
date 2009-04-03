@@ -65,11 +65,16 @@ class WayPoint(object):
 
     @classmethod
     def find_closest_for(cls, character, game):
-        closest = None
-        for waypoint in game.level['waypoints']:
-            if waypoint.is_taken:
-                continue
-            distance = (waypoint.main_node.location - character.position).length
-            if closest is None or distance < closest[1]:
-                closest = (waypoint, distance)
-        return closest[0]
+        """
+        Find the closest waypoint to cover for a character in the game, but it
+        dismiss all the waypoints that are closer to other AI allies.
+        """
+        def euclidean_sort(wp1, wp2):
+            dwp1 = (character.position - wp1.main_node.location).length
+            dwp2 = (character.position - wp2.main_node.location).length
+            return cmp(dwp1, dwp2)
+        waypoints = game.level['waypoints']
+        waypoints.sort(euclidean_sort)
+        for wp in waypoints:
+            if not wp.is_taken:
+                return wp

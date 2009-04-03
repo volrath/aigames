@@ -35,7 +35,7 @@ def seek(character, target, target_radius=None):
     """
     steering = {}
     new_acc = target - character.position
-    if new_acc.length > 5.: return None
+    if new_acc.length < 5.: return None
     steering['linear'] = new_acc.set_length(character.std_acc_step)
     steering['angular'] = 0.
     return steering
@@ -56,22 +56,23 @@ def flee(character, target, target_radius=None):
     return steering
 
 @target_transform
-def arrive(character, target, target_radius=.3, slow_radius=2.5,
+def arrive(character, target, target_radius=.5, slow_radius=1.5,
            time_to_target=.1):
     steering = {}
     direction = target - character.position
     distance = direction.length
     # Are we there?
     if distance < target_radius:
-        character.velocity.set_length(0.)
+        character.velocity.set_length(0)
         return { 'linear': Vector3(), 'angular': 0. }
     # Are we <slow_radius>near?
     if distance < slow_radius:
         speed = character.max_speed * distance / slow_radius
     else:
         speed = character.max_speed
-    velocity = direction.set_length(speed)
-    steering['linear'] = (velocity - character.velocity) / time_to_target
+    character.velocity.set_length(speed)
+    #steering['linear'] = (velocity - character.velocity) / time_to_target
+    steering['linear'] = direction / time_to_target
     # Check if the acceleration is too fast
     if steering['linear'].length > character.max_acc:
         steering['linear'].set_length(character.max_acc)
@@ -159,7 +160,10 @@ def pursue_evade(basic_behavior):
                   *args, **kwargs):
         global LEVEL
         # First calculate the target to delegate the seek
-        distance = (target.position - character.position).length
+        if hasattr(target, 'position'):
+            distance = (target.position - character.position).length
+        else:
+            distance = (target - character.position).length
         if characters_sight is not None and distance > characters_sight:
             return None
         if character.velocity.length <= distance / max_prediction:
@@ -172,11 +176,14 @@ def pursue_evade(basic_behavior):
         ## ALERT: small modification, if the target.velocity == 0 we are
         ## pursuing/evading the target itself, not some delegate target which
         ## doesn't exists.
-        if target.velocity.length != 0:
+        if hasattr(target, 'velocity') and target.velocity.length != 0:
             target_node = graph_quantization(target.position + \
                                              (target.velocity * prediction))
         else:
-            target_node = graph_quantization(target.position)
+            if hasattr(target, 'position'):
+                target_node = graph_quantization(target.position)
+            else:
+                target_node = graph_quantization(target)
         a_result = LEVEL['a_star'].get_route(character.node_position.id, target_node.id)
 #        print 'pursuing', a_result['path'], target_node.id
         try:
@@ -228,7 +235,7 @@ class Separation:
     def __init__(self, character, target, radius=None):
         self.character = character
         self.targets = target
-        self.radius = radius or character.size + 7.
+        self.radius = radius or character.size + 3.
 
     def execute(self):
         steering = {'linear': Vector3(), 'angular': 0.}

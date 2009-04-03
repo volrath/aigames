@@ -157,41 +157,56 @@ class StateMachine(object):
 
         # Check if the enemy is super powerfull
         if game.main_character.is_kicking_asses:
+            self.character.not_so_smart = True
             # Was I attacking before?
             if self.scared_state == S_STATE.attacking:
                 self._fighting_tree(game)
                 if self.fighting_state != F_STATE.hold:
                     return self
-                
-            # Am I covered?
-            my_waypoint = None
-            for waypoint in game.level['waypoints']:
-                localization_node = graph_quantization(self.character.position)
-                if waypoint.main_node.id == localization_node.id and \
-                   waypoint.taken == self.character:
-                    # Yes i'm covered
-                    self.scared_state = S_STATE.shaking
-                    my_waypoint = waypoint
-                else:
-                    # No, i'm not!
-                    # Is m enemy near to me?
-                    if (self.character.position - game.main_character.position).length < 4:
-                        self.scared_state = S_STATE.attacking
-                    else:
-                        self.scared_state = S_STATE.uncovered
-                    return self
 
-            if my_waypoint is not None:
+            # Do I have a waypoint asigned?
+            if self.character.waypoint_taken is None:
+                # I have to cover quickly
+                self.scared_state = S_STATE.uncovered
+                return self
+
+            # Am I covered yet?
+            localization_node = graph_quantization(self.character.position)
+            if self.character.waypoint_taken.main_node.id == localization_node.id and \
+               (self.character.waypoint_taken.main_node.location - \
+                self.character.position).length < 1:
+                # Yes i'm covered
+                self.scared_state = S_STATE.shaking
+                
                 # Do I hear steps that came from an uncover location?
                 for step in game.main_character.steps:
-                    if self._check_sound_wave_collision(step) and \
-                       step.intensity > self.character.hearing_umbral:
-                        
-                        node = graph_quantization(step.location)
-                        if node.id in my_waypoint.uncover_form:
+                    if self._check_sound_wave_collision(step['wave']) and \
+                       step['wave'].intensity > self.character.hearing_umbral:
+
+                        node = graph_quantization(step['wave'].position)
+                        if node.id in self.character.waypoint_taken.uncover_from:
                             # Yes I hear them
+                            print 'im %s and i hear you!' % self.character
                             self.scared_state = S_STATE.attacking
                     return self
+
+            else:
+                # No, i'm not!
+                # Is m enemy near to me?
+                if (self.character.position - game.main_character.position).length < 7:
+                    self.scared_state = S_STATE.attacking
+                else:
+                    self.scared_state = S_STATE.uncovered
+                return self
+
+        else:
+            self.scared_state = S_STATE.none
+            self.character.not_so_smart = False
+            try:
+                self.character.waypoint_taken.taken = None
+                self.character.waypoint_taken = None
+            except AttributeError:
+                pass
 
         # NORMAL BEHAVIOR
         # 2. Fighting check
@@ -199,7 +214,6 @@ class StateMachine(object):
 
         # 3. Moving support
         self._moving_support()
-
         return self
 
     def execute(self, game):
@@ -212,11 +226,14 @@ class StateMachine(object):
             return
 
         # When scared
-        if self.scared_state == S_STATE.uncover:
-            self.cover()
+        if self.scared_state == S_STATE.uncovered:
+            wp = self.character.cover(game)
             return
         if self.scared_state == S_STATE.shaking:
-            self.shake()
+            self.character.shake()
+            return
+        if self.scared_state == S_STATE.attacking:
+            self.character.attack(game)
             return
 
         # When fighting

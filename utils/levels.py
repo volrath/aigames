@@ -115,10 +115,10 @@ NEIGHBORS = [
     (17, 41, 52),
     ]
 
-WAYPOINTS = [WayPoint(NODES[20], uncover_from=(18, 19)),
-             WayPoint(NODES[44], uncover_from=(42, 43)),
-             WayPoint(NODES[48], uncover_from=(3, 4, 5)),
-             WayPoint(NODES[49], uncover_from=(27, 28, 29))]
+WAYPOINTS = [WayPoint(NODES[20], uncover_from=(17, 18, 19, 20, 21, 22)),
+             WayPoint(NODES[44], uncover_from=(41, 42, 43, 44, 45, 46)),
+             WayPoint(NODES[48], uncover_from=(3, 4, 5, 48, 49, 29)),
+             WayPoint(NODES[49], uncover_from=(5, 48, 49, 27, 28, 29))]
 
 OBSTACLES = [
     # Side Amps
@@ -147,5 +147,8 @@ LEVEL = {
     'neighbors': NEIGHBORS,
     'waypoints': WAYPOINTS,
     'obstacles':  OBSTACLES,
-    'enemies': [Vector3(-9., 0., 15.), Vector3(9., 0., 15.)],
+    'enemies': [(Vector3(-28., 0., -24.), '#1'), (Vector3(28., 0., -24.),'#2'),
+                (Vector3(0., 0., 24.), '#3')]
+##     'enemies': [(Vector3(-28., 0., -24.), '#1'), (Vector3(28., 0., -24.), '#2'),
+##                 (Vector3(-18.2, 0., 14.43),'#3'), (Vector3(18.2, 0., 14.43),'#4')],
     }
