@@ -57,7 +57,7 @@ def main():
         # Set FPS
         game.clock.tick(FPS)
 
-        # Updates cammera position, if asked.
+        # Updates camera position, if asked.
         camera.handle_keys()
         # Draw the camera
         glMatrixMode(GL_MODELVIEW)
@@ -69,8 +69,9 @@ def main():
 
         # Draw the game
         try:
-            game.render()         # Render all game's elements
+            game.render()         # Renders all game's elements
             game.behave()         # Follows behaviors in game.characters
+            game.extra()          # Loads extra content in the game, if needed
         except GameOverException:
             import sys, time
             # wait a few seconds to show the result of the game.

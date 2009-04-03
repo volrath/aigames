@@ -1,3 +1,4 @@
+import random
 from math import pi
 
 import pygame
@@ -60,7 +61,8 @@ class Game:
         self.sound_wave = None # sound wave 'pool'
         self.stage = Stage(STAGE_SIZE)
         # Control
-        self.print_debug = True
+        self.print_debug = False
+        self.last_enemy_addition = 0
 
     def set_level(self, level):
         """
@@ -174,6 +176,23 @@ class Game:
             else:
                 self.sound_wave.update(self).render()
 
+    def extra(self):
+        """
+        Loads extra content in the game, if needed
+        """
+        current_time = pygame.time.get_ticks()
+        # Add a new enemy every 90s
+        if len(self.characters) < 4 and \
+           current_time - self.last_enemy_addition > 90000:
+            random_node = random.choice(self.level['nodes'])
+            while random_node.id in \
+                  [node.id for node in \
+                   [graph_quantization(character.position) for character in \
+                    self.characters]]:
+                random_node = random.choice(self.level['nodes'])
+            self.random_enemies([(random_node.location, 'X')])
+            self.last_enemy_addition = current_time
+
     def render_debug(self):
         """
         """
@@ -195,13 +214,6 @@ class Game:
             glVertex3f(s3[0], 0., s3[1])
             glVertex3f(s2[0], 0., s2[1])
             glEnd()
-
-        # Nodes
-##         glColor3f(1., 1., 1.)
-##         for node in self.level['nodes']:
-##             glTranslatef(node.location.x, 1., node.location.z)
-##             print node.id, node.location.x, node.location.z
-##             glutSolidSphere(.5, 5, 5)
         glPopMatrix()
 
         glPushMatrix()
