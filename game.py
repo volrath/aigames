@@ -78,9 +78,9 @@ class Game:
         self.stage.set_level(LEVEL['obstacles'])
         # 3.
         self.graph = Graph(LEVEL['number_of_nodes'], LEVEL['nodes'], LEVEL['neighbors'])
-        self.graph.load()
         self.a_star = AStar(self.graph)
-        LEVEL['a_star'] = self.a_star
+        self.graph.load(self.a_star)
+        LEVEL['graph'] = self.graph
         # 4.
         self.random_enemies(LEVEL['enemies'])
 

@@ -569,11 +569,11 @@ class Enemy(Character):
         self.behaviors[bg].behavior_set[b.name] = b
 
     def behave(self):
-        if self.not_so_smart:
-            return
         if self.is_dizzy:
             self.behave_acceleration.set_length(0)
             self.behave_angular = 70.
+            return
+        if self.not_so_smart:
             return
 
         def group_priority_cmp(g1, g2):

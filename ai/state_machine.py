@@ -186,7 +186,6 @@ class StateMachine(object):
                         node = graph_quantization(step['wave'].position)
                         if node.id in self.character.waypoint_taken.uncover_from:
                             # Yes I hear them
-                            print 'im %s and i hear you!' % self.character
                             self.scared_state = S_STATE.attacking
                     return self
 

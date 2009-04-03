@@ -184,7 +184,7 @@ def pursue_evade(basic_behavior):
                 target_node = graph_quantization(target.position)
             else:
                 target_node = graph_quantization(target)
-        a_result = LEVEL['a_star'].get_route(character.node_position.id, target_node.id)
+        a_result = LEVEL['graph'].path[character.node_position.id, target_node.id]
 #        print 'pursuing', a_result['path'], target_node.id
         try:
             node = LEVEL['nodes'][a_result['path'][1]]

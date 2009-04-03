@@ -1,7 +1,7 @@
 class CostMatrix(object):
     """
     Class that stores the precalculated distance between all the nodes.
-    Its main goal is to establish an O(1) access to the cost<distance>
+    Its main goal is to stablish an O(1) access to the cost<distance>
     between two given node's locations
     """
     def __init__(self, node_list):
@@ -18,6 +18,29 @@ class CostMatrix(object):
         """
         i, j = key
         return self.costs[i][j]
+
+
+class PathMatrix(object):
+    """
+    Class that stores the precalculated A* path between all the nodes for
+    stablishing an O(1) access to the best path between two locations
+    """
+    def __init__(self, a_star):
+        """
+        """
+        self.paths = []
+        for node1 in a_star.graph.nodes:
+            mpath = []
+            for node2 in a_star.graph.nodes:
+                mpath.append(a_star.get_route(node1.id, node2.id))
+            self.paths.append(mpath)
+
+    def __getitem__(self, key):
+        """
+        Key most be a tuple
+        """
+        i, j = key
+        return self.paths[i][j]
 
 
 class Node(object):
@@ -44,11 +67,13 @@ class Graph(object):
         self.nodes = node_list
         self.paths = path_list
 
-    def load(self):
+    def load(self, a_star):
         """
-        Loads the manhattan cost between all the nodes
+        Loads the euclidean cost and the A* path between all the nodes.
         """
         self.cost = CostMatrix(self.nodes)
+        self.path = PathMatrix(a_star)
+
 
 class WayPoint(object):
     """
