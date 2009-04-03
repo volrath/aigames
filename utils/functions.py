@@ -5,7 +5,7 @@ from math import sin, cos, pi, atan2
 from physics.vector3 import Vector3
 from utils.levels import LEVEL
 from utils.locals import MAIN_VIEW, SIDE_VIEW, TOP_VIEW, \
-     IMPACT_ORIENTATION_UMBRAL
+     IMPACT_ORIENTATION_UMBRAL, MEDIA_PATH
 
 # Check for dependencies.
 if not pygame.font: print 'Warning, fonts disabled'

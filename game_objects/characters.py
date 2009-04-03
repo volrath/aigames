@@ -396,9 +396,6 @@ class Character(object):
         self.check_energy()
         glPopMatrix()
 
-        # Character's Radius
-        draw_circle(self.position + Vector3(0., self.size, 0.), self.radius, (1., 0., 228/255.))
-
         # Character's weapon, if any
         if hasattr(self, 'weapon'):
             glPushMatrix()

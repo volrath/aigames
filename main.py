@@ -8,44 +8,39 @@ from OpenGL.GLU import *
 from game import Game, OGLManager
 from physics.vector3 import Vector3
 from utils.camera import Camera
+from utils.exceptions import GameOverException
 from utils.functions import keymap_handler
 from utils.locals import SCREEN, FPS
-from utils.exceptions import GameOverException
+from utils.menu import Menu
 
 def main():
     global camera
 
     # Game initialization
     pygame.init()
-    screen = pygame.display.set_mode(map(int, SCREEN.size), HWSURFACE|OPENGL|DOUBLEBUF)
-    OGLManager.resize(*(map(int, SCREEN.size)))
-    OGLManager.init(*(map(int, SCREEN.size)))
-
-    pygame.display.set_caption("¡A ti te va a caer el Axl!")
+    screen = pygame.display.set_mode(map(int, SCREEN.size))
 
     # Game's objects initialization
     camera = Camera()
-    game = Game()             # Game object. This will handle all the game world
-                              # and its components
+    game   = Game()             # Game object. This will handle all the game world
+                                # and its components
+    menu   = Menu(screen, game)
 
     # Game's menu
-    loading = True
-    while loading:
+    while menu.update():
+        menu.render()
         for event in pygame.event.get():
             if event.type == QUIT:
                 return
             if event.type == KEYUP and event.key == K_ESCAPE:
                 return
-            if event.type == KEYUP and event.key == K_RETURN:
-                # - Set loading state
-                print 'LOADING!'
-                # - Check level selected
-                # - Load level
-                game.set_level(0)
-                # - Unset loading
-                print 'ALL SET...'
-                loading = False
+        pygame.display.flip()
 
+    screen = pygame.display.set_mode(map(int, SCREEN.size), HWSURFACE|OPENGL|DOUBLEBUF)
+    OGLManager.resize(*(map(int, SCREEN.size)))
+    OGLManager.init(*(map(int, SCREEN.size)))
+
+    pygame.display.set_caption("¡A ti te va a caer el Axl!")
     # Game!
     while True:
         for event in pygame.event.get():
@@ -78,7 +73,6 @@ def main():
             time.sleep(4)
             # Continue? maybe later
             sys.exit()
-
         # Flip and display view.
         pygame.display.flip()
 

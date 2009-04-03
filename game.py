@@ -16,8 +16,8 @@ from game_objects.characters import Slash, Enemy
 from graphics.utils import life_bar, rock_bar
 from physics.vector3 import Vector3
 from utils.camera import Camera
-from utils.functions import keymap_handler
-from utils.locals import MAIN_VIEW, FPS, STAGE_SIZE, NEW_ENEMY_TIME
+from utils.functions import keymap_handler, load_image
+from utils.locals import SCREEN, MAIN_VIEW, FPS, STAGE_SIZE, NEW_ENEMY_TIME
 from utils.exceptions import GameOverException
 
 class OGLManager:
