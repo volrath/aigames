@@ -7,7 +7,7 @@ SCREEN = Rect((0, 0), 1000, 700)
 STAGE_SIZE = 30
 MEDIA_PATH = 'media'
 FPS = 60
-GRAVITY = Vector3(0., -19.62, 0.)
+GRAVITY = Vector3(0., -39.24, 0.)
 NEW_ENEMY_TIME = 90000
 
 # Character's constants

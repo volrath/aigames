@@ -87,11 +87,13 @@ para accelerar hacia varias direcciones al mismo tiempo.
   \hline\hline
   \bf Tecla & \bf Acción \\ [0.5ex] \hline
   Espacio & Salto \\
-  Enter & Disparar \\
-  $]$ & Aumentar ángulo de disparo \\
-  $[$ & Disminuir ángulo de disparo \\
-  ' & Aumentar fuerza de disparo \\
-  $\backslash$ & Disminuir fuerza de disparo \\ [1ex]
+  h & Golpear \\
+  j & Disparar \\
+  k & Tocar Guitarra \\
+  y & ángulo de disparo \\
+  u & Disminuir ángulo de disparo \\
+  n & Aumentar fuerza de disparo \\
+  m & Disminuir fuerza de disparo \\ [1ex]
   \hline
 \end{tabular}
 \end{center}
@@ -130,17 +132,46 @@ con algún otro personaje, se usa la verdadera masa del personaje
 $M_{p}$.
 
 \subsection{Slash}
-El personaje principal del juego sólo posee un arma: su guitarra,
-con la cual puede golpear a los reggaetoneros como si fuera una
-espada, pero tambien puede disparar ``balas'' a sus enemigos más
-lejanos. Actualmente no existen restricciones a cerca del número de
-balas con las que puede contar \textbf{Slash}.
+El personaje principal del juego sólo posee un arma: su guitarra, con
+la cual puede golpear a los reggaetoneros como si fuera una espada,
+pero tambien puede disparar ``balas'' a sus enemigos más lejanos. No
+existen restricciones acerca del número de balas con las que puede
+contar \textbf{Slash}.
 
 \subsection{Los Reggaetoneros}
-En el estado en el que se encuentra el juego para esta entrega, los
-reggaetoneros no cuentan con ningún arma para defenderse. Su única
-función es demostrar comportamientos inteligentes desarrollados
-artificialmente. Estos comportamientos serán detallados más adelante.
+Los reggaetoneros, al igual que slash, cuentan con un arma para
+disparar y golpear. A pesar de ser más pequeños que \textbf{Slash},
+los golpes y balas que lancen causan más daños que las lanzadas por el
+personaje principal, sin embargo los reggaetoneros tienen que ser más
+cuidadosos, pues si se equivocan apuntando pueden herir a sus propios
+compañeros del reggaeton.
+
+\section{Proyectiles}
+Los proyectiles forman parte importante del juego pués son la manera
+más fácil y efectiva de hacer daño a los oponentes. Sólo se cuenta con
+un tipo de proyectil: la ``bala'' que describe un movimiento
+parabólico hacia el suelo dependiendo de la fuerza y el ángulo con la
+que fué lanzada. Además de las ``balas'' en esta sección describiremos
+otro tipo de herramienta con la que cuenta \textbf{Slash} para cumplir
+su objetivo: las ``ondas de sonido'' que, a pesar de no ser un
+proyectil como tal, funcionan como un ataque de largo alcance.
+
+\subsection{Balas}
+Las balas son simplemente esferas que tienen un radio, un peso y una
+cantidad de daño causante predefinido. El daño que causa una bala es
+constante, pero la fuerza con la que empuja al personaje que recibe la
+bala depende de la velocidad que lleve la bala en ese momento y el
+peso de la misma.
+
+Las balas desaparecen del juego al tocar a cualquier jugador, a
+cualquier obstaculo o al tocar el suelo.
+
+\subsection{Ondas de sonido}
+Las ondas de sonido se modelan como circunferencias que poseen un
+radio incial y un coeficiente de expansión de dicho radio. Todas las
+ondas de sonido en el juego tienen inicialmente una intensidad fijada
+en 100\%, esa intensidad irá descendiendo a medida que la onda se
+expanda con su coeficiente de expansión.
 
 \section{Escenario o tarima}
 El escenario del juego es un espacio rectangular de tamaño fijo, en el
@@ -231,14 +262,60 @@ un mayor peso en la suma resultante.\\
 La implementación del ``Blending'' realizado será detallada
 posteriormente.
 
+\chapter{Introduciendo Sentidos al juego}
+Además de la posibilidad de tener un rango de visión, los
+reggaetoneros fueron dotados de la habilidad para oir ciertas ondas de
+sonido. A continuación se describe el funcionamiento de este sentido y
+las necesidades de usarlo.
+
+\section{El ataque secreto de Slash}
+Slash guarda un ataque secreto del cual sus enemigos no disponen:
+Tocar su privilegiada guitarra hace que los reggaetoneros queden
+mareados por dicho ataque y no puedan reaccionar ni pensar en
+estrategias o comportamientos a seguir.\\
+
+El efecto producido por la guitarra de \textbf{Slash} se modela como
+una onda de sonido que parte desde la posición central donde se
+encuentra \textbf{Slash} y se expande a cierto radio disminuyendo su
+intensidad.
+
+\section{El umbral auditivo de los reggaetoneros}
+Los reggaetoneros por su parte cuentan con la capacidad de oir sólo
+hasta cierta intensidad de sonido. Si una onda de sonido los alcanza,
+ellos reaccionarán ante ella únicamente si la intensidad de dicha onda
+sobrepasa su umbral auditivo.\\
+
+En el caso particular de las ondas emitidas por la poderosa guitarra
+de \textbf{Slash}, mientras los reggaetoneros tengan menor capacidad
+de oir sonidos estarán más a salvo de los efectos causados por la
+guitarra, lo que demuestra que para los reggaetoneros mientras más
+sordos estén, mejor.\\
+
+Al recibir una onda de sonido proveniente de la guitarra de
+\textbf{Slash}, los reggaetoneros la procesan sólo si la intensidad de
+la onda es mayor a su respectivo umbral auditivo. De ser así, se
+marean una cantidad de tiempo en segundos que corresponde a la
+siguiente función lineal:
+
+$$Mareo = I x C_m / 100$$
+
+Donde:
+\begin{itemize}
+\item $I$: Intensidad de la onda
+\item $C_m$: Coeficiente de tiempo de mareo
+\end{itemize}
+
+El umbral auditivo de los reggaetoneros también es en otros momentos
+del juego que serán explicados más adelante.
+
 \chapter{Dándole inteligencia a los reggaetoneros}
 \section{Encontrar caminos (A*)}
 Un problema importante en el juego es dotar a los reggaetoneros de la
 suficiente inteligencia para poder navergar el mapa completo en
 búsqueda de caminos. Esta importancia se puede ver en la necesidad de
 poder encontrar a Slash cuando se esconda detrás de algún obstaculo
-del juego. En la Figura \ref{fig:stage} podemos ver una visión superior de la
-disposición de los obstaculos en el \emph{Stage}.
+del juego. En la Figura \ref{fig:stage} podemos ver una visión
+superior de la disposición de los obstaculos en el \emph{Stage}.
 
 \begin{figure}[htp]
   \centering
@@ -252,8 +329,8 @@ serie de decisiones explicadas a continuación.
 \subsection{Malla de Polígonos: División del mapa}
 El primer paso escencial para proveer navegabilidad del \emph{Stage} a
 los reggaetoneros fué dividir el mismo en \textbf{sectores
-  triángulares} (Figura \ref{fig:smp})para que la inteligencia artificial pudiese distinguir
-en que parte del escenario se encuentra.
+  triángulares} (Figura \ref{fig:smp})para que la inteligencia
+artificial pudiese distinguir en que parte del escenario se encuentra.
 
 \begin{figure}[htp]
   \centering
@@ -267,6 +344,7 @@ disposición para que la inteligencia artificial pueda conseguir los
 caminos evitando al mismo tiempo los obstaculos.
 
 \subsection{Enumeración de sectores, nodos y caminos}
+\label{sec:snc}
 Para conseguir una verdadera noción por parte de los reggaetoneros
 sobre en que lugar del \emph{stage} se encuentran, se enumeraron todos
 los sectores y se creó un grafo en donde los nodos son los
@@ -286,6 +364,19 @@ El grafo obtenido se muestra a continuación:
 \end{figure}
 
 Las líneas rojas representan los caminos.\\
+
+Inicialmente se definió un camino entre cada dos triángulos que
+compartieran un lado. Esta aproximación fué modificada y se crearon
+caminos entre cualquier par de nodos de forma que los caminos no se
+intersectaran con ningún obstaculo del juego.
+
+Esta decisión fué tomada en base a la necesidad de recrear un
+movimiento más natural en el algorítmo de búsqueda de caminos mínimos
+hacia ciertos objetivos. Como los sectores triangulares podrían poseer
+áreas muy grandes en ciertos lugares del mapa, el camino a seguir sólo
+entre los lados de dichos triángulos a veces parecía poco natural. La
+solución fue obviar los lados comunes de los sectores triangulares y
+trabajar unicamente con los nodos en el mapa.
 
 \subsection{Encontrando el camino inteligentemente}
 Una vez obtenido el grafo anterior, el problema presentado fué hacer
@@ -364,13 +455,97 @@ Para más información sobre las prioridades de los comportamientos en
 la inteligencia artificial del juego, ver la Tabla \ref{tab:bh-pri}.
 
 \subsection{Máquina de estados para la pelea}
-La máquina de estados corresponiente a las acciones de la pelea es la
-siguiente:
+La máquina de estados corresponiente a las acciones de la pelea se
+muestra en la Figura \ref{fig:sm}
 
 \begin{figure}[htp]
   \centering
   \includegraphics[scale=0.6]{../media/states.png}
-  \caption{Máquina de estados}\label{fig:sm}
+  \caption{Máquina de estados para la pelea}\label{fig:sm}
+\end{figure}
+
+\section{La estrategia cobarde de los reggaetoneros}
+De vez en cuando los reggaetoneros se encuentran con una amenaza más
+peligrosa de lo que son capaces de manejar, y se ven en la necesidad
+de tomar estrategias evasivas para poder sobrevivir.
+
+\subsection{Super Slash}
+Nuestro personaje principal cuenta con la nueva característica de
+volverse super poderoso cuando logra realizar un ``combo'' frente a
+los reggaetoneros. Para lograrlo, \textbf{Slash} debe golpear a los
+reggaetoneros de forma seguida sin descansar hasta llenar cierta
+``barra de poder''. Esta barra cuenta cuanto daño consecutivo ha
+podido realizar \textbf{Slash} en cierta cantidad restringida de
+tiempo. Si \textbf{Slash} logra llenar su barra de poder, adquirirá
+\emph{Super Fuerza}, lo que hará que pueda disparar balas más grandes
+y que golpean con mucha más fuerza, tocar más fuerte su guitarra y
+hacerse mucho más pesado para que sea mas dificil sacarle del
+escenario.\\
+
+\textbf{Super Slash} solo será capaz de mantener sus super poderes
+durante una cantidad limitada y corta de tiempo, así que durante este
+tiempo sus enemigos pasaran a tratar de realizar estrategias evasivas
+para cubrirse de los ataques de \textbf{Super Slash}.
+
+\subsection{La estrategia por sobrevivir}
+Al verse en la gran vulnerabilidad de no poder atacar a \textbf{Super
+  Slash}, los reggaetoneros tratarán de conseguir ciertas localidades
+en el mapa cubiertas por varios obstaculos en la que saben que es mas
+difícil que puedan ser atacados por el enemigo. Estas localidades se
+encuentran mostradas en la Figura \ref{fig:waypoints}.
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.3]{../media/stage_waypoints.png}
+  \caption{Puntos de protección en el \emph{Stage}}\label{fig:waypoints}
+\end{figure}
+
+Al momento de reconocer que \textbf{Slash} ha obtenido super poderes,
+los reggaetoneros buscarán el punto de protección mas cercano que
+encuentren y se dirigirán hacia él, pero antes de hacerlo le avisarán
+a los demás reggaetoneros que ese punto de protección ya esta tomado,
+para que ninguno de ellos vaya a cubrirse en el mismo punto y sean
+menos vulnerables.
+
+\subsection{El super defecto de Super Slash}
+Cuando \textbf{Slash} consigue sus super poderes, también consigue el
+importante problema de hacerse mas ruidoso cuando camina, y sus pasos
+se oyen por los lugares en donde pasa.\\
+
+Este defecto del super poder de \textbf{Slash} es tomado por los
+reggaetoneros para conseguir un poco de ventaja, pues una vez que se
+encuentran escondidos pasan a estar en un estado de vigilancia en el
+cual estan oyendo cualquier sonido que se les acerque.
+
+Cuando un reggaetonero que ya esta cubierto en un punto de protección
+oye los pasos de \textbf{Super Slash}, pasa a atacarlo inmediatamente
+para por lo menos tratar de defenderse y bajarle aunque sea un poco la
+vida.\\
+
+La detección de sonidos en vigilancia de los reggaetoneros es incluso
+un poco más refinada: Pueden detectar si el sonido viene de un lugar
+en donde no hay forma de que todavía \textbf{Super Slash} los pueda
+ver y así se quedan vigilantes sin descubrirse por error. Para lograr
+esto, los reggaetoneros analizan el punto de protección donde se
+encuentran parados y pueden ver los lugares cubiertos y no cubiertos
+que el punto de protección les ofrece. Si el sonido proviene de un
+lugar que no es cubierto desde el punto de protección, pasan a hacer
+una persecusión de la posición donde se originó el sonido mientras
+atacan. Si el sonido que oyen proviene de un lugar del cual se
+encuentran cubiertos, se quedan vigilantes esperando a que el sonido
+siga apareciendo desde allí.
+
+\section{El árbol de toma de decisiones completo}
+Tomando en consideración el estado de ``mareo'' obtenido al oir la
+guitarra de \textbf{Slash}, la toma de decisiones para los momentos de
+pelea, para el movimiento y para las estrategias evasivas, el árbol de
+decisiones que rige el comportamiento de un reggaetonero es el
+mostrado en la Figura \ref{fig:whole-tree}
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[scale=0.7]{../media/complete_tree.png}
+  \caption{Árbol de toma de decisiones completo}\label{fig:whole-tree}
 \end{figure}
 
 \chapter{Detalles de Implementación}
@@ -519,6 +694,8 @@ Donde:
 \item $F_{fr}$: Fuerza de fricción
 \end{itemize}
 
+
+
 \chapter{Problemas encontrados}
 
 \section{Velocidades después de una colisión}
@@ -566,11 +743,23 @@ forma, al momento de cargar el nivel, los obstaculos y los personajes,
 también se crea el grafo, con sus sectores y nodos correspondientes, y
 se calcula la distancia entre cada uno de los nodos.\\
 
-Esta decisión mejora ampliamente el comportamiento del juego al
+Luego, al agregar mucho más caminos entre los nodos (como se describió
+anteriormente en la Sub Sección \ref{sec:snc}, se pudo observar que no
+era suficiente precalcular la heurística euclideana entre todos los
+nodos pués, con muchos mas caminos, el costo de correr el algorítmo de
+A* aumenta. Para solucionar este problema se decidió tomar la misma
+aproximación de precalcular todo lo posible, y se decidio realizar una
+matriz de caminos óptimos que diera el camino óptimo entre 2 nodos con
+orden de acceso lineal. Construir esta matriz significó realizar el
+cálculo del algoritmo A* sobre todos los nodos al momento de cargar el
+juego, y dejar dichos calculos realizados en memoria principal.
+
+Ambas decisiones mejoran ampliamente el comportamiento del juego al
 momento de tener reggaetoneros siguiendo caminos óptimos, debido a que
 tiene un impacto en el cálculo permanente de la heuristica entre cada
 punto y el nodo destino y además provee de forma directa (acceso
-lineal sobre una matriz) el costo de trasladarse entre un nodo y otro.
+lineal sobre una matriz) el costo de trasladarse entre un nodo y otro,
+y sobre el costo completo de calcular todo el camino.
 
 \section{Choques contra obstaculos}
 Para cada obstaculo en el juego, y para cada personaje, existe un
@@ -584,5 +773,9 @@ pared contra el personaje, pero si el personaje choca contra alguna
 esquina del obstaculo entonces se quedan ambos pegados y el personaje
 no logra salir, al menos de que otras fuerzas interactuen sobre él
 (por ejemplo, la fuerza de algunas balas).
+
+\section{Movimiento poco natural al buscar caminos mínimos}
+El origen y solución de este problema se encuentra detallado en la
+Sub Sección \ref{sec:snc}
 
 \end{document}

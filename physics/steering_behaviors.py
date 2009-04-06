@@ -235,7 +235,7 @@ class Separation:
     def __init__(self, character, target, radius=None):
         self.character = character
         self.targets = target
-        self.radius = radius or character.size + 3.
+        self.radius = radius or character.size + 5.
 
     def execute(self):
         steering = {'linear': Vector3(), 'angular': 0.}
