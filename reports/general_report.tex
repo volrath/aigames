@@ -105,7 +105,7 @@ El juego consta de varios objetos que se describen a continuación
 \section{Personajes}
 Los personajes que participan en el juego pueden ser divididos en dos
 grupos: El personaje principal (\textbf{Slash}) y sus enemigos los
-reggaetoneros. Ambos cuentan con resticciones similares en cuanto a su
+reggaetoneros. Ambos cuentan con restricciones similares en cuanto a su
 máxima velocidad y aceleración, tanto lineal como angular, que puedan
 tener. Además cada personaje tiene una cierta cantidad de masa que lo
 hace más o menos suceptible a ser desplazado por golpes de otros
@@ -164,7 +164,7 @@ bala depende de la velocidad que lleve la bala en ese momento y el
 peso de la misma.
 
 Las balas desaparecen del juego al tocar a cualquier jugador, a
-cualquier obstaculo o al tocar el suelo.
+cualquier obstáculo o al tocar el suelo.
 
 \subsection{Ondas de sonido}
 Las ondas de sonido se modelan como circunferencias que poseen un
@@ -175,7 +175,7 @@ expanda con su coeficiente de expansión.
 
 \section{Escenario o tarima}
 El escenario del juego es un espacio rectangular de tamaño fijo, en el
-cual se encuentran objetos que funcionarán como obstaculos a evitar
+cual se encuentran objetos que funcionarán como obstáculos a evitar
 para los personajes llevados por la inteligencia artificial.
 
 \chapter{Comportamientos y movimientos desarrollados}
@@ -209,13 +209,13 @@ siguientes:
 
 \item \textbf{Perseguir y Evadir} (Pursue and Evade): Con estos
   comportamientos, los reggaetoneros persiguen (o evaden) un objetivo,
-  estimando la posición del objetivo 1 segundo mas adelante del tiempo
+  estimando la posición del objetivo 1 segundo más adelante del tiempo
   actual, asumiendo que el objetivo permanece con la misma velocidad
   durante dicho tiempo.
 
-\item \textbf{Evasión de obstaculos} (Obstacle Avoidance): Los
+\item \textbf{Evasión de obstáculos} (Obstacle Avoidance): Los
   reggaetoneros tratarán de evadir, siempre que se pueda, los
-  obstaculos que se les presenten en el camino. Entre los obstaculos a
+  obstáculos que se les presenten en el camino. Entre los obstáculos a
   evitar, se fijarán también en los bordes del escenario, tomandolos
   como paredes imaginarias que tendrán que esquivar.
 
@@ -313,14 +313,14 @@ del juego que serán explicados más adelante.
 Un problema importante en el juego es dotar a los reggaetoneros de la
 suficiente inteligencia para poder navergar el mapa completo en
 búsqueda de caminos. Esta importancia se puede ver en la necesidad de
-poder encontrar a Slash cuando se esconda detrás de algún obstaculo
+poder encontrar a Slash cuando se esconda detrás de algún obstáculo
 del juego. En la Figura \ref{fig:stage} podemos ver una visión
-superior de la disposición de los obstaculos en el \emph{Stage}.
+superior de la disposición de los obstáculos en el \emph{Stage}.
 
 \begin{figure}[htp]
   \centering
   \includegraphics[scale=0.3]{../media/stage.png}
-  \caption{Nuevos obstaculos en el \emph{Stage}}\label{fig:stage}
+  \caption{Nuevos obstáculos en el \emph{Stage}}\label{fig:stage}
 \end{figure}
 
 Para solucionar eficazmente este problema se tomaron y realizaron una
@@ -341,7 +341,7 @@ artificial pudiese distinguir en que parte del escenario se encuentra.
 Esta división se realizó a mano, sin seguir ningún algorítmo
 específico de división, buscando colocar los polígonos en la mejor
 disposición para que la inteligencia artificial pueda conseguir los
-caminos evitando al mismo tiempo los obstaculos.
+caminos evitando al mismo tiempo los obstáculos.
 
 \subsection{Enumeración de sectores, nodos y caminos}
 \label{sec:snc}
@@ -353,7 +353,7 @@ los sectores y se creó un grafo en donde los nodos son los
   todos los puntos del polígono} de los triángulos (sectores) y los
 caminos entre dichos nodos fueron definidos arbitrariamente buscando
 que cada camino evite tener alguna intersección con el área ocupada
-por algún obstaculo.\\
+por algún obstáculo.\\
 
 El grafo obtenido se muestra a continuación:
 
@@ -368,7 +368,7 @@ Las líneas rojas representan los caminos.\\
 Inicialmente se definió un camino entre cada dos triángulos que
 compartieran un lado. Esta aproximación fué modificada y se crearon
 caminos entre cualquier par de nodos de forma que los caminos no se
-intersectaran con ningún obstaculo del juego.
+intersectaran con ningún obstáculo del juego.
 
 Esta decisión fué tomada en base a la necesidad de recrear un
 movimiento más natural en el algorítmo de búsqueda de caminos mínimos
@@ -376,7 +376,7 @@ hacia ciertos objetivos. Como los sectores triangulares podrían poseer
 áreas muy grandes en ciertos lugares del mapa, el camino a seguir sólo
 entre los lados de dichos triángulos a veces parecía poco natural. La
 solución fue obviar los lados comunes de los sectores triangulares y
-trabajar unicamente con los nodos en el mapa.
+trabajar únicamente con los nodos en el mapa.
 
 \subsection{Encontrando el camino inteligentemente}
 Una vez obtenido el grafo anterior, el problema presentado fué hacer
@@ -395,7 +395,7 @@ cuales se quiere conseguir el camino óptimo (con menor distancia
 recorrida).
 
 \section{Toma de decisiones}
-Cada reggaetoneros fué dotado de una implementacion de toma de
+Cada reggaetoneros fué dotado de una implementación de toma de
 decisiones que regula su comportamiento a través del juego dadas las
 distintas variables con las que se encuentre externas a él mismo.\\
 
@@ -434,18 +434,18 @@ reggaetoneros es de la siguiente forma:
 \end{figure}
 
 Básicamente el árbol de movimiento afecta la capacidad de esquivar
-obstaculos del reggaetonero. Cuando el reggaetonero esta persiguiendo
+obstáculos del reggaetonero. Cuando el reggaetonero esta persiguiendo
 a \textbf{Slash} está siguiendo los nodos de navegación presentados
 anteriormente, por lo tanto la probabilidad de que choque contra un
-obstaculo o pegue contra alguna de las paredes del stage es pequeña,
+obstáculo o pegue contra alguna de las paredes del stage es pequeña,
 por esto, se le baja la prioridad al comportamiento de evasión de
-obstaculos para que el \emph{Blending} de comportamientos lo tome
+obstáculos para que el \emph{Blending} de comportamientos lo tome
 menos en cuenta.\\
 
-Por el contrario, cuando el reggaetonero esta huyendo, es mas probable
-que en su desesperación se tope con obstaculos y paredes que tenga que
+Por el contrario, cuando el reggaetonero está huyendo, es más probable
+que en su desesperación se tope con obstáculos y paredes que tenga que
 evitar, por esto, se le da la máxima prioridad al comportamiento de
-evasión de paredes y obstaculos.\\
+evasión de paredes y obstáculos.\\
 
 Por último, cuando el reggaetonero está haciendo cualquier otra cosa
 que no sea perseguir o evadir, le da una alta prioridad a la evasión
@@ -479,7 +479,7 @@ podido realizar \textbf{Slash} en cierta cantidad restringida de
 tiempo. Si \textbf{Slash} logra llenar su barra de poder, adquirirá
 \emph{Super Fuerza}, lo que hará que pueda disparar balas más grandes
 y que golpean con mucha más fuerza, tocar más fuerte su guitarra y
-hacerse mucho más pesado para que sea mas dificil sacarle del
+hacerse mucho más pesado para que sea más difícil sacarle del
 escenario.\\
 
 \textbf{Super Slash} solo será capaz de mantener sus super poderes
@@ -490,7 +490,7 @@ para cubrirse de los ataques de \textbf{Super Slash}.
 \subsection{La estrategia por sobrevivir}
 Al verse en la gran vulnerabilidad de no poder atacar a \textbf{Super
   Slash}, los reggaetoneros tratarán de conseguir ciertas localidades
-en el mapa cubiertas por varios obstaculos en la que saben que es mas
+en el mapa cubiertas por varios obstáculos en la que saben que es más
 difícil que puedan ser atacados por el enemigo. Estas localidades se
 encuentran mostradas en la Figura \ref{fig:waypoints}.
 
@@ -501,7 +501,7 @@ encuentran mostradas en la Figura \ref{fig:waypoints}.
 \end{figure}
 
 Al momento de reconocer que \textbf{Slash} ha obtenido super poderes,
-los reggaetoneros buscarán el punto de protección mas cercano que
+los reggaetoneros buscarán el punto de protección más cercano al que
 encuentren y se dirigirán hacia él, pero antes de hacerlo le avisarán
 a los demás reggaetoneros que ese punto de protección ya esta tomado,
 para que ninguno de ellos vaya a cubrirse en el mismo punto y sean
@@ -509,7 +509,7 @@ menos vulnerables.
 
 \subsection{El super defecto de Super Slash}
 Cuando \textbf{Slash} consigue sus super poderes, también consigue el
-importante problema de hacerse mas ruidoso cuando camina, y sus pasos
+importante problema de hacerse ruidoso cuando camina, y sus pasos
 se oyen por los lugares en donde pasa.\\
 
 Este defecto del super poder de \textbf{Slash} es tomado por los
@@ -517,7 +517,7 @@ reggaetoneros para conseguir un poco de ventaja, pues una vez que se
 encuentran escondidos pasan a estar en un estado de vigilancia en el
 cual estan oyendo cualquier sonido que se les acerque.
 
-Cuando un reggaetonero que ya esta cubierto en un punto de protección
+Cuando un reggaetonero que ya está cubierto en un punto de protección
 oye los pasos de \textbf{Super Slash}, pasa a atacarlo inmediatamente
 para por lo menos tratar de defenderse y bajarle aunque sea un poco la
 vida.\\
@@ -689,7 +689,7 @@ Donde:
 \begin{itemize}
 \item $F_{bh}$: Fuerza de comportamiento
 \item $F_{ht}$: Fuerza de golpes recibidos por otro personaje o por
-  algún obstaculo.
+  algún obstáculo.
 \item $F_{bl}$: Fuerza de balas recibidas
 \item $F_{fr}$: Fuerza de fricción
 \end{itemize}
@@ -739,7 +739,7 @@ algorítmo de búsqueda de caminos mínimos (A*) y se vió que el cálculo
 de la heurística (la distancia euclidiana entre los puntos) era
 preprocesable antes de empezar el juego, debido a que los nodos no
 cambian de posición a lo largo del desarrollo del juego. De esta
-forma, al momento de cargar el nivel, los obstaculos y los personajes,
+forma, al momento de cargar el nivel, los obstáculos y los personajes,
 también se crea el grafo, con sus sectores y nodos correspondientes, y
 se calcula la distancia entre cada uno de los nodos.\\
 
@@ -748,29 +748,29 @@ anteriormente en la Sub Sección \ref{sec:snc}, se pudo observar que no
 era suficiente precalcular la heurística euclideana entre todos los
 nodos pués, con muchos mas caminos, el costo de correr el algorítmo de
 A* aumenta. Para solucionar este problema se decidió tomar la misma
-aproximación de precalcular todo lo posible, y se decidio realizar una
+aproximación de precalcular todo lo posible, y se decidió realizar una
 matriz de caminos óptimos que diera el camino óptimo entre 2 nodos con
 orden de acceso lineal. Construir esta matriz significó realizar el
 cálculo del algoritmo A* sobre todos los nodos al momento de cargar el
-juego, y dejar dichos calculos realizados en memoria principal.
+juego, y dejar dichos cálculos realizados en memoria principal.
 
 Ambas decisiones mejoran ampliamente el comportamiento del juego al
 momento de tener reggaetoneros siguiendo caminos óptimos, debido a que
-tiene un impacto en el cálculo permanente de la heuristica entre cada
+tiene un impacto en el cálculo permanente de la heurística entre cada
 punto y el nodo destino y además provee de forma directa (acceso
 lineal sobre una matriz) el costo de trasladarse entre un nodo y otro,
 y sobre el costo completo de calcular todo el camino.
 
-\section{Choques contra obstaculos}
-Para cada obstaculo en el juego, y para cada personaje, existe un
+\section{Choques contra obstáculos}
+Para cada obstáculo en el juego, y para cada personaje, existe un
 radio de choque que se utiliza para detectar colisiones entre objetos.
-En el caso particular de un choque entre un personaje y un obstaculo,
+En el caso particular de un choque entre un personaje y un obstáculo,
 se trata de calcular cuanto es la fuerza normal que ejerce dicho
-obstaculo sobre el personaje que chocó contra él. El problema ha sido
+obstáculo sobre el personaje que chocó contra él. El problema ha sido
 que cuando los personajes chocan de forma directa contra alguna de las
-paredes de los obstaculos, se aplica la fuerza normal que tiene dicha
+paredes de los obstáculos, se aplica la fuerza normal que tiene dicha
 pared contra el personaje, pero si el personaje choca contra alguna
-esquina del obstaculo entonces se quedan ambos pegados y el personaje
+esquina del obstáculo entonces se quedan ambos pegados y el personaje
 no logra salir, al menos de que otras fuerzas interactuen sobre él
 (por ejemplo, la fuerza de algunas balas).
 
